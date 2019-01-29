@@ -1,0 +1,101 @@
+
+{% extends "layout.html" %}
+{% block content %}
+
+    
+     <!-- SlideShow -->
+    <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
+            <div class="carousel-inner" data-interval="500">
+              <div class="carousel-item active">
+                  <img src="{{url_for('static', filename='pic3.png')}}" class="d-block w-100"  >
+              </div>
+              <div class="carousel-item" data-interval="500">
+                <img src="{{url_for('static', filename='pic2.jpg')}}" class="d-block w-100" >
+              </div>
+              <div class="carousel-item" data-interval="500">
+                <img src="{{url_for('static', filename='pic1.jpg')}}" class="d-block w-100">
+              </div>
+            </div>
+          </div>
+    
+      <div class="container" style="margin-top: 50px;">  
+        <div class="row justify-content-center" >
+            <div class="col-6" style="background-color:white  ; border:5px ; padding: 10px; border-radius: 10px ;">
+
+               
+                <p>
+                Sed et nulla nec nisl rhoncus aliquam. Donec vitae lorem eu nulla scelerisque congue. Aliquam eget tincidunt ex. Donec quis risus quis nulla vulputate viverra in sit amet augue. Quisque quis feugiat libero. Nulla consequat massa vel mauris sodales cursus. Vivamus nulla dolor, imperdiet in metus vitae, luctus fringilla lorem. Donec porttitor viverra augue, vitae venenatis ex varius porttitor. Etiam quis porta metus. Etiam molestie ex et sodales mattis. Cras efficitur eleifend ipsum, vel sagittis quam. Praesent vel lobortis tortor, in interdum neque. Integer euismod pretium eros, non molestie leo volutpat eu. Aenean tempor eu ligula et blandit. Cras tempus mi nec diam tincidunt, ut molestie neque efficitur.
+                </p>
+                <p>
+                Pellentesq  ue eget nibh tincidunt, lobortis elit eu, fermentum eros. Pellentesque vehicula quis nisl non rutrum. Praesent sagittis nisi nunc, sed pulvinar lectus sollicitudin in. Curabitur ornare nunc id tempus mollis. Nunc finibus, lectus non fermentum consectetur, ipsum est ullamcorper justo, ac mollis ligula nibh eget est. Curabitur vitae venenatis sapien, id fermentum quam. Sed mattis, dui quis ultrices dignissim, eros ipsum feugiat dolor, non lobortis nunc dolor vitae mi. Sed ornare arcu urna, quis aliquet metus auctor in. Praesent tincidunt gravida dolor.
+                </p>
+                <p>
+                Sed commodo nisl eget justo porta, ut lacinia tortor pharetra. Vivamus blandit leo est, nec faucibus eros suscipit eget. Sed rutrum neque ac sodales cursus. Maecenas at nunc erat. Praesent dignissim mattis arcu a suscipit. Donec aliquam lacus tellus, a pretium diam ullamcorper ac. Suspendisse potenti. Vestibulum aliquam sapien a malesuada faucibus.
+                </p>
+                
+                <p>
+                Pellentesq  ue eget nibh tincidunt, lobortis elit eu, fermentum eros. Pellentesque vehicula quis nisl non rutrum. Praesent sagittis nisi nunc, sed pulvinar lectus sollicitudin in. Curabitur ornare nunc id tempus mollis. Nunc finibus, lectus non fermentum consectetur, ipsum est ullamcorper justo, ac mollis ligula nibh eget est. Curabitur vitae venenatis sapien, id fermentum quam. Sed mattis, dui quis ultrices dignissim, eros ipsum feugiat dolor, non lobortis nunc dolor vitae mi. Sed ornare arcu urna, quis aliquet metus auctor in. Praesent tincidunt gravida dolor.
+                </p>
+                <p>
+                Sed commodo nisl eget justo porta, ut lacinia tortor pharetra. Vivamus blandit leo est, nec faucibus eros suscipit eget. Sed rutrum neque ac sodales cursus. Maecenas at nunc erat. Praesent dignissim mattis arcu a suscipit. Donec aliquam lacus tellus, a pretium diam ullamcorper ac. Suspendisse potenti. Vestibulum aliquam sapien a malesuada faucibus.
+                </p>
+            </div>
+            
+
+        </div>
+
+
+        
+        <div class="row justify-content-center">
+            <div class="col-6 m-8" style="background-color:white ; border:5px ; padding: 10px; border-radius: 10px; margin-top: 20px;">
+                  <p> Become a researcher! </p>
+                    <form class="Justify-content-center">
+                            <div class="form-row">
+                            
+                                <div class="form-group col-6  ">
+                                    <label for="inputFirstName">First Name</label>
+                                    <input type="text" class="form-control" id="inputFirstName" placeholder="John">
+                                </div>
+                                
+                                <div class="form-group col-6">
+                                    <label for="inputLastName">Last Name</label>
+                                    <input type="text" class="form-control" id="inputLastName" placeholder="Appleseed">
+                                </div>
+                                
+                            
+                                <div class="form-group col-6">
+                                    <label for="inputJobTitle">Job Title</label>
+                                    <input type="text" class="form-control" id="inputJobTitle" placeholder="Professor of...">
+                                </div>
+                            
+                                <div class="form-group col-6">
+                                    <label for="inputPrefix">Prefix</label>
+                                    <input type="text" class="form-control" id="inputPrefix" placeholder="Dr, Prof, etc">
+                                </div>
+                            
+                                <div class="form-group col-6">
+                                    <label for="inputPhoneNumber">Phone Number</label>
+                                    <input type="tel" class="form-control" id="inputCity" placeholder="+353861234567">
+                                </div>
+
+                                <div class="form-group  col-6">
+                                    <label for="inputEmail">Email</label>
+                                    <input type="email" class="form-control" id="inputEmail" placeholder="Johnappleseed@example.com">
+                                    
+                    
+                                </div>
+                            
+                            
+                                <div class="row col-8 justify-content-center ">
+                                        <button type="submit" class="btn btn-primary">Sign Up</button>
+                                </div>
+                            </div>
+                        
+                    </form>
+
+            </div>
+        </div>
+        
+        
+    </div>
+{% endblock content %}
