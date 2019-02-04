@@ -39,12 +39,14 @@ class RegisterForm(FlaskForm):
 	password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
 	#prefix? radio button?
 	#age?
+#Do these DB classes need __init__
 
 @app.route('/')
+@app.route('/home')
 def index():
-	return render_template("sign_in.html") #directs to the index.html
+	return render_template("home.html") #directs to the index.html
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/sign_in', methods=['GET', 'POST'])
 def login():
 	form = LoginForm() #create login form here
 
@@ -60,10 +62,10 @@ def login():
 		else:
 			return #error stating the password is incorrect
 	else:
-		return #error stating the user doesn't exist
-	return render_template('login.html', form=form)
+		return render_template('sign_in.html', form=form)
+	return render_template('sign_in.html', form=form)
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/sign_up', methods=['GET', 'POST'])
 def signup():
 	form = RegisterForm() #create register form here
 
@@ -79,7 +81,7 @@ def signup():
 		db.session.commit()
 
 		return #a page that acknowledges the user has been created
-	return render_template('signup.html', form=form) # return the signup html page
+	return render_template('sign_up.html', form=form) # return the signup html page
 
 @app.route('/dashboard')
 @login_required
