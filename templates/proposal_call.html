@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+{% block content %}
+
+    {% from "_formhelpers.html" import render_field %}
+
+
+
+<div class="row justify-content-center">
+  <form action = "{{ request.path }}" method = "post" class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
+      <div class="form-row">
+        {{ form.hidden_tag() }}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul>
+                    {% for message in messages %}
+ 	<li>{{ message[1] }}</li>
+{% endfor %}</ul>
+{% endif %}
+{% endwith %}
+
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.start_date)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.end_date)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.funding_amount)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.funding_body)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.funding_programme)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.status)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+
+              {{render_field(form.primary_attribution)}}
+
+          </div>
+          <div>
+              {{ form.submit }}
+          </div>
+
+      </div>
+  </form>
+
+
+</div>
+
+{% endblock content %}
