@@ -157,11 +157,16 @@ def dashboard():
 
 
 # @app.route('/resetpassword')
-# @login_required
+#@login_required
+
+#Proposal call page
+@login_required
 @app.route('/proposal_call', methods=['GET', 'POST'])
 def proposal_call():
+    #Creates proposal form
     form = proposalForm(request.form)
     print(form.errors)
+    #checks if form is submitted by post
     if request.method == 'POST':
         if form.is_submitted():
             print("submitted")
@@ -170,14 +175,13 @@ def proposal_call():
             print("valid")
 
         print(form.errors)
-
+        #if input validates pushes to db
         if form.validate_on_submit():
             flash("Successfully logged")
             Start = form.start_date.data
             print(Start)
             End = form.end_date.data
             Amount = form.funding_amount.data
-            #check db for fudning body column
             FundingBody = form.funding_body.data
             Programme = form.funding_programme.data
             status = form.status.data
@@ -193,6 +197,7 @@ def proposal_call():
             conn.commit()
             cur.close()
             conn.close()
+            #links to form creation
             return render_template('create_submission_form.html')
         return render_template('proposal_call.html', form=form)
     else:
