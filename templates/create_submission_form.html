@@ -6,6 +6,24 @@
     </script>
 {% endblock scripts %}
 {% block content %}
-    <button type="button" class="btn btn-primary">Add +</button>
+    <div class="dropdown" style="margin: 7em">
+    <button class="btn btn-primary dropdown-toggle" id="menu1" type="button" data-toggle="dropdown">Add Form Element
+    <span class="caret"></span></button>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="menu1">
+      <li role="presentation"><button class="btn btn-primary dropdown-toggle"role="menuitem"
+                                     id="menu2" type="button" data-toggle="dropdown" tabindex="-1">Text Area</button></li>
+                                    <ul class="dropdown-menu" role="menu" aria-labelledby="menu2">
+                                        <li role="presentation">
+                                            <form>
+                                                <input type="text"/>
+                                            </form>
+                                        </li>
+                                    </ul>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">CSS</a></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">JavaScript</a></li>
+      <li role="presentation" class="divider"></li>
+      <li role="presentation"><a role="menuitem" tabindex="-1" href="#">About Us</a></li>
+    </ul>
+  </div>
 
 {% endblock content %}
