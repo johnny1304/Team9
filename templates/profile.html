@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css">
+    
+    <title>Home</title>
+  </head>
+  <body style="background-color:#f2f2f2 ; width:100% !important;">
+ 
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+   
+   
+   
+    <!-- NAVBAR -->
+   <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color:#6c92dd ;">
+        <a class="navbar-brand" href="#"><img src="{{url_for('static', filename='sfi-logo.svg')}}"/></a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/sign_in">Sign In</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link " href="/sign_up" >Sign Up</a>
+                </li>
+               
+                <li class="nav-item">
+                    <a class="nav-link " href="#" >About</a>
+                </li>
+            </ul>
+            
+            <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-light my-2 my-sm-0" style="background-color:green" type="submit">Search</button>
+           
+           </form>
+        </div>
+    </nav> 
+    
+    <div class="jumbotron" style="margin-bottom: 0; margin-top: 35px;">
+        <div class="container">
+            <img src="Downloads/placeholder.png" height="80" width="80"></img>
+            <h1 class="display-5">Profile name</h1>
+            <p class="lead">Researcher title</p>
+            <button type="button" class="btn btn-light" href="details.html">Change details</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-6 ">
+                <div class="border border-primary">
+                    <h3>Contact information</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Phone number:</li>
+                        <li class="list-group-item">Email address</li>
+                        <li class="list-group-item">Website</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-12 col-md-6" >
+                <div class="border border-primary">
+                    <h3>Education information</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Degree</li>
+                        <li class="list-group-item">Field of study</li>
+                        <li class="list-group-item">Institution</li>
+                        <li class="list-group-item">Year of degree award</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6 ">
+                <div class="border border-primary">
+                    <h3>Employment</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Company</li>
+                        <li class="list-group-item">Location</li>
+                        <li class="list-group-item">Years</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+  </body>
+</html>
