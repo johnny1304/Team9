@@ -1,0 +1,49 @@
+{% extends "layout.html" %}
+{% block content %} 
+    
+    <div class="jumbotron" style="margin-bottom: 0; margin-top: 35px;">
+        <div class="container">
+            <img src="Downloads/placeholder.png" height="80" width="80"></img>
+            <h1 class="display-5">Profile name</h1>
+            <p class="lead">Researcher title</p>
+            <button type="button" class="btn btn-light" href="details.html">Change details</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-6 ">
+                <div class="border border-primary">
+                    <h3>Contact information</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Phone number:</li>
+                        <li class="list-group-item">Email address</li>
+                        <li class="list-group-item">Website</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-12 col-md-6" >
+                <div class="border border-primary">
+                    <h3>Education information</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Degree</li>
+                        <li class="list-group-item">Field of study</li>
+                        <li class="list-group-item">Institution</li>
+                        <li class="list-group-item">Year of degree award</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12 col-md-6 ">
+                <div class="border border-primary">
+                    <h3>Employment</h3>
+                    <ul class="list-group">
+                        <li class="list-group-item">Company</li>
+                        <li class="list-group-item">Location</li>
+                        <li class="list-group-item">Years</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content}
