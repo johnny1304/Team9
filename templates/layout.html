@@ -7,7 +7,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
     
     <title>Home</title>
   </head>
@@ -24,46 +24,56 @@
    
     <!-- NAVBAR -->
     <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color:#6c92dd ;">
+        
         <a class="navbar-brand" href="#"><img src="{{url_for('static', filename='sfi-logo.svg')}}"/></a>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+                <img src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50"/>
             </button>
+           
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item active">
                     <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/sign_in">Sign In</a>
+                
+                <li class="nav-item  d-block d-xs-block d-lg-none">
+                    <a class="nav-link " href="/sign_in" >Sign In</a>
                 </li>
 
                 <li class="nav-item">
                     <a class="nav-link " href="/sign_up" >Sign Up</a>
                 </li>
-
-                <li class="nav-item">
-                    <a class="nav-link " href="/proposal_call" >Proposal</a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link " href="/create_submission_form" >submission form</a>
-                </li>
                
                 <li class="nav-item">
                     <a class="nav-link " href="#" >About</a>
                 </li>
+                
             </ul>
             
-            <form class="form-inline my-2 my-lg-0">
-                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
-            <button class="btn btn-outline-light my-2 my-sm-0" style="background-color:green" type="submit">Search</button>
-           
-           </form>
+            <form class="form-inline my-2 my-lg-0" style="">
+                    <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+                    <button class="btn btn-outline-light my-2 my-sm-0" style="background-color:green" type="submit">Search</button>
+                    
+            </form>
+            <ul class="navbar-nav mr-auto d-none d-lg-block d-xl-block">
+            <li class="nav-item dropdown float-right">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img class='d-none d-lg-block d-xl-block 'src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50"/>
+                    </a>
+                    <div class="dropdown-menu" >
+                      <a class="dropdown-item" href="/sign_in">Sign In</a>
+
+                  </li>
+            </ul>
+            
         </div>
     </nav>
-
+    <br>
+    <br>
+    <br>
+   
     {% block content %}
    
     {% endblock %}
