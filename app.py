@@ -123,28 +123,28 @@ def load_user(user_id):
     # this is a function that callsback the user by the user_id
     return User.query.get(int(user_id))
 
-def mail(content="", email="", password="")
-	#function provides default content message, sender's email, and password but accepts
-	#them as parameters if given
-	#for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-	cur = mysql.get_db().cursor()
+def mail(content="", email="", password=""):
+    #function provides default content message, sender's email, and password but accepts
+    #them as parameters if given
+    #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
+    cur = mysql.get_db().cursor()
     cur.execute("SELECT email FROM researchers")
     rv = cur.fetchall()
 	
-	if not content:
-		content = "default text"
-	if not email:
-		email = "default email address"
-	if not password:
-		password = "default password"
+    if not content:
+        content = "default text"
+    if not email:
+        email = "default email address"
+    if not password:
+        password = "default password"
 	
-	mail = smtplib.SMTP('smtp.gmail.com', 587)
-	mail.ehlo() #not a typo do not fix thanks
-	mail.starttls()
-	mail.login(email,password)
-	for email in rv:
-		mail.sendmail('sender(me)', 'receiver', content)
-	mail.close()
+    mail = smtplib.SMTP('smtp.gmail.com', 587)
+    mail.ehlo() #not a typo do not fix thanks
+    mail.starttls()
+    mail.login(email,password)
+    for email in rv:
+	    mail.sendmail('sender(me)', 'receiver', content)
+    mail.close()
 
 @app.route('/')
 # @app.route('/home')
