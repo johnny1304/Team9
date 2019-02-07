@@ -1,64 +1,57 @@
 {% extends "layout.html" %}
 {% block content %}
 
-    {% from "_formhelpers.html" import render_field %}
-
-
-
 <div class="row justify-content-center">
   <form action = "{{ request.path }}" method = "post" class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
       <div class="form-row">
-        {{ form.hidden_tag() }}
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<ul>
-                    {% for message in messages %}
- 	<li>{{ message[1] }}</li>
-{% endfor %}</ul>
-{% endif %}
-{% endwith %}
-
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.start_date)}}
-
+              {{form.start_date.label}}
+              <br>
+              {{form.start_date}}
+              <br>
           </div>
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.end_date)}}
-
+              {{form.end_date.label}}
+              <br>
+              {{form.end_date}}
+              <br>
           </div>
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.funding_amount)}}
-
+              {{form.funding_amount.label}}
+              <br>
+              {{form.funding_amount}}
+              <br>
           </div>
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.funding_body)}}
-
+              {{form.funding_body.label}}
+              <br>
+              {{form.funding_body}}
+              <br>
           </div>
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.funding_programme)}}
-
+              {{form.funding_programme.label}}
+              <br>
+              {{form.funding_programme}}
+              <br>
           </div>
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.status)}}
-
+              {{form.status.label}}
+              <br>
+              {{form.status}}
+              <br>
           </div>
 
           <div class="form-group col-lg-12">
-
-              {{render_field(form.primary_attribution)}}
-
+              {{form.primary_attribution.label}}
+              <br>
+              {{form.primary_attribution}}
+              <br>
           </div>
           <div>
               {{ form.submit }}
