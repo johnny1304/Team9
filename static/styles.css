@@ -1,0 +1,19 @@
+.dropdown-toggle::after {
+    display:none;
+}
+@media only screen and (min-width: 1200px) {
+    .form-inline {
+      padding-left: 25em;
+    }
+  }
+
+#sign_in{
+    padding-left: 5em;
+
+
+}
+
+#proposal{
+    padding-left: 10em;
+
+}
