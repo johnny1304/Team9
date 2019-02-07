@@ -16,7 +16,7 @@ Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
+login_manager.login_view = '/sign_up'
 
 #setup for proposal call form
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
@@ -192,8 +192,9 @@ def dashboard():
 
 
 # @app.route('/resetpassword')
-# @login_required
+
 @app.route('/proposal_call', methods=['GET', 'POST'])
+@login_required
 def proposal_call():
     #Creates proposal form
     form = proposalForm(request.form)
@@ -235,8 +236,9 @@ def proposal_call():
     else:
         return render_template('proposal_call.html', form=form)
 
-
-@app.route('/logout')
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect('/sign_in?next=' + request.path)
 
 
 @app.route('/logout')
