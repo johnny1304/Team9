@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, request, flash
+from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SubmitField
@@ -8,13 +8,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 
-# from flask.ext.mysqldb import MySQL
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'sqlite:////mnt/c/Users/calvi/OneDrive/Documents/CS3305/test.db'  # set the database directory
-# app.config['MYSQL_HOST'] = 'mysql.netsoc.co'
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -62,86 +59,124 @@ class Funding(db.Model):
     def __repr__(self):
         return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
 
+# standard set up for the Flask app
+
 class User(UserMixin, db.Model):
-    __tablename__ = 'user'
+    # this is the user login class that corresponds to the database
+    __tablename__ = 'Researcher'  # the table name in the database is called Researcher
+    # the following variables correspond to the columns in the Researcher table
     orcid = db.Column('orcid', db.Integer, primary_key=True, unique=True)
-    first_name = db.Column('first_name', db.String(20))
-    last_name = db.Column('last_name', db.String(20))
+    first_name = db.Column('FirstName', db.String(20))
+    last_name = db.Column('LastName', db.String(20))
     email = db.Column('email', db.String(50), unique=True)
     password = db.Column('password', db.String(80))
+    job = db.Column('job', db.String(255))
+    prefix = db.Column('prefix', db.String(20))
+    suffix = db.Column('suffix', db.String(20))
+    phone = db.Column('phone', db.Integer)
+    phone_extension = db.Column('PhoneExtension', db.Integer)
+
+    def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension):
+        # this initialises the class and maps the variables to the table (done by flask automatically)
+        self.orcid = orcid
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = password
+        self.job = job
+        self.prefix = prefix
+        self.suffix = suffix
+        self.phone = phone
+        self.phone_extension = phone_extension
 
     def get_id(self):
+        # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
         return self.orcid
 
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
+# Below are the form classes that inherit the FlaskForm class.
+# You can set the requirements for each attribute here instead of doing it in the html file
 class LoginForm(FlaskForm):
+    # this is the class for the login form in the sign_in.html
     email = StringField('Email', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('Remember me')
 
 
 class RegisterForm(FlaskForm):
-    orcid = IntegerField('ORCID:', validators=[InputRequired()])
-    first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
-    last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
-    email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
-    password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
+	#this is the class for the register form in the sign_up.html
+	orcid = IntegerField('ORCID:', validators=[InputRequired()])
+	first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
+	last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
+	email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
+	password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
+	job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
+	prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
+	suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
+	phone = IntegerField('Phone: ')
+	phone_extension = IntegerField('Phone Extension: ')
 
 
-# prefix? radio button?
-# age?
-# Do these DB classes need __init__
+@login_manager.user_loader
+def load_user(user_id):
+    # this is a function that callsback the user by the user_id
+    return User.query.get(int(user_id))
+
 
 @app.route('/')
 # @app.route('/home')
 def index():
+    # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
-def login():
+def signin():
+    # this is the login in route
     form = LoginForm()  # create login form here
 
     if form.validate_on_submit():  # if login form is submitted then
-        user = User.query.filter_by(email=form.email.data).first()
-        if user:  # check if the user is in the database
-            # if the check password function terminates and returns True, then
-            if check_password_hash(user.password, form.password.data):
-                # logs in the user using flask login_user() function and
-                # pass the remember_me boolean parameter from the form
-                login_user(user, remember=form.remember.data)
-                # redirect the user to the dashboard after logging in
-                return redirect(url_for('dashboard'))
-            else:
-                return  # error stating the password is incorrect
-        else:
-            return  # error stating user doesn't exist
-    else:
-        return render_template('sign_in.html', form=form)
+        user = User.query.filter_by(email=form.email.data).first()  # get user from the database
+        if not user or not check_password_hash(user.password, form.password.data):
+            # if user doesn't exist or the password is incorrect
+            flash('Please check your login details and try again!')  # show an error message
+            return redirect(url_for('signin'))
+
+        # else logs in the user
+        login_user(user)
+        # and redirect to the index page which will be the profile page once its done
+        return redirect(url_for('index'))
     return render_template('sign_in.html', form=form)
 
 
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signup():
     form = RegisterForm()  # create register form here
+    if request.method == 'POST':
+        if form.is_submitted():
+            print("submitted")
 
-    if form.validate_on_submit():  # if register form is submitted then
+        if form.validate():
+            print("valid")
+    if form.validate_on_submit():
+        print("here")# if register form is submitted then
         # hash the password
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         # create a new user for the database
+        user = User.query.filter_by(email=form.email.data).first()
+
+        if user:
+            flash('This email has already been used')
+            return redirect(url_for('signup'))
         new_user = User(orcid=form.orcid.data, first_name=form.first_name.data, last_name=form.last_name.data,
-                        email=form.email.data, password=hashed_password)
+                        email=form.email.data, job=form.job.data, prefix=form.prefix.data, suffix=form.suffix.data,
+                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password)
         # add the new user to the database
         db.session.add(new_user)
         # commit the changes to the database
         db.session.commit()
 
-        return redirect('sign_in')  # a page that acknowledges the user has been created
+        return render_template('sign_in.html')  # a page that acknowledges the user has been created
     return render_template('sign_up.html', form=form)  # return the signup html page
 
 
@@ -157,10 +192,7 @@ def dashboard():
 
 
 # @app.route('/resetpassword')
-#@login_required
-
-#Proposal call page
-@login_required
+# @login_required
 @app.route('/proposal_call', methods=['GET', 'POST'])
 def proposal_call():
     #Creates proposal form
@@ -202,6 +234,9 @@ def proposal_call():
         return render_template('proposal_call.html', form=form)
     else:
         return render_template('proposal_call.html', form=form)
+
+
+@app.route('/logout')
 
 
 @app.route('/logout')

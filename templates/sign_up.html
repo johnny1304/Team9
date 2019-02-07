@@ -1,28 +1,60 @@
 {% extends "layout.html" %}
 {% block content %}
+     {% from "_formhelpers.html" import render_field %}
 
 <div class="row justify-content-center">
-  <form class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
+  <form class="Justify-content-center" method="POST" action="/sign_up" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
+    {{form.hidden_tag()}}
       <div class="form-row">
-      
+          {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul>
+                    {% for message in messages %}
+ 	<li>{{ message[1] }}</li>
+{% endfor %}</ul>
+{% endif %}
+{% endwith %}
+
+
           <div class="form-group col-lg-12 ">
-              <label for="inputFirstName">First Name</label>
-              <input type="text" class="form-control" id="inputFirstName" placeholder="First Name">
-          </div>
-          
-          <div class="form-group col-lg-12">
-              <label for="inputLastName">Last Name</label>
-              <input type="text" class="form-control" id="inputLastName" placeholder="Last Name">
+              {{render_field(form.first_name)}}
           </div>
 
           <div class="form-group col-lg-12">
-              <label for="inputORCID">ORCID</label>
-              <input type="text" class="form-control" id="inputORCID" placeholder="ORCID">
+              {{render_field(form.last_name)}}
           </div>
 
           <div class="form-group col-lg-12">
-              <label for="inputEmail">Email</label>
-              <input type="text" class="form-control" id="inputEmail" placeholder="Email">
+              {{render_field(form.orcid)}}
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.email)}}
+
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.password)}}
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.job)}}
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.prefix)}}
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.suffix)}}
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.phone)}}
+          </div>
+
+          <div class="form-group col-lg-12">
+              {{render_field(form.phone_extension)}}
           </div>
 
       </div>
