@@ -104,17 +104,17 @@ class LoginForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
-    # this is the class for the register form in the sign_up.html
-    orcid = IntegerField('ORCID:', validators=[InputRequired()])
-    first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
-    last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
-    email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
-    password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
-    job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
-    prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
-    suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
-    phone = IntegerField('Phone: ')
-    phone_extension = IntegerField('Phone Extension: ')
+	#this is the class for the register form in the sign_up.html
+	orcid = IntegerField('ORCID:', validators=[InputRequired()])
+	first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
+	last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
+	email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
+	password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
+	job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
+	prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
+	suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
+	phone = IntegerField('Phone: ')
+	phone_extension = IntegerField('Phone Extension: ')
 
 
 @login_manager.user_loader
@@ -152,8 +152,14 @@ def signin():
 @app.route('/sign_up', methods=['GET', 'POST'])
 def signup():
     form = RegisterForm()  # create register form here
+    if request.method == 'POST':
+        if form.is_submitted():
+            print("submitted")
 
-    if form.validate_on_submit():  # if register form is submitted then
+        if form.validate():
+            print("valid")
+    if form.validate_on_submit():
+        print("here")# if register form is submitted then
         # hash the password
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         # create a new user for the database
@@ -170,7 +176,7 @@ def signup():
         # commit the changes to the database
         db.session.commit()
 
-        return redirect('sign_in')  # a page that acknowledges the user has been created
+        return render_template('sign_in.html')  # a page that acknowledges the user has been created
     return render_template('sign_up.html', form=form)  # return the signup html page
 
 
