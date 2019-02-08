@@ -147,7 +147,7 @@ def mail(content="", email="", password=""):
     mail.close()
 
 @app.route('/')
-# @app.route('/home')
+@app.route('/home')
 def index():
     # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
@@ -199,7 +199,7 @@ def signup():
         # commit the changes to the database
         db.session.commit()
 
-        return render_template('sign_in.html')  # a page that acknowledges the user has been created
+        return redirect(url_for('signin'))  # a page that acknowledges the user has been created
     return render_template('sign_up.html', form=form)  # return the signup html page
 
 
