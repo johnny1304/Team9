@@ -37,19 +37,24 @@
                 <li class="nav-item active">
                     <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                 </li>
-                
+                {% if not current_user.is_authenticated %}
                 <li class="nav-item  d-block d-xs-block d-lg-none">
                     <a class="nav-link " href="/sign_in" >Sign In</a>
                 </li>
+                {% endif %}
 
+                {% if not current_user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link " href="/sign_up" >Sign Up</a>
                 </li>
+                {% endif %}
 
 
+                {% if current_user.is_authenticated %}
                  <li class="nav-item">
                     <a class="nav-link " href="/proposal_call" >Proposal</a>
                 </li>
+                {% endif %}
                
                 <li class="nav-item">
                     <a class="nav-link " href="#" >About</a>
@@ -67,8 +72,18 @@
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img class='d-none d-lg-block d-xl-block 'src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50"/>
                     </a>
+                    {% if not current_user.is_authenticated %}
                     <div class="dropdown-menu" >
                       <a class="dropdown-item" href="/sign_in">Sign In</a>
+                    </div>
+                    {% endif %}
+
+                    {% if current_user.is_authenticated %}
+                    <div class="dropdown-menu" >
+                      <a class="dropdown-item" href="/logout">Sign Out</a>
+                    </div>
+                    {% endif %}
+
 
                   </li>
             </ul>

@@ -17,7 +17,7 @@ Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = '/sign_up'
+login_manager.login_view = 'signin'
 
 #setup for proposal call form
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
@@ -147,7 +147,7 @@ def mail(content="", email="", password=""):
     mail.close()
 
 @app.route('/')
-# @app.route('/home')
+@app.route('/home')
 def index():
     # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
@@ -166,7 +166,7 @@ def signin():
             return redirect(url_for('signin'))
 
         # else logs in the user
-        login_user(user)
+        login_user(user, remember=form.remember.data)
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('index'))
     return render_template('sign_in.html', form=form)
@@ -187,20 +187,25 @@ def signup():
         hashed_password = generate_password_hash(form.password.data, method='sha256')
         # create a new user for the database
         user = User.query.filter_by(email=form.email.data).first()
+        exist_orcid = User.query.filter_by(orcid=form.orcid.data).first()
 
-        if user:
-            flash('This email has already been used')
-            return redirect(url_for('signup'))
-        new_user = User(orcid=form.orcid.data, first_name=form.first_name.data, last_name=form.last_name.data,
+        if not exist_orcid and not user:
+            new_user = User(orcid=form.orcid.data, first_name=form.first_name.data, last_name=form.last_name.data,
                         email=form.email.data, job=form.job.data, prefix=form.prefix.data, suffix=form.suffix.data,
                         phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password)
-        # add the new user to the database
-        db.session.add(new_user)
-        # commit the changes to the database
-        db.session.commit()
+            # add the new user to the database
+            db.session.add(new_user)
+            # commit the changes to the database
+            db.session.commit()
+            return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
-        return render_template('sign_in.html')  # a page that acknowledges the user has been created
-    return render_template('sign_up.html', form=form)  # return the signup html page
+        if user:
+            flash('This email has already been used', category="email")
+        if exist_orcid:
+            flash('This orcid has already been registered', category="orcid")
+        
+        return redirect(url_for('signup'))
+    return render_template('sign_up.html', form=form, logged=False)  # return the signup html page
 
 
 @app.route('/dashboard')

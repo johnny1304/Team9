@@ -7,15 +7,6 @@
 
       <div class="form-row" id="proposal">
       {{form.hidden_tag()}}
-          {% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<ul>
-                    {% for message in messages %}
- 	<li>{{ message[1] }}</li>
-{% endfor %}</ul>
-{% endif %}
-{% endwith %}
-
 
           <div class="form-group col-lg-12 ">
               {{render_field(form.first_name ,class="col-lg-6")}}
@@ -28,11 +19,34 @@
           <div class="form-group col-lg-12">
               {{render_field(form.orcid,class="col-lg-6")}}
           </div>
+          {% with orcid_error = get_flashed_messages(category_filter=["orcid"]) %}
+          {% if orcid_error %}
+          <div class="alert_message block-message error">
+            <ul>
+              {% for message in orcid_error %}
+              <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% endwith %}
+
 
           <div class="form-group col-lg-12">
               {{render_field(form.email,class="col-lg-6")}}
 
           </div>
+          {% with email_error = get_flashed_messages(category_filter=["email"]) %}
+          {% if email_error %}
+          <div class="alert_message block-message error">
+            <ul>
+              {% for message in email_error %}
+              <li>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+          {% endwith %}
 
           <div class="form-group col-lg-12">
               {{render_field(form.password,class="col-lg-6")}}
