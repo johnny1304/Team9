@@ -199,6 +199,7 @@ def signup():
             db.session.commit()
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
+<<<<<<< HEAD
         if user:
             flash('This email has already been used', category="email")
         if exist_orcid:
@@ -206,6 +207,10 @@ def signup():
         
         return redirect(url_for('signup'))
     return render_template('sign_up.html', form=form, logged=False)  # return the signup html page
+=======
+        return redirect(url_for('signin'))  # a page that acknowledges the user has been created
+    return render_template('sign_up.html', form=form)  # return the signup html page
+>>>>>>> fd621ff3aab52ca1f749ec494fb0f750f43d8b1c
 
 
 @app.route('/dashboard')
