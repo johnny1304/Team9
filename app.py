@@ -1,7 +1,7 @@
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SubmitField
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SubmitField, TextAreaField
 from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,14 +28,37 @@ mysql = MySQL(app)
 mysql.init_app(app)
 
 class proposalForm(FlaskForm):
-    start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
-    end_date = DateField('End Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
-    funding_amount = IntegerField('Funding Amount', validators=[InputRequired()], render_kw={"placeholder": "Amount"})
-    funding_body = StringField('Funding Body', validators=[InputRequired()], render_kw={"placeholder": "Funding Body"})
-    funding_programme = StringField('Funding Programme', validators=[InputRequired()], render_kw={"placeholder": "Funding Programme"})
-    status = StringField('Status', validators=[InputRequired()], render_kw={"placeholder": "Active/Inactive"})
-    primary_attribution = StringField('Primary Attribution', validators=[InputRequired()], render_kw={"placeholder": "Primary Attribution"})
+    deadline = DateField('Deadline', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    text_of_call = TextAreaField('Text of Call', validators=[InputRequired()], render_kw={"placeholder": "Text of call"})
+    target_audience = StringField('Target Audience', validators=[InputRequired()], render_kw={"placeholder": "Target Audience"})
+    eligibility_criteria = TextAreaField('Eligibility Criteria', validators=[InputRequired()], render_kw={"placeholder": "Eligibility Criteria"})
+    duration = IntegerField('Duration', validators=[InputRequired()], render_kw={"placeholder": "Duration in Months"})
+    reporting_guidelines = TextAreaField('Reporting Guidlines', validators=[InputRequired()], render_kw={"placeholder": "Reporting Guidelines"})
+    time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
     submit = SubmitField('Submit')
+
+class Proposal(db.Model):
+    Deadline = db.Column(db.Date, nullable=False)
+    TextOfCall = db.Column(db.String(1000), nullable=False)
+    TargetAudience = db.Column(db.String(500), nullable=False)
+    EligibilityCriteria = db.Column(db.String(1000), nullable=False)
+    Duration = db.Column(db.Integer, nullable=False)
+    ReportingGuidelines = db.Column(db.String(1000), nullable=False)
+    TimeFrame = db.Column(db.String(200), nullable=False)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+
+    def __init__(self, Deadline, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame):
+        self.Deadline = Deadline
+        self.TextOfCall = TextOfCall
+        self.TargetAudience = TargetAudience
+        self.EligibilityCriteria = EligibilityCriteria
+        self.Duration = Duration
+        self.ReportingGuidelines = ReportingGuidelines
+        self.TimeFrame = TimeFrame
+
+    def __repr__(self):
+        return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
 
 class Funding(db.Model):
     StartDate = db.Column(db.Date, nullable=False)
@@ -117,6 +140,16 @@ class RegisterForm(FlaskForm):
 	phone = IntegerField('Phone: ')
 	phone_extension = IntegerField('Phone Extension: ')
 
+#form for form creations
+class formCreationForm(FlaskForm):
+    start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    funding_amount = IntegerField('Funding Amount', validators=[InputRequired()], render_kw={"placeholder": "Amount"})
+    funding_body = StringField('Funding Body', validators=[InputRequired()], render_kw={"placeholder": "Funding Body"})
+    funding_programme = StringField('Funding Programme', validators=[InputRequired()], render_kw={"placeholder": "Funding Programme"})
+    status = StringField('Status', validators=[InputRequired()], render_kw={"placeholder": "Active/Inactive"})
+    primary_attribution = StringField('Primary Attribution', validators=[InputRequired()], render_kw={"placeholder": "Primary Attribution"})
+    submit = SubmitField('Submit')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -218,7 +251,11 @@ def dashboard():
 # @app.route('/edit')
 # @login_required
 
-
+@app.route('/create_submission_form')
+@login_required
+def create_submission_page():
+    # return the dashboard html file with the user passed to it
+    return render_template('create_submission_form.html', user=current_user)
 # @app.route('/resetpassword')
 
 @app.route('/proposal_call', methods=['GET', 'POST'])
@@ -239,27 +276,27 @@ def proposal_call():
         #if input validates pushes to db
         if form.validate_on_submit():
             flash("Successfully logged")
-            Start = form.start_date.data
-            print(Start)
-            End = form.end_date.data
-            Amount = form.funding_amount.data
-            FundingBody = form.funding_body.data
-            Programme = form.funding_programme.data
-            status = form.status.data
-            PrimaryAttribution = form.primary_attribution.data
-            ORCID = "22222"
+            deadline = form.deadline.data
+            textofcall = form.text_of_call.data
+            targetaudience = form.target_audience.data
+            eligibilitycriteria = form.eligibility_criteria.data
+            duration = form.duration.data
+            reportingguidelines = form.reporting_guidelines.data
+            timeframe = form.time_frame.data
+
 
             conn = mysql.connect
             cur = conn.cursor()
             # execute a query
-            cur.execute("""INSERT INTO Funding(StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Stats, PrimaryAttribution, ORCID)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(Start, End, Amount, FundingBody, Programme, status, PrimaryAttribution, ORCID))
+            cur.execute("""INSERT INTO Proposals(Deadline, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s);""",(deadline, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
             # rv contains the result of the execute
             conn.commit()
             cur.close()
             conn.close()
             #links to form creation
-            return render_template('create_submission_form.html')
+            print("here")
+            return redirect(url_for('create_submission_page'))
         return render_template('proposal_call.html', form=form)
     else:
         return render_template('proposal_call.html', form=form)
