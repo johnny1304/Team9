@@ -38,24 +38,25 @@ class proposalForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class Funding(db.Model):
+    __tablename__ = 'Funding'
     StartDate = db.Column(db.Date, nullable=False)
     EndDate = db.Column(db.Date, nullable=False)
-    FundingAmount = db.Column(db.Integer, nullable=False)
-
+    AmountFunding = db.Column(db.Integer, nullable=False)
+    FundingBody = db.Column(db.String(255))
     FundingProgramme = db.Column(db.String(255), nullable=False)
     Stats = db.Column(db.String(255), nullable=False)
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
-    ORCID =db.Column(db.String(255), nullable=False)
+    orcid =db.Column(db.String(255), nullable=False)
 
-    def __init__(self, Start, End, Amount, Programme, status, PrimaryAttribution, ORCID):
-        self.StartDate = Start
-        self.EndDate = End
-        self.FundingAmount = Amount
-
-        self.FundingProgramme = Programme
-        self.Stats = status
+    def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+        self.StartDate = StartDate
+        self.EndDate = EndDate
+        self.AmountFunding = AmountFunding
+        self.FundingBody = FundingBody
+        self.FundingProgramme = FundingProgramme
+        self.Status = Status
         self.PrimaryAttribution = PrimaryAttribution
-        self.ORCID = ORCID
+        self.orcid = orcid
 
     def __repr__(self):
         return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
@@ -89,6 +90,9 @@ class User(UserMixin, db.Model):
         self.suffix = suffix
         self.phone = phone
         self.phone_extension = phone_extension
+
+    def getORCID(self):
+        return self.orcid
 
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
@@ -245,19 +249,24 @@ def proposal_call():
             Amount = form.funding_amount.data
             FundingBody = form.funding_body.data
             Programme = form.funding_programme.data
-            status = form.status.data
+            Status = form.status.data
             PrimaryAttribution = form.primary_attribution.data
-            ORCID = "22222"
+            orcid = current_user.getORCID()
+            print(orcid)
 
-            conn = mysql.connect
+            new_fund = Funding(StartDate=Start, EndDate=End, AmountFunding=Amount, FundingBody=FundingBody, 
+                FundingProgramme=Programme, Status=Status, PrimaryAttribution=PrimaryAttribution, orcid=orcid)
+            db.session.add(new_fund)
+            db.session.commit()
+            """conn = mysql.connect
             cur = conn.cursor()
             # execute a query
-            cur.execute("""INSERT INTO Funding(StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Stats, PrimaryAttribution, ORCID)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(Start, End, Amount, FundingBody, Programme, status, PrimaryAttribution, ORCID))
+            cur.execute(""INSERT INTO Funding(StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Stats, PrimaryAttribution, ORCID)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s);"",(Start, End, Amount, FundingBody, Programme, status, PrimaryAttribution, ORCID))
             # rv contains the result of the execute
             conn.commit()
             cur.close()
-            conn.close()
+            conn.close()"""
             #links to form creation
             return render_template('create_submission_form.html')
         return render_template('proposal_call.html', form=form)
