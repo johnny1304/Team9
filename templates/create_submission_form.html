@@ -1,7 +1,50 @@
 {% extends "layout.html" %}
 {% block content %}
-<div>
-</div>
+    <div class="row justify-content-center text-center">
+        {% for post in posts %}
+            <div class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:5em; border-radius: 10px;">
+                <div class="form-group col-lg-12">
+                    <h3>Deadline</h3>
+                    <p>{{ post.deadline }}</p>
+                </div>
 
+            <div class="form-group col-lg-12">
+                <h3>Deadline</h3>
+                <p>{{ post.deadline }}</p>
+            </div>
+
+            <div class="form-group col-lg-12">
+                <h3>Text of Call</h3>
+                <p>{{ post.text }}</p>
+            </div>
+
+            <div class="form-group col-lg-12">
+                <h3>Target Audience</h3>
+                <p>{{ post.audience }}</p>
+            </div>
+
+            <div class="form-group col-lg-12">
+                <h3>Eligibility Criteria</h3>
+                <p>{{ post.eligibility }}</p>
+            </div>
+
+            <div class="form-group col-lg-12">
+                <h3>Duration</h3>
+                <p>{{ post.duration }}</p>
+            </div>
+
+            <div class="form-group col-lg-12">
+                <h3>Reporting guidelines</h3>
+                <p>{{ post.guidelines }}</p>
+            </div>
+
+            <div class="form-group col-lg-12">
+                <h3>Time Frame</h3>
+                <p>{{ post.timeframe }}</p>
+            </div>
+
+          </div>
+        {% endfor %}
+    </div>
 
 {% endblock content %}

@@ -1,13 +1,19 @@
+import os
+import secrets
+
+from PIL import Image
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SubmitField, TextAreaField
-from wtforms.validators import InputRequired, Email, Length
+from flask_wtf.file import FileAllowed
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField,FileField
+from wtforms.validators import InputRequired, Email, Length, length, DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 import smtplib
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
@@ -28,6 +34,7 @@ mysql = MySQL(app)
 mysql.init_app(app)
 
 class proposalForm(FlaskForm):
+    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
     deadline = DateField('Deadline', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
     text_of_call = TextAreaField('Text of Call', validators=[InputRequired()], render_kw={"placeholder": "Text of call"})
     target_audience = StringField('Target Audience', validators=[InputRequired()], render_kw={"placeholder": "Target Audience"})
@@ -35,30 +42,78 @@ class proposalForm(FlaskForm):
     duration = IntegerField('Duration', validators=[InputRequired()], render_kw={"placeholder": "Duration in Months"})
     reporting_guidelines = TextAreaField('Reporting Guidlines', validators=[InputRequired()], render_kw={"placeholder": "Reporting Guidelines"})
     time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
+    picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
 
 class Proposal(db.Model):
     Deadline = db.Column(db.Date, nullable=False)
+    title = db.Column(db.String(100),nullable=False)
     TextOfCall = db.Column(db.String(1000), nullable=False)
     TargetAudience = db.Column(db.String(500), nullable=False)
     EligibilityCriteria = db.Column(db.String(1000), nullable=False)
     Duration = db.Column(db.Integer, nullable=False)
     ReportingGuidelines = db.Column(db.String(1000), nullable=False)
     TimeFrame = db.Column(db.String(200), nullable=False)
+    picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
 
-    def __init__(self, Deadline, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame):
+    def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
+        self.title = title
         self.TextOfCall = TextOfCall
         self.TargetAudience = TargetAudience
         self.EligibilityCriteria = EligibilityCriteria
         self.Duration = Duration
         self.ReportingGuidelines = ReportingGuidelines
         self.TimeFrame = TimeFrame
+        self.picture = picture
 
     def __repr__(self):
         return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
+
+#form for submission
+class Submission_Form(FlaskForm):
+    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
+    duration = IntegerField('Duration', validators=[InputRequired()],render_kw={"placeholder": "Duration in months"})
+    NRP = SelectField(u'NRP', choices=[('areaA','Priority Area A - Future Networks & Communications'),
+                                       ('areaB', 'Priority Area B - Data Analytics, Management, Securitu & Privacy'),
+                                       ('areaC', 'Priority Area C - Digital Platforms, Content & Applications'),
+                                       ('areaD', 'Priority Area D - Connected Health and Independent Living'),
+                                       ('areaE', 'Priority Area E - Medical Devices'),
+                                       ('areaF', 'Priority Area F - Diagnostics'),
+                                       ('areaG', 'Priority Area G - Therapeutics : Synthesis, Formulation, Processing and Drug Delivery'),
+                                       ('areaH', 'Priority Area H - Food for Health'),
+                                       ('areaI', 'Priority Area I - Sustainable Food Production'),
+                                       ('areaJ', 'Priority Area J - Marine Renewable Energy'),
+                                       ('areaK', 'Priority Area K - Smart Grids & Smart Cities'),
+                                       ('areaL', 'Priority Area L - Manufacturing Competitiveness'),
+                                       ('areaM', 'Priority Area M - Processing Technologies and Novel Materials'),
+                                       ('areaN', 'Priority Area N - Innovation in Services and Buisness Processses'),
+                                       ('Software', 'Software'),
+                                       ('Others', 'Others')
+                                       ])
+    legal_remit = TextAreaField("Please describe how your proposal is aligned with SFI's legal remit (max 250 words)"
+                                ,validators=[InputRequired(), length(max=1250) ],render_kw={"placeholder": "Legal remit"}
+                                )
+    ethical_animal =  TextAreaField("A statement indicating whether the research involves the use of animals"
+                                ,validators=[InputRequired()],render_kw={"placeholder": "Animal ethics statement"}
+                                )
+    ethical_human = TextAreaField("A statement indicating whether the research involves human participants, human biological material, or identifiable data"
+                                   , validators=[InputRequired()], render_kw={"placeholder": "Human ethics statement"}
+                                   )
+    location = TextAreaField("A statement of the applicant’s location (country) at the time of submission"
+                             , validators=[InputRequired()], render_kw={"placeholder": "Location statement"})
+    co_applicants = TextAreaField("A list of co-applicants if applicable",render_kw={"placeholder": "List of co-applicants eg: '- name' "})
+    collaborators = TextAreaField("Alist of collaborators, if applicable. Information about collaborators should include:( -Name -Organization -Email )"
+                                  ,render_kw={"placeholder":"-name\n-organisation\n-Email;"})
+    scientific_abstract = TextAreaField("Scientific Abstract( max 200 words )",
+                                        validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
+    lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
+                                        validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
+    #pdf upload here
+    declaration = BooleanField('Agree?', validators=[DataRequired(), ])
+
 
 class Funding(db.Model):
     __tablename__ = 'Funding'
@@ -259,8 +314,107 @@ def dashboard():
 @login_required
 def create_submission_page():
     # return the dashboard html file with the user passed to it
-    return render_template('create_submission_form.html', user=current_user)
+    posts=[]
+    conn = mysql.connect
+    cur = conn.cursor()
+    # execute a query
+
+    cur.execute("""
+                SELECT *
+                FROM Proposals;
+                """)
+    for i in cur.fetchall():
+        post={}
+        post["id"] = i[0]
+        post["deadline"] = i[1]
+        post["text"] = i[2]
+        post["audience"] = i[3]
+        post["eligibility"] = i[4]
+        post["duration"] = i[5]
+        post["guidelines"] = i[6]
+        post["timeframe"] = i[7]
+        posts.append(post)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    return render_template('create_submission_form.html', user=current_user, posts=posts)
 # @app.route('/resetpassword')
+
+@app.route('/proposals', methods=['GET' , 'POST'])
+@login_required
+def proposals():
+    posts = []
+    conn = mysql.connect
+    cur = conn.cursor()
+    # execute a query
+
+    cur.execute("""
+                 SELECT *
+                 FROM Proposals;
+                 """)
+    for i in cur.fetchall():
+        post = {}
+        post["id"] = i[0]
+        post["deadline"] = i[1]
+        post["text"] = i[2]
+        post["audience"] = i[3]
+        post["eligibility"] = i[4]
+        post["duration"] = i[5]
+        post["guidelines"] = i[6]
+        post["timeframe"] = i[7]
+        post["title"] = i[9]
+        posts.append(post)
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    return render_template('proposals.html', user=current_user, posts=posts)
+
+@app.route('/submissions')
+@login_required
+def submissions():
+    sub={}
+    form=Submission_Form()
+    post=request.args.get("id")
+
+    conn = mysql.connect
+    cur = conn.cursor()
+    cur.execute(f"""
+                     SELECT *
+                     FROM Proposals
+                     WHERE proposalID = {post};
+                     """)
+    i=cur.fetchone()
+    print(i)
+    sub["id"] = i[0]
+    sub["deadline"] = i[1]
+    sub["text"] = i[2]
+    sub["audience"] = i[3]
+    sub["eligibility"] = i[4]
+    sub["duration"] = i[5]
+    sub["guidelines"] = i[6]
+    sub["timeframe"] = i[7]
+    sub["title"] = i[9]
+    conn.commit()
+
+    cur.close()
+    conn.close()
+    return render_template('submissions.html', user=current_user, sub=sub,form=form)
+
+#needs to be fixed cant save image
+def save_picture(form_picture):
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture)
+    picture_fn = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/propoosal_pics', picture_fn)
+
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)
+    i.save(picture_path)
+
+    return picture_fn
 
 @app.route('/proposal_call', methods=['GET', 'POST'])
 @login_required
@@ -280,6 +434,10 @@ def proposal_call():
         #if input validates pushes to db
         if form.validate_on_submit():
             flash("Successfully logged")
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
             deadline = form.deadline.data
             textofcall = form.text_of_call.data
             targetaudience = form.target_audience.data
@@ -287,17 +445,18 @@ def proposal_call():
             duration = form.duration.data
             reportingguidelines = form.reporting_guidelines.data
             timeframe = form.time_frame.data
+            title = form.title.data
 
 
             conn = mysql.connect
             cur = conn.cursor()
             # execute a query
-
-            cur.execute("""INSERT INTO Proposals(Deadline, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s);""",(deadline, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
+            cur.execute("""INSERT INTO Proposals(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(deadline,title, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
             # rv contains the result of the execute
             conn.commit()
             cur.close()
+            conn.close()
             #links to form creation
             print("here")
             return redirect(url_for('create_submission_page'))
