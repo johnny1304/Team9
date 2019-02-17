@@ -113,7 +113,41 @@ class Submission_Form(FlaskForm):
                                         validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
     #pdf upload here
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
+    submit = SubmitField('Submit')
 
+class Submissions(db.Model):
+    __tablename__='Submission'
+    propid = db.Column(db.Integer,nullable=False)
+    subid = db.Column(db.Integer,nullable=False, primary_key=True)
+    title = db.Column(db.Text,nullable=False)
+    duration = db.Column(db.Integer,nullable=False)
+    NRP = db.Column(db.String(200),nullable=False)
+    legal = db.Column(db.Text,nullable=False)
+    ethicalAnimal = db.Column(db.Text,nullable=False)
+    ethicalHuman = db.Column(db.Text,nullable=False)
+    location = db.Column(db.Text,nullable=False)
+    coapplicants = db.Column(db.Text,nullable=True)
+    collaborators = db.Column(db.Text,nullable=True)
+    scientific = db.Column(db.Text,nullable=False)
+    lay = db.Column(db.Text,nullable=False)
+    declaration = db.Column(db.Boolean,nullable=False)
+    user = db.Column(db.String(20),nullable=False)
+
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user):
+        self.title=title
+        self.propid=propid
+        self.duration=duration
+        self.NRP=NRP
+        self.legal=legal
+        self.ethicalAnimal=ethicalAnimal
+        self.ethicalHuman=ethicalHuman
+        self.location=location
+        self.coapplicants=coapplicants
+        self.collaborators=collaborators
+        self.scientific=scientific
+        self.lay=lay
+        self.declaration=declaration
+        self.user=user
 
 class Funding(db.Model):
     __tablename__ = 'Funding'
@@ -371,13 +405,13 @@ def proposals():
     conn.close()
     return render_template('proposals.html', user=current_user, posts=posts)
 
-@app.route('/submissions')
+@app.route('/submissions',methods=['GET' , 'POST'])
 @login_required
 def submissions():
+    #fix request shit
     sub={}
     form=Submission_Form()
     post=request.args.get("id")
-
     conn = mysql.connect
     cur = conn.cursor()
     cur.execute(f"""
@@ -386,7 +420,6 @@ def submissions():
                      WHERE proposalID = {post};
                      """)
     i=cur.fetchone()
-    print(i)
     sub["id"] = i[0]
     sub["deadline"] = i[1]
     sub["text"] = i[2]
@@ -397,10 +430,30 @@ def submissions():
     sub["timeframe"] = i[7]
     sub["title"] = i[9]
     conn.commit()
-
     cur.close()
     conn.close()
-    return render_template('submissions.html', user=current_user, sub=sub,form=form)
+    print("66666")
+
+    if form.validate_on_submit():
+        print("here")
+        new_submission=Submissions(propid=sub["id"],title=form.title.data, duration=form.duration.data,
+                                   NRP=form.NRP.data,legal=form.legal_remit.data,
+                                   ethicalAnimal=form.ethical_animal.data,
+                                   ethicalHuman=form.ethical_human.data,
+                                   location=form.location.data,
+                                   coapplicants=form.co_applicants.data,
+                                   collaborators=form.collaborators.data,
+                                   scientific=form.scientific_abstract.data,
+                                   lay=form.lay_abstract.data,
+                                   declaration=form.declaration.data,
+                                   user=current_user
+                                   )
+        db.session.add(new_submission)
+        db.session.commit()
+        flash("successfully submitted")
+        return redirect(url_for("submissions",id=sub["id"]))
+
+    return render_template('submissions.html',id=sub["id"], user=current_user, sub=sub,form=form)
 
 #needs to be fixed cant save image
 def save_picture(form_picture):
