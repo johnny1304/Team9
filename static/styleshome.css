@@ -1,0 +1,18 @@
+.thumbnail {
+    padding: 0 0 15px 0;
+    border: none;
+    border-radius: 0;
+  }
+  
+  .thumbnail img {
+    width: 10%;
+    height: 10%;
+    margin-bottom: 10px;
+  }
+
+  .thumbnail img:hover {
+    -ms-transform: scale(1.5); /* IE 9 */
+    -webkit-transform: scale(1.5); /* Safari 3-8 */
+    transform: scale(1.5); 
+  }
+
