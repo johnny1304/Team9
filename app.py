@@ -521,6 +521,10 @@ def proposal_call():
 def unauthorized_callback():
     return redirect('/sign_in?next=' + request.path)
 
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
 
 @app.route('/logout')
 @login_required
