@@ -34,7 +34,7 @@
             </div>
             </div>
 
-    <form action = "submissions.html?id=1" enctype="multipart/form-data" method = "post" class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;" >
+    <form action = "" enctype="multipart/form-data" method = "post" class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;" >
       <div class="form-row">
         {{ form.hidden_tag() }}
 {% with messages = get_flashed_messages(with_categories=true) %}
@@ -45,6 +45,9 @@
 {% endfor %}</ul>
 {% endif %}
 {% endwith %}
+
+
+
 
       <div class="form-group col-lg-12">
 

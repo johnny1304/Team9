@@ -74,6 +74,7 @@ class Proposal(db.Model):
 
 #form for submission
 class Submission_Form(FlaskForm):
+    propid = StringField('propid')
     title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
     duration = IntegerField('Duration', validators=[InputRequired()],render_kw={"placeholder": "Duration in months"})
     NRP = SelectField(u'NRP', choices=[('areaA','Priority Area A - Future Networks & Communications'),
@@ -115,6 +116,9 @@ class Submission_Form(FlaskForm):
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
     submit = SubmitField('Submit')
 
+    def setPropId(self, propid):
+        self.propid=propid
+
 class Submissions(db.Model):
     __tablename__='Submission'
     propid = db.Column(db.Integer,nullable=False)
@@ -148,6 +152,9 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
+
+
+
 
 class Funding(db.Model):
     __tablename__ = 'Funding'
@@ -412,31 +419,13 @@ def submissions():
     sub={}
     form=Submission_Form()
     post=request.args.get("id")
-    conn = mysql.connect
-    cur = conn.cursor()
-    cur.execute(f"""
-                     SELECT *
-                     FROM Proposals
-                     WHERE proposalID = {post};
-                     """)
-    i=cur.fetchone()
-    sub["id"] = i[0]
-    sub["deadline"] = i[1]
-    sub["text"] = i[2]
-    sub["audience"] = i[3]
-    sub["eligibility"] = i[4]
-    sub["duration"] = i[5]
-    sub["guidelines"] = i[6]
-    sub["timeframe"] = i[7]
-    sub["title"] = i[9]
-    conn.commit()
-    cur.close()
-    conn.close()
+    form.setPropId(post)
+
     print("66666")
 
     if form.validate_on_submit():
         print("here")
-        new_submission=Submissions(propid=sub["id"],title=form.title.data, duration=form.duration.data,
+        new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
                                    NRP=form.NRP.data,legal=form.legal_remit.data,
                                    ethicalAnimal=form.ethical_animal.data,
                                    ethicalHuman=form.ethical_human.data,
@@ -451,9 +440,30 @@ def submissions():
         db.session.add(new_submission)
         db.session.commit()
         flash("successfully submitted")
-        return redirect(url_for("submissions",id=sub["id"]))
+        return redirect(url_for("submissions",id=form.propid))
 
-    return render_template('submissions.html',id=sub["id"], user=current_user, sub=sub,form=form)
+    conn = mysql.connect
+    cur = conn.cursor()
+    cur.execute(f"""
+                         SELECT *
+                         FROM Proposals
+                         WHERE proposalID = {post};
+                         """)
+    i = cur.fetchone()
+    sub["id"] = i[0]
+    sub["deadline"] = i[1]
+    sub["text"] = i[2]
+    sub["audience"] = i[3]
+    sub["eligibility"] = i[4]
+    sub["duration"] = i[5]
+    sub["guidelines"] = i[6]
+    sub["timeframe"] = i[7]
+    sub["title"] = i[9]
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    return render_template('submissions.html', user=current_user, sub=sub,form=form)
 
 #needs to be fixed cant save image
 def save_picture(form_picture):

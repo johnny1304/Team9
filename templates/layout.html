@@ -58,7 +58,13 @@
 
                 {% if current_user.is_authenticated %}
                  <li class="nav-item">
-                    <a class="nav-link " href="/proposal_call" >Proposal</a>
+                    <a class="nav-link " href="/proposals" >Proposals</a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
+                 <li class="nav-item">
+                    <a class="nav-link " href="/proposal_call" >Create Proposal</a>
                 </li>
                 {% endif %}
                
