@@ -196,8 +196,9 @@ class User(UserMixin, db.Model):
     suffix = db.Column('suffix', db.String(20))
     phone = db.Column('phone', db.Integer)
     phone_extension = db.Column('PhoneExtension', db.Integer)
+    type = db.Column('Type', db.String(20))
 
-    def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension):
+    def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
         # this initialises the class and maps the variables to the table (done by flask automatically)
         self.orcid = orcid
         self.first_name = first_name
@@ -209,9 +210,16 @@ class User(UserMixin, db.Model):
         self.suffix = suffix
         self.phone = phone
         self.phone_extension = phone_extension
+        self.type = type
 
     def getORCID(self):
         return self.orcid
+
+    def getType(self):
+        return self.type
+
+    def setType(self, type):
+        self.type = type
 
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
@@ -299,6 +307,8 @@ def signin():
             return redirect(url_for('signin'))
 
         # else logs in the user
+        if user.getType() == "Admin":
+            return redirect(url_for(''))
         login_user(user, remember=form.remember.data)
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('index'))
@@ -325,7 +335,7 @@ def signup():
         if not exist_orcid and not user:
             new_user = User(orcid=form.orcid.data, first_name=form.first_name.data, last_name=form.last_name.data,
                         email=form.email.data, job=form.job.data, prefix=form.prefix.data, suffix=form.suffix.data,
-                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password)
+                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password, type="Reasearcher")
             # add the new user to the database
             db.session.add(new_user)
             # commit the changes to the database
