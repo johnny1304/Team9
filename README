@@ -1,0 +1,24 @@
+Coding convention: From now on
+
+Classes = Upper CamelCase
+Fuctions = spaces replaced by underscores [get_id]
+
+
+Use this section of the README to put down stuff to ask in the next meeting.
+
+what is this?
+	class formCreationForm(FlaskForm):
+
+	if not a typo then it should look like class FormCreationForm(FlaskForm):
+
+
+Use this section of the README to put down todo things.
+
+
+Use this section of the README to put down ideas.
+
+
+
+Always do git pull before starting your work
+Don't forget to git push after you are done
+
