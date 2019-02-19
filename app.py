@@ -6,7 +6,7 @@ from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField, RadioField
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField
 from wtforms.validators import InputRequired, Email, Length, length, DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -244,7 +244,7 @@ class RegisterForm(FlaskForm):
 
 class ManageForm(FlaskForm):
     orcid = IntegerField('ORCID: ', validators=[InputRequired()])
-    role = RadioField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
+    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
 
@@ -564,6 +564,8 @@ def manage():
         if form.validate_on_submit():
             researcher = User.query.filter_by(orcid=form.orcid.data).first()
             newRole = form.role.data
+            if researcher.orcid == current_user.orcid:
+                flash("You can't change your own role unfortunately", category="unauthorised")
             researcher.type = newRole
             db.session.commit()
             flash("Role have been updated", category="success")
@@ -572,7 +574,7 @@ def manage():
         return render_template('manage.html', form=form)
     else:
         flash("You need to be an admin to manage others.", category="unauthorised")
-        return redirect(url_for('index'))
+        return redirect(url_for('manage'))
 
 
 if __name__ == "__main__":

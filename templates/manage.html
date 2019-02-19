@@ -6,6 +6,18 @@
   {% if current_user.is_authenticated and current_user.type == "Admin" %}
   <form class="Justify-content-center col-lg-6" method="POST" action="/manage" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
 
+      {% with messages = get_flashed_messages(category_filter=["success"]) %}
+      {% if messages %}
+      <div>
+        {% for message in messages %}
+        <ul>
+          <li>{{ message }}</li>
+        </ul>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% endwith %}
+
       <div class="form-row" id="manage">
       {{form.hidden_tag()}}
 
@@ -27,7 +39,7 @@
 
   {% if not current_user.type == "Admin" %}
   <div class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding:10px; margin-top: 10em; border-radius: 10px;">
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(category_filter=["unauthorised"]) %}
       {% if messages %}
         <ul>
           {% for message in messages %}
