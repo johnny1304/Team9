@@ -212,7 +212,7 @@ class User(UserMixin, db.Model):
         self.phone_extension = phone_extension
         self.type = type
 
-    def getORCID(self):
+    def get_orcid(self):
         return self.orcid
 
     def get_id(self):
