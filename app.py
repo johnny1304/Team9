@@ -6,7 +6,7 @@ from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField,FileField
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField, RadioField
 from wtforms.validators import InputRequired, Email, Length, length, DataRequired
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -215,12 +215,6 @@ class User(UserMixin, db.Model):
     def getORCID(self):
         return self.orcid
 
-    def getType(self):
-        return self.type
-
-    def setType(self, type):
-        self.type = type
-
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
         return self.orcid
@@ -247,6 +241,12 @@ class RegisterForm(FlaskForm):
 	suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
 	phone = IntegerField('Phone: ')
 	phone_extension = IntegerField('Phone Extension: ')
+
+class ManageForm(FlaskForm):
+    orcid = IntegerField('ORCID: ', validators=[InputRequired()])
+    role = RadioField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
+    submit = SubmitField('Apply')
+
 
 #form for form creations
 class formCreationForm(FlaskForm):
@@ -290,7 +290,11 @@ def mail(content="", email="", password=""):
 @app.route('/')
 @app.route('/home')
 def index():
-    # this route returns the home.html file
+    #if current_user.is_authenticated:
+    #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
+    #    updateType.type = "Admin"
+    #    db.session.commit()
+        # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
 
 
@@ -307,9 +311,9 @@ def signin():
             return redirect(url_for('signin'))
 
         # else logs in the user
-        if user.getType() == "Admin":
-            return redirect(url_for(''))
         login_user(user, remember=form.remember.data)
+        if user.type == "Admin":
+            return redirect(url_for('manage')) #returns the admin page
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('index'))
     return render_template('sign_in.html', form=form)
@@ -335,7 +339,7 @@ def signup():
         if not exist_orcid and not user:
             new_user = User(orcid=form.orcid.data, first_name=form.first_name.data, last_name=form.last_name.data,
                         email=form.email.data, job=form.job.data, prefix=form.prefix.data, suffix=form.suffix.data,
-                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password, type="Reasearcher")
+                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password, type="Researcher")
             # add the new user to the database
             db.session.add(new_user)
             # commit the changes to the database
@@ -551,6 +555,24 @@ def profile():
 def logout():
     logout_user()  # logs the user out
     return redirect(url_for('index'))  # or return a log out page
+
+@app.route('/manage', methods=['GET', 'POST'])
+@login_required
+def manage():
+    form = ManageForm()
+    if current_user.type == "Admin":
+        if form.validate_on_submit():
+            researcher = User.query.filter_by(orcid=form.orcid.data).first()
+            newRole = form.role.data
+            researcher.type = newRole
+            db.session.commit()
+            flash("Role have been updated", category="success")
+            return redirect(url_for('manage'))
+
+        return render_template('manage.html', form=form)
+    else:
+        flash("You need to be an admin to manage others.", category="unauthorised")
+        return redirect(url_for('index'))
 
 
 if __name__ == "__main__":
