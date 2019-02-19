@@ -6,7 +6,7 @@
   {% if current_user.is_authenticated and current_user.type == "Admin" %}
   <form class="Justify-content-center col-lg-6" method="POST" action="/manage" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
 
-      {% with messages = get_flashed_messages(category_filter=["success"]) %}
+      {% with messages = get_flashed_messages(category_filter=["success", "unauthorised"]) %}
       {% if messages %}
       <div>
         {% for message in messages %}

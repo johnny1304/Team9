@@ -566,6 +566,10 @@ def manage():
             newRole = form.role.data
             if researcher.orcid == current_user.orcid:
                 flash("You can't change your own role unfortunately", category="unauthorised")
+                return redirect(url_for('manage'))
+            if researcher.type == "Admin":
+                flash("You can't change another admin's role", category="unauthorised")
+                return redirect(url_for('manage'))
             researcher.type = newRole
             db.session.commit()
             flash("Role have been updated", category="success")
