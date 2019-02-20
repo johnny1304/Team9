@@ -273,6 +273,7 @@ def load_user(user_id):
     # this is a function that callsback the user by the user_id
     return User.query.get(int(user_id))
 
+
 def mail(content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
