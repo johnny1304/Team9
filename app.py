@@ -252,7 +252,7 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    orcid = IntegerField('ORCID: ', validators=[InputRequired()])
+    researcher = SelectField(u"User") 
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -605,8 +605,15 @@ def logout():
 def manage():
     form = ManageForm()
     if current_user.type == "Admin":
+        researchers = []
+        all_users = User.query.all()
+        for each in all_users:
+            if each.type != "Admin":
+                researchers.append(each)
+        form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
+
         if form.validate_on_submit():
-            researcher = User.query.filter_by(orcid=form.orcid.data).first()
+            researcher = User.query.filter_by(orcid=form.researcher.data).first()
             newRole = form.role.data
             if researcher.orcid == current_user.orcid:
                 flash("You can't change your own role unfortunately", category="unauthorised")
@@ -619,7 +626,7 @@ def manage():
             flash("Role have been updated", category="success")
             return redirect(url_for('manage'))
 
-        return render_template('manage.html', form=form)
+        return render_template('manage.html', form=form, researchers=researchers)
     else:
         flash("You need to be an admin to manage others.", category="unauthorised")
         return redirect(url_for('manage'))
