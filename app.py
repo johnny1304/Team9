@@ -7,7 +7,7 @@ from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField
-from wtforms.validators import InputRequired, Email, Length, length, DataRequired
+from wtforms.validators import InputRequired, Email, Length, length, DataRequired, EqualTo
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -241,19 +241,20 @@ class LoginForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
 	#this is the class for the register form in the sign_up.html
-	orcid = IntegerField('ORCID:', validators=[InputRequired()])
-	first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
-	last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
-	email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
-	password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
-	job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
-	prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
-	suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
-	phone = IntegerField('Phone: ')
-	phone_extension = IntegerField('Phone Extension: ')
+    orcid = IntegerField('ORCID:', validators=[InputRequired()])
+    first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
+    last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
+    email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
+    password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat password')
+    job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
+    prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
+    suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
+    phone = IntegerField('Phone: ')
+    phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    orcid = IntegerField('ORCID: ', validators=[InputRequired()])
+    researcher = SelectField(u"User") 
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -273,6 +274,7 @@ class formCreationForm(FlaskForm):
 def load_user(user_id):
     # this is a function that callsback the user by the user_id
     return User.query.get(int(user_id))
+
 
 def mail(content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
@@ -626,8 +628,15 @@ def submitted():
 def manage():
     form = ManageForm()
     if current_user.type == "Admin":
+        researchers = []
+        all_users = User.query.all()
+        for each in all_users:
+            if each.type != "Admin":
+                researchers.append(each)
+        form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
+
         if form.validate_on_submit():
-            researcher = User.query.filter_by(orcid=form.orcid.data).first()
+            researcher = User.query.filter_by(orcid=form.researcher.data).first()
             newRole = form.role.data
             if researcher.orcid == current_user.orcid:
                 flash("You can't change your own role unfortunately", category="unauthorised")
@@ -640,7 +649,7 @@ def manage():
             flash("Role have been updated", category="success")
             return redirect(url_for('manage'))
 
-        return render_template('manage.html', form=form)
+        return render_template('manage.html', form=form, researchers=researchers)
     else:
         flash("You need to be an admin to manage others.", category="unauthorised")
         return redirect(url_for('manage'))

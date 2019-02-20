@@ -1,8 +1,13 @@
 Coding convention: From now on
 
-Classes = Upper CamelCase
+Classes = UpperCamelCase
 Fuctions = spaces replaced by underscores [get_id]
+variables = same as functions
+calass variables = UPPERCASE
 
+Admin user for all:
+email = john2@sample.com
+password = 22222222
 
 Use this section of the README to put down stuff to ask in the next meeting.
 
@@ -17,9 +22,12 @@ Use this section of the README to put down todo things.
 
 Use this section of the README to put down ideas.
 
-Calvin : make an error so that we can flash whatever message into that error page
+Calvin : make an error pages so that we can flash whatever message into that error page
 
 Always do git pull before starting your work
 Don't forget to git push after you are done
 
 
+Meeting 20/02/2019
+
+In the dashboard, the applications pending action will be changed to Current Applications. Basically the backend of it will be querying the database and see if there has been a change to it.
