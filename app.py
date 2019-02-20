@@ -239,16 +239,16 @@ class LoginForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
 	#this is the class for the register form in the sign_up.html
-	orcid = IntegerField('ORCID:', validators=[InputRequired()])
-	first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
-	last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
-	email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
-	password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
-	job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
-	prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
-	suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
-	phone = IntegerField('Phone: ')
-	phone_extension = IntegerField('Phone Extension: ')
+    orcid = IntegerField('ORCID:', validators=[InputRequired()])
+    first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
+    last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
+    email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
+    password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
+    job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
+    prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
+    suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
+    phone = IntegerField('Phone: ')
+    phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
     orcid = IntegerField('ORCID: ', validators=[InputRequired()])
