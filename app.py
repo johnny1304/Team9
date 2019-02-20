@@ -453,7 +453,20 @@ def submissions():
                              """)
     lst=[]
     for i in cur.fetchall():
-        print(i[1])
+        if i[14]==False:
+            return render_template("submitted")
+        form.title.data=i[2]
+        form.duration.data=i[3]
+        form.NRP.data=i[4]
+        form.legal_remit.data=i[5]
+        form.ethical_animal.data=i[6]
+        form.ethical_human.data=i[7]
+        form.location.data=i[8]
+        form.co_applicants.data=i[9]
+        form.collaborators.data=i[10]
+        form.scientific_abstract.data=i[11]
+        form.lay_abstract.data=i[12]
+        form.declaration.data=i[13]
 
     #form.title.data=lst[0]
     #form.duration.data=lst[1]
@@ -477,7 +490,6 @@ def submissions():
                                        lay=form.lay_abstract.data,
                                        declaration=form.declaration.data,
                                        user=f"{current_user.orcid}"
-                                      #draft=False
                                        )
             print(current_user.orcid)
             db.session.add(new_submission)
