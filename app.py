@@ -157,6 +157,8 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
+        self.draft=True
+
 
     def setDraftFalse(self):
         self.draft=False
@@ -441,8 +443,6 @@ def submissions():
     sub={}
     form=Submission_Form()
     post=request.args.get("id")
-    previousDraft=False
-    previousSubmission=False
     form.setPropId(post)
     conn = mysql.connect
     cur = conn.cursor()
@@ -453,8 +453,9 @@ def submissions():
                              """)
     lst=[]
     for i in cur.fetchall():
-        if i[14]==False:
-            return render_template("submitted")
+        if i[15]==0:
+            return render_template("submitted.html")
+        form.propid=i[1]
         form.title.data=i[2]
         form.duration.data=i[3]
         form.NRP.data=i[4]
@@ -491,11 +492,28 @@ def submissions():
                                        declaration=form.declaration.data,
                                        user=f"{current_user.orcid}"
                                        )
-            print(current_user.orcid)
             db.session.add(new_submission)
             db.session.commit()
             flash("successfully submitted")
             return redirect(url_for("submissions",id=form.propid,sub=sub))
+        elif form.submit.data:
+            new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
+                                         NRP=form.NRP.data, legal=form.legal_remit.data,
+                                         ethicalAnimal=form.ethical_animal.data,
+                                         ethicalHuman=form.ethical_human.data,
+                                         location=form.location.data,
+                                         coapplicants=form.co_applicants.data,
+                                         collaborators=form.collaborators.data,
+                                         scientific=form.scientific_abstract.data,
+                                         lay=form.lay_abstract.data,
+                                         declaration=form.declaration.data,
+                                         user=f"{current_user.orcid}",
+                                         )
+            new_submission.setDraftFalse()
+            db.session.add(new_submission)
+            db.session.commit()
+            flash("successfully submitted")
+            return redirect(url_for("submissions", id=form.propid, sub=sub))
 
 
     conn = mysql.connect
@@ -597,6 +615,11 @@ def profile():
 def logout():
     logout_user()  # logs the user out
     return redirect(url_for('index'))  # or return a log out page
+
+@app.route('/submitted')
+@login_required
+def submitted():
+    return render_template('submitted.html')
 
 @app.route('/manage', methods=['GET', 'POST'])
 @login_required
