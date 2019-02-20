@@ -3,6 +3,9 @@ Coding convention: From now on
 Classes = Upper CamelCase
 Fuctions = spaces replaced by underscores [get_id]
 
+Admin user for all:
+email = john2@sample.com
+password = 22222222
 
 Use this section of the README to put down stuff to ask in the next meeting.
 
