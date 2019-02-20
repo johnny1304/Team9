@@ -1,15 +1,17 @@
 import os
+from pathlib import Path
 import secrets
-
+import uuid
 from PIL import Image
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed
+from flask_wtf.file import FileAllowed,FileField
 from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField
 from wtforms.validators import InputRequired, Email, Length, length, DataRequired, EqualTo
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 import smtplib
@@ -112,7 +114,7 @@ class Submission_Form(FlaskForm):
                                         validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
     lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
                                         validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
-    #pdf upload here
+    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
     submit = SubmitField('Submit')
 
@@ -141,8 +143,9 @@ class Submissions(db.Model):
     declaration = db.Column(db.Boolean,nullable=False)
     user = db.Column(db.String(20),nullable=False)
     draft = db.Column(db.Boolean, nullable=False, default=True)
+    proposalPDF = db.Column(db.String(255),nullable=False)
 
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user):
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
         self.title=title
         self.propid=propid
         self.duration=duration
@@ -157,6 +160,7 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
+        self.proposalPDF=proposalPDF
         self.draft=True
 
 
@@ -254,7 +258,7 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField(u"User") 
+    researcher = SelectField(u"User")
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -448,16 +452,17 @@ def submissions():
     form.setPropId(post)
     conn = mysql.connect
     cur = conn.cursor()
+    previousFile=None
     cur.execute(f"""
                              SELECT *
                              FROM Submission
                              WHERE propid = {post} AND user='{current_user.orcid}';
                              """)
-    lst=[]
     for i in cur.fetchall():
+        print(i)
         if i[15]==0:
             return render_template("submitted.html")
-        form.propid=i[1]
+        form.propid=i[0]
         form.title.data=i[2]
         form.duration.data=i[3]
         form.NRP.data=i[4]
@@ -470,10 +475,10 @@ def submissions():
         form.scientific_abstract.data=i[11]
         form.lay_abstract.data=i[12]
         form.declaration.data=i[13]
+        previousFile=i[16]
 
-    #form.title.data=lst[0]
-    #form.duration.data=lst[1]
-    #form
+
+
     cur.close()
     conn.close()
 
@@ -482,6 +487,21 @@ def submissions():
         if form.validate.data:
             flash("Input Successfully Validated")
         elif form.draft.data:
+            filenamesecret=previousFile
+            if form.proposalPDF.data != None:
+                filenamesecret = uuid.uuid4().hex
+                while True:
+                    filecheck = Path(f"uploads/{filenamesecret}")
+                    if filecheck.is_file():
+                        filenamesecret = uuid.uuid4().hex
+                    else:
+                        break
+                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                if previousFile!=None:
+                    os.remove(f"uploads/{previousFile}")
+
+
+
             new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
                                        NRP=form.NRP.data,legal=form.legal_remit.data,
                                        ethicalAnimal=form.ethical_animal.data,
@@ -492,13 +512,26 @@ def submissions():
                                        scientific=form.scientific_abstract.data,
                                        lay=form.lay_abstract.data,
                                        declaration=form.declaration.data,
-                                       user=f"{current_user.orcid}"
+                                       user=f"{current_user.orcid}",
+                                       proposalPDF=f"{filenamesecret}"
                                        )
             db.session.add(new_submission)
             db.session.commit()
-            flash("successfully submitted")
+            flash("successfully Saved Draft")
             return redirect(url_for("submissions",id=form.propid,sub=sub))
         elif form.submit.data:
+            filenamesecret = previousFile
+            if form.proposalPDF.data!=None:
+                while True:
+                    filecheck=Path(f"uploads/{filenamesecret}")
+                    if filecheck.is_file():
+                        filenamesecret = uuid.uuid4().hex
+                    else:
+                        break
+                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                os.remove(f"uploads/{previousFile}")
+
+
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
                                          NRP=form.NRP.data, legal=form.legal_remit.data,
                                          ethicalAnimal=form.ethical_animal.data,
@@ -510,6 +543,7 @@ def submissions():
                                          lay=form.lay_abstract.data,
                                          declaration=form.declaration.data,
                                          user=f"{current_user.orcid}",
+                                         proposalPDF=f"{filenamesecret}"
                                          )
             new_submission.setDraftFalse()
             db.session.add(new_submission)
@@ -628,13 +662,6 @@ def submitted():
 def manage():
     form = ManageForm()
     if current_user.type == "Admin":
-        researchers = []
-        all_users = User.query.all()
-        for each in all_users:
-            if each.type != "Admin":
-                researchers.append(each)
-        form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
-
         if form.validate_on_submit():
             researcher = User.query.filter_by(orcid=form.researcher.data).first()
             newRole = form.role.data

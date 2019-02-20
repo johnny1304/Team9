@@ -146,7 +146,7 @@ CREATE TABLE EducationAndPublicEngagement(
 DROP TABLE IF EXISTS Submission; 
 CREATE TABLE Submission (
 	propid INT not null,
- 	subid=int not null primary key,
+ 	subid int not null primary key AUTO_INCREMENT,
  	title varchar(255) NOT NULL,
   	duration int not null,
   	NRP varchar(1000) NOT NULL,
@@ -160,4 +160,5 @@ CREATE TABLE Submission (
     lay TEXT NOT NULL,
     declaration BOOLEAN NOT NULL,
     user varchar(255) NOT NULL,
-  	draft Boolean default True);
+  	draft Boolean default True,
+  	proposalPDF varchar(255) NOT NULL);
