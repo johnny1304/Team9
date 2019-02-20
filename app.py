@@ -116,6 +116,10 @@ class Submission_Form(FlaskForm):
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
     submit = SubmitField('Submit')
 
+    validate = SubmitField('Validate form')
+
+    draft = SubmitField('Save Draft')
+
     def setPropId(self, propid):
         self.propid=propid
 
@@ -136,6 +140,7 @@ class Submissions(db.Model):
     lay = db.Column(db.Text,nullable=False)
     declaration = db.Column(db.Boolean,nullable=False)
     user = db.Column(db.String(20),nullable=False)
+    draft = db.Column(db.Boolean, nullable=False, default=True)
 
     def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user):
         self.title=title
@@ -152,6 +157,9 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
+
+    def setDraftFalse(self):
+        self.draft=False
 
 
 
@@ -429,28 +437,50 @@ def submissions():
     sub={}
     form=Submission_Form()
     post=request.args.get("id")
+    previousDraft=False
+    previousSubmission=False
     form.setPropId(post)
+    conn = mysql.connect
+    cur = conn.cursor()
+    cur.execute(f"""
+                             SELECT *
+                             FROM Submission
+                             WHERE propid = {post} AND user='{current_user.orcid}';
+                             """)
+    lst=[]
+    for i in cur.fetchall():
+        print(i[1])
 
-    print("66666")
+    #form.title.data=lst[0]
+    #form.duration.data=lst[1]
+    #form
+    cur.close()
+    conn.close()
+
 
     if form.validate_on_submit():
-        print("here")
-        new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
-                                   NRP=form.NRP.data,legal=form.legal_remit.data,
-                                   ethicalAnimal=form.ethical_animal.data,
-                                   ethicalHuman=form.ethical_human.data,
-                                   location=form.location.data,
-                                   coapplicants=form.co_applicants.data,
-                                   collaborators=form.collaborators.data,
-                                   scientific=form.scientific_abstract.data,
-                                   lay=form.lay_abstract.data,
-                                   declaration=form.declaration.data,
-                                   user=current_user
-                                   )
-        db.session.add(new_submission)
-        db.session.commit()
-        flash("successfully submitted")
-        return redirect(url_for("submissions",id=form.propid))
+        if form.validate.data:
+            flash("Input Successfully Validated")
+        elif form.draft.data:
+            new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
+                                       NRP=form.NRP.data,legal=form.legal_remit.data,
+                                       ethicalAnimal=form.ethical_animal.data,
+                                       ethicalHuman=form.ethical_human.data,
+                                       location=form.location.data,
+                                       coapplicants=form.co_applicants.data,
+                                       collaborators=form.collaborators.data,
+                                       scientific=form.scientific_abstract.data,
+                                       lay=form.lay_abstract.data,
+                                       declaration=form.declaration.data,
+                                       user=f"{current_user.orcid}"
+                                      #draft=False
+                                       )
+            print(current_user.orcid)
+            db.session.add(new_submission)
+            db.session.commit()
+            flash("successfully submitted")
+            return redirect(url_for("submissions",id=form.propid,sub=sub))
+
 
     conn = mysql.connect
     cur = conn.cursor()
