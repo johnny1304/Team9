@@ -11,7 +11,8 @@ CREATE TABLE Researcher(
 	Email varchar(255) NOT NULL,
 	ORCID varchar(255) NOT NULL,
 	Password char(80) NOT NULL,
-	Type varchar(20) NOT NULL,PRIMARY KEY (ORCID)
+	Type varchar(20) NOT NULL,
+	PRIMARY KEY (ORCID)
 	);
 /*Education */
 DROP TABLE IF EXISTS Education;
@@ -67,7 +68,8 @@ CREATE TABLE TeamMembers(
 	DepartureDate DATE,
 	Name VARCHAR(255),
 	Position VARCHAR(255),
-	PrimaryAttribution VARCHAR(255) NOT NULL
+	PrimaryAttribution VARCHAR(255) NOT NULL,
+	ORCID VARCHAR(255) NOT NULL
 	);
 /*Impacts */
 DROP TABLE IF EXISTS Impacts;
@@ -95,7 +97,8 @@ CREATE TABLE Publications(
 	Status VARCHAR(255),
 	DOI VARCHAR(255) NOT NULL, 
 	PrimaryAttribution VARCHAR(255) NOT NULL,
-	PRIMARY KEY (DOI));
+	PRIMARY KEY (DOI)
+	);
 /*Presentations */
 DROP TABLE IF EXISTS Presentations;
 CREATE TABLE Presentations(
@@ -121,7 +124,8 @@ CREATE TABLE Collaborations(
 	PrimaryGoal VARCHAR(255),
 	FrequencyOfInteraction VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL, 
-	Academic Boolean);
+	Academic Boolean
+	);
 /*OrganisedEvents */
 DROP TABLE IF EXISTS OrganisedEvents;
 CREATE TABLE OrganisedEvents(
@@ -131,7 +135,8 @@ CREATE TABLE OrganisedEvents(
 	Type VARCHAR(255),
 	Role VARCHAR(255),
 	Location VARCHAR(255),
-	PrimaryAttribution VARCHAR(255) NOT NULL);
+	PrimaryAttribution VARCHAR(255) NOT NULL
+	);
 /*EducationAndPublicEngagement */
 DROP TABLE IF EXISTS EducationAndPublicEngagement;
 CREATE TABLE EducationAndPublicEngagement(
@@ -141,7 +146,8 @@ CREATE TABLE EducationAndPublicEngagement(
 	Activity VARCHAR(255),
 	Topic VARCHAR(255),
 	TargetArea VARCHAR(255),
-	PrimaryAttribution VARCHAR(255) NOT NULL);
+	PrimaryAttribution VARCHAR(255) NOT NULL
+	);
 /*Submission */
 DROP TABLE IF EXISTS Submission; 
 CREATE TABLE Submission (
