@@ -1,4 +1,4 @@
-/*Resercher */
+/*Researcher */
 DROP TABLE IF EXISTS Researcher;
 CREATE TABLE Researcher(
 	FirstName varchar(255) NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE Education(
 	Institution varchar(255),
 	Location varchar(255),
 	Year int,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Employment */
 DROP TABLE IF EXISTS Employment;
@@ -34,8 +34,8 @@ CREATE TABLE Employment(
 	Location varchar(255),
 	Years INT,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Societies */
 DROP TABLE IF EXISTS Societies;
@@ -47,8 +47,8 @@ CREATE TABLE Societies(
 	Membership VARCHAR(255),
 	Status VARCHAR(20),
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Award */
 DROP TABLE IF EXISTS Awards;
@@ -59,8 +59,8 @@ CREATE TABLE Awards(
 	Details VARCHAR(255),
 	TeamMember VARCHAR(255),
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Funding */
 DROP TABLE IF EXISTS Funding;
@@ -74,8 +74,8 @@ CREATE TABLE Funding(
 	Stats VARCHAR(255),
 	PrimaryAttribution VARCHAR(255),
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Team*/
 DROP TABLE IF EXIST Team;
@@ -85,8 +85,8 @@ CREATE TABLE Team(
 	TeamLeader int NOT NULL,
 	proposalID int NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*TeamMembers */
 DROP TABLE IF EXISTS TeamMembers;
@@ -98,8 +98,8 @@ CREATE TABLE TeamMembers(
 	Position VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Impacts */
 DROP TABLE IF EXISTS Impacts;
@@ -110,8 +110,8 @@ CREATE TABLE Impacts(
 	PrimaryBeneficiary VARCHAR(255) NOT NULL,
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*InnovationAndCommercialisation */
 DROP TABLE IF EXISTS InnovationAndCommercialisation;
@@ -122,8 +122,8 @@ CREATE TABLE InnovationAndCommercialisation(
 	Title VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Publications */
 DROP TABLE IF EXISTS Publications;
@@ -136,7 +136,7 @@ CREATE TABLE Publications(
 	DOI VARCHAR(255) NOT NULL, 
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 	PRIMARY KEY (DOI)
 );
 /*Presentations */
@@ -153,8 +153,8 @@ CREATE TABLE Presentations(
 	Location VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Collaborations */
 DROP TABLE IF EXISTS Collaborations;
@@ -171,8 +171,8 @@ CREATE TABLE Collaborations(
 	PrimaryAttribution VARCHAR(255) NOT NULL, 
 	Academic Boolean,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*OrganisedEvents */
 DROP TABLE IF EXISTS OrganisedEvents;
@@ -186,8 +186,8 @@ CREATE TABLE OrganisedEvents(
 	Location VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*EducationAndPublicEngagement */
 DROP TABLE IF EXISTS EducationAndPublicEngagement;
@@ -201,16 +201,16 @@ CREATE TABLE EducationAndPublicEngagement(
 	TargetArea VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
-	PRIMARY KEY(ID),
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	PRIMARY KEY (ID),
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Submission */
 DROP TABLE IF EXISTS Submission; 
 CREATE TABLE Submission (
-	propid INT not null,
- 	subid int not null primary key AUTO_INCREMENT,
+	propid INT NOT NULL,
+ 	subid int NOT NULL PRIMARY KEY AUTO_INCREMENT,
  	title varchar(255) NOT NULL,
-  	duration int not null,
+  	duration int NOT NULL,
   	NRP varchar(1000) NOT NULL,
     legal TEXT NOT NULL,
     ethicalAnimal TEXT NOT NULL,
@@ -222,8 +222,8 @@ CREATE TABLE Submission (
     lay TEXT NOT NULL,
     declaration BOOLEAN NOT NULL,
     user varchar(255) NOT NULL,
-  	draft Boolean default True,
+  	draft Boolean DEFAULT True,
   	proposalPDF varchar(255) NOT NULL
 	ORCID int NOT NULl,
-	FOREIGN KEY(ORCID) REFERENCES Researcher(ORCID)
+	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
