@@ -747,10 +747,9 @@ def employmentInfo():
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
                # Image.open(picture_file)
-            degree = form.degree.data
-            institution= form.institution.data
+            company = form.company.data
             location= form.location.data
-            year = form.year.data
+            years = form.years.data
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -824,7 +823,7 @@ def societiesInfo():
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Societies SET StartDate={start_date},EndDate={end_date},
+            cur.execute(f"""UPDATE Societies SET StartDate='{start_date}',EndDate='{end_date}',
              Society='{society}' , Membership='{membership}' , Status='{status}' WHERE ORCID ={current_user.orcid};  """)
             conn.commit()
             cur.close()
@@ -894,7 +893,7 @@ def awardsInfo():
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Awards SET Year={year},awardingBody='{awardingBody}'',
+            cur.execute(f"""UPDATE Awards SET Year={year},awardingBody='{awardingBody}',
              details='{details}' , TeamMember='{team_member}'  WHERE ORCID ={current_user.orcid};  """)
             conn.commit()
             cur.close()
