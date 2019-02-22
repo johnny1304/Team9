@@ -6,30 +6,31 @@ CREATE TABLE Researcher(
 	Job varchar(255) NOT NULL,
 	Prefix varchar(20) NOT NULL,
 	Suffix VARCHAR(20) NOT NULL,
-	Phone VARCHAR (30),
-	PhoneExtension varchar(30),
+	Phone int (30),
+	PhoneExtension int(30),
 	Email varchar(255) NOT NULL,
-	ORCID varchar(255) NOT NULL,
+	ORCID int NOT NULL,
 	Password char(80) NOT NULL,
 	Type varchar(20) NOT NULL,
 	PRIMARY KEY (ORCID)
-	);
+);
 /*Education */
 DROP TABLE IF EXISTS Education;
 CREATE TABLE Education(
-	ORCID varchar(255) NOT NULL,
+	ORCID int NOT NULL,
 	Degree varchar(255),Field varchar(255),
 	Institution varchar(255),
 	Location varchar(255),
-	Year int);
+	Year int
+);
 /*Employment */
 DROP TABLE IF EXISTS Employment;
 CREATE TABLE Employment(
 	Company varchar(255),
 	Location varchar(255),
 	Years INT,
-	ORCID varchar(255) NOT NULL
-	);
+	ORCID int NOT NULL
+);
 /*Societies */
 DROP TABLE IF EXISTS Societies;
 CREATE TABLE Societies(
@@ -38,8 +39,8 @@ CREATE TABLE Societies(
 	Society VARCHAR(255),
 	Membership VARCHAR(255),
 	Status VARCHAR(20),
-	ORCID VARCHAR(255) NOT NULL
-	);
+	ORCID int NOT NULL
+);
 /*Award */
 DROP TABLE IF EXISTS Awards;
 CREATE TABLE Awards(
@@ -47,8 +48,8 @@ CREATE TABLE Awards(
 	AwardingBody VARCHAR(255),
 	Details VARCHAR(255),
 	TeamMember VARCHAR(255),
-	ORCID VARCHAR(255) NOT NULL
-	);
+	ORCID int NOT NULL
+);
 /*Funding */
 DROP TABLE IF EXISTS Funding;
 CREATE TABLE Funding(
@@ -59,8 +60,15 @@ CREATE TABLE Funding(
 	FundingProgramme VARCHAR(255),
 	Stats VARCHAR(255),
 	PrimaryAttribution VARCHAR(255),
-	ORCID VARCHAR(255) NOT NULL
-	);
+	ORCID int NOT NULL
+);
+/*Team*/
+DROP TABLE IF EXIST Team;
+CREATE TABLE Team(
+	TeamID int NOT NULL AUTO_INCREMENT,
+	TeamLeader int NOT NULL,
+	proposalID int NOT NULL
+);
 /*TeamMembers */
 DROP TABLE IF EXISTS TeamMembers;
 CREATE TABLE TeamMembers(
@@ -69,8 +77,8 @@ CREATE TABLE TeamMembers(
 	Name VARCHAR(255),
 	Position VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
-	ORCID VARCHAR(255) NOT NULL
-	);
+	ORCID int NOT NULL
+);
 /*Impacts */
 DROP TABLE IF EXISTS Impacts;
 CREATE TABLE Impacts(
@@ -78,7 +86,7 @@ CREATE TABLE Impacts(
 	Category VARCHAR(255),
 	PrimaryBeneficiary VARCHAR(255) NOT NULL,
 	PrimaryAttribution VARCHAR(255) NOT NULL
-	);
+);
 /*InnovationAndCommercialisation */
 DROP TABLE IF EXISTS InnovationAndCommercialisation;
 CREATE TABLE InnovationAndCommercialisation(
@@ -86,7 +94,7 @@ CREATE TABLE InnovationAndCommercialisation(
 	Type VARCHAR(255),
 	Title VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL
-	);
+);
 /*Publications */
 DROP TABLE IF EXISTS Publications;
 CREATE TABLE Publications(
@@ -98,7 +106,7 @@ CREATE TABLE Publications(
 	DOI VARCHAR(255) NOT NULL, 
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	PRIMARY KEY (DOI)
-	);
+);
 /*Presentations */
 DROP TABLE IF EXISTS Presentations;
 CREATE TABLE Presentations(
@@ -111,7 +119,7 @@ CREATE TABLE Presentations(
 	OrganisingBody VARCHAR(255),
 	Location VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL
-	);
+);
 /*Collaborations */
 DROP TABLE IF EXISTS Collaborations;
 CREATE TABLE Collaborations(
@@ -125,7 +133,7 @@ CREATE TABLE Collaborations(
 	FrequencyOfInteraction VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL, 
 	Academic Boolean
-	);
+);
 /*OrganisedEvents */
 DROP TABLE IF EXISTS OrganisedEvents;
 CREATE TABLE OrganisedEvents(
@@ -136,7 +144,7 @@ CREATE TABLE OrganisedEvents(
 	Role VARCHAR(255),
 	Location VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL
-	);
+);
 /*EducationAndPublicEngagement */
 DROP TABLE IF EXISTS EducationAndPublicEngagement;
 CREATE TABLE EducationAndPublicEngagement(
@@ -147,7 +155,7 @@ CREATE TABLE EducationAndPublicEngagement(
 	Topic VARCHAR(255),
 	TargetArea VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL
-	);
+);
 /*Submission */
 DROP TABLE IF EXISTS Submission; 
 CREATE TABLE Submission (
@@ -167,4 +175,5 @@ CREATE TABLE Submission (
     declaration BOOLEAN NOT NULL,
     user varchar(255) NOT NULL,
   	draft Boolean default True,
-  	proposalPDF varchar(255) NOT NULL);
+  	proposalPDF varchar(255) NOT NULL
+);
