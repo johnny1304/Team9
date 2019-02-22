@@ -280,27 +280,28 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-def mail(content="", email="", password=""):
+def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    cur = mysql.get_db().cursor()
-    cur.execute("SELECT email FROM researchers")
-    rv = cur.fetchall()
+    
+	#cur = mysql.get_db().cursor()
+    #cur.execute("SELECT email FROM researchers")
+    #rv = cur.fetchall()
 	
     if not content:
-        content = "default text"
+        content = "Account made confirmation message"
     if not email:
-        email = "default email address"
+        email = "team9sendermail@gmail.com"
     if not password:
-        password = "default password"
+        password = "team9admin"
 	
     mail = smtplib.SMTP('smtp.gmail.com', 587)
-    mail.ehlo() #not a typo do not fix thanks
+    mail.ehlo()
     mail.starttls()
-    mail.login(email,password)
-    for email in rv:
-	    mail.sendmail('sender(me)', 'receiver', content)
+    mail.login(email, password)
+    #for email in rv:
+    mail.sendmail(email, receiver,content)
     mail.close()
 
 @app.route('/')
@@ -360,6 +361,8 @@ def signup():
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
+			# send confirmation email
+            mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
         if user:
