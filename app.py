@@ -4,6 +4,7 @@ import secrets
 import uuid
 from PIL import Image
 from flask import Flask, render_template, redirect, url_for, flash, request
+from flask_dropzone import Dropzone
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed,FileField
@@ -26,6 +27,14 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
+
+dropzone = Dropzone(app)
+
+#drag and drop file upload settings
+app.config['DROPZONE_MAX_FILE_SIZE'] = 6
+app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
+app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.pdf'
+app.config['DROPZONE_IN_FORM'] = True
 
 #setup for proposal call form
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"

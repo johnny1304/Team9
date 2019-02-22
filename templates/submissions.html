@@ -1,6 +1,18 @@
 {% extends "layout.html" %}
 {% from "_formhelpers.html" import render_field %}
 {% block content %}
+	<head>
+	<!-- Loading dropzone for use later on -->
+	<!-- dropzone returns no url provided error I think something to do with the form upload settings? -->
+    {{ dropzone.load() }}
+    {{ dropzone.style('border: 2px dashed #0087F7; margin: 10%; min-height: 400px;') }}
+	</head>
+	<body onload = disableAuto();>
+	<script>
+	function disableAuto(){
+		Dropzone.autoDisover = false;
+		}
+	</script>
     <div class="col-lg-12" style="margin-top:5em">
 
             <h1>{{ sub.title }}</h1>
@@ -33,7 +45,6 @@
                 <p><b>Time Frame: </b>{{ sub.timeframe }}</p>
             </div>
             </div>
-
     <form action = "" enctype="multipart/form-data" method = "post" class="Justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;" >
       <div class="form-row">
         {{ form.hidden_tag() }}
@@ -117,7 +128,9 @@
 
       <div class="form-group col-lg-12">
           <b>{{ form.proposalPDF.label }}</b><br>
-          {{form.proposalPDF}}
+		  <h1> WHY WON'T THIS WORK </h1>
+		  {{ dropzone.create(action_view='submissions') }}
+            {{form.proposalPDF}}
 
       </div>
 
