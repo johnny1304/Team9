@@ -1,49 +1,71 @@
+
 {% extends "layout.html" %}
 {% block content %} 
-    
+        {% from "_formhelpers.html" import render_field %}
     <div class="jumbotron" style="margin-bottom: 0; margin-top: 35px;">
         <div class="container">
-            <img src="Downloads/placeholder.png" height="80" width="80"></img>
-            <h1 class="display-5">Profile name</h1>
+            <img src="{{url_for('static', filename='profileIcon2.svg')}}" height="80" width="80"></img>
+            <h1 class="display-5">{{ current_user.first_name }} {{ current_user.last_name}}</h1>
             <p class="lead">Researcher title</p>
             <button type="button" class="btn btn-light" href="details.html">Change details</button>
         </div>
     </div>
-    <div class="container">
-        <div class="row">
-            <div class="col-12 col-md-6 ">
-                <div class="border border-primary">
-                    <h3>Contact information</h3>
-                    <ul class="list-group">
-                        <li class="list-group-item">Phone number:</li>
-                        <li class="list-group-item">Email address</li>
-                        <li class="list-group-item">Website</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col-12 col-md-6" >
-                <div class="border border-primary">
-                    <h3>Education information</h3>
-                    <ul class="list-group">
-                        <li class="list-group-item">Degree</li>
-                        <li class="list-group-item">Field of study</li>
-                        <li class="list-group-item">Institution</li>
-                        <li class="list-group-item">Year of degree award</li>
-                    </ul>
-                </div>
+  
+
+    <div class="row justify-content">
+        <div class="col-3" style="margin-left:5em;">
+            <div class="card" style="  width: 18em;">
+               
+                
+                        <a href="/profile">General Infomation</a>
+                        <a href="/educationInfo">Education Information</a>
+                        <a href="/employmentInfo">Employment</a>
+                        <a href="/societiesInfo"> Professional societies</a>
+                        <a href="/awardsInfo"> Distinctions & Awards</a>
+                        <a> Funding Diversification</a>
+                        <a>Team Members</a>
+                        <a>Impacts</a>
+                        <a>Innovation & Commercialisation</li>
+                        <a>Publications</a>
+                        <a>Presentations</a>
+                        <a> Academic Collaborations</a>
+                        <a> Non academic Collaborations</a>
+                        <a> Conferences/Workshops/Seminars</a>
+                        <a> Communications Overview</a>
+                        <a> SFI Funding Ratio</a>
+                        <a>Education & Public Engagement</a>
+
+             
             </div>
         </div>
-        <div class="row">
-            <div class="col-12 col-md-6 ">
-                <div class="border border-primary">
-                    <h3>Employment</h3>
-                    <ul class="list-group">
-                        <li class="list-group-item">Company</li>
-                        <li class="list-group-item">Location</li>
-                        <li class="list-group-item">Years</li>
-                    </ul>
-                </div>
+        
+        <div class="col-7 justify-content-center" style="background-color:white  ; border:5px ; padding: 10px; border-radius: 10px ;" >
+        
+           {% block form %}
+           <div class="card " style="width: 18rem;">
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item">First Name: {{ data[0]}}</li>
+                  <li class="list-group-item">Last Name: {{ data[1]}}</li>
+                  <li class="list-group-item">Occupation: {{ data[2]}}</li>
+                  <li class="list-group-item">Prefix: {{ data[3]}}</li>
+                  <li class="list-group-item">Suffix: {{ data[4]}}</li>
+                  <li class="list-group-item">Phone Number: {{ data[5]}}</li>
+                  <li class="list-group-item">Phone Extenstion: {{ data[6]}}</li>
+                  <li class="list-group-item">Email: {{ data[7]}}</li>
+                  <li class="list-group-item">ORCID:{{ data[8]}}</li>
+                </ul>
+                
             </div>
+            <div class="col-6" >
+                    <a href='/generalInfo'><button type="submit" class="btn btn-primary" >Edit</button></a>
+                </div>
+            {% endblock %}
+
         </div>
     </div>
+
 {% endblock content%}
+
+
+
+
