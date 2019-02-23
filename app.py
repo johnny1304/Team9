@@ -310,6 +310,17 @@ class AwardsForm(FlaskForm):
 	team_member = StringField('Team Member ', validators=[Length(max=50)])
 	submit = SubmitField('Edit')
 
+class TeamMembersForm(FlaskForm):
+	
+    start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    departure_date = DateField('Departure Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    name = StringField('Name:', validators=[ Length(max=50)])
+    position = StringField('Position:',validators=[ Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:',validators=[ Length(max=20)])
+    submit = SubmitField('Edit')
+	
+
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -894,13 +905,82 @@ def awardsInfo():
             cur= conn.cursor()
             # execute a query
             cur.execute(f"""UPDATE Awards SET Year={year},awardingBody='{awardingBody}',
-             details='{details}' , TeamMember='{team_member}'  WHERE ORCID ={current_user.orcid};  """)
+             Details='{details}' , TeamMember='{team_member}'  WHERE ORCID ={current_user.orcid};  """)
             conn.commit()
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
     
     return render_template('awardsInfo.html', form=form, data=data)
+
+@app.route('/team_members_info', methods=['GET', 'POST'])
+@login_required
+def team_members_info():
+    #Creates proposal form
+    form = TeamMembersForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM TeamMembers WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+    print(data)
+    if data==None:
+        if request.method == 'POST':
+        
+            print(form.errors)
+            #if input validates pushes to db
+            if form.validate_on_submit():
+            
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+                start_date= form.start_date.data
+                departure_date= form.departure_date.data
+                name= form.name.data
+                position = form.position.data
+                primary_attribution = form.primary_attribution.data
+                
+
+                
+
+                conn = mysql.connect
+                cur= conn.cursor()
+                # execute a query
+                cur.execute(f"""INSERT INTO TeamMembers (StartDate, DepartureDate,Name,Position, PrimaryAttribution ORCID) VALUES ('{start_date}'',
+                '{departure_date}','{name}','{position}', '{primary_attribution}', '{current_user.orcid}' );  """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            year= form.year.data
+            awardingBody= form.awardingBody.data
+            details= form.details.data
+            team_member = form.team_member.data
+                
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE TeamMembers SET StartDate='{start_date}',DepartureDate='{departure_date}',
+            Name='{name}' , Position='{position}' WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('team_members_info.html', form=form, data=data)
 
 @login_manager.unauthorized_handler
 def unauthorized_callback():

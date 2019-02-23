@@ -67,11 +67,11 @@
                     <a class="nav-link " href="/proposal_call" >Create Proposal</a>
                 </li>
                 {% endif %}
-               
+                {% if not current_user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link " href="#" >About</a>
+                    <a class="nav-link " href="/sign_in" >Sign in</a>
                 </li>
-                
+                {% endif %}
             </ul>
             
             <form class="form-inline my-2 my-lg-0" style="">

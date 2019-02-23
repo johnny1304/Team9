@@ -6,24 +6,29 @@
 <div class="row justify-content-center">
   <form class="Justify-content-center col-lg-6" method="POST" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;">
 
-      <div class="form-row" id="education">
+      <div class="form-row" id="team_members">
       {{form.hidden_tag()}}
 
           <div class="form-group col-lg-12 ">
-              {{render_field(form.degree, value= data[2],class="col-lg-12")}}
+              {{render_field(form.start_date, value= data[0],class="col-lg-12")}}
           </div>
 
           <div class="form-group col-lg-12">
-              {{render_field(form.institution,  value= data[4],class="col-lg-12")}}
+              {{render_field(form.departure_date, value= data[1],class="col-lg-12")}}
           </div>
 
           <div class="form-group col-lg-12">
-              {{render_field(form.location,value= data[5],class="col-lg-12")}}
+              {{render_field(form.name,value= data[2],class="col-lg-12")}}
           </div>
-
           <div class="form-group col-lg-12">
-              {{render_field(form.year,value= data[6],class="col-lg-12")}}
-          </div>
+            {{render_field(form.position,value= data[3],class="col-lg-12")}}
+            </div>
+        
+            <div class="form-group col-lg-12">
+            {{render_field(form.primary_attribution,value= data[4],class="col-lg-12")}}
+        </div>
+
+       
 
       
 
