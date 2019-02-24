@@ -921,7 +921,7 @@ def team_members_info():
     conn = mysql.connect
     cur= conn.cursor()
             # execute a query
-    cur.execute("""SELECT * FROM TeamMembers WHERE ORCID=%s""", [current_user.orcid])
+    cur.execute("""SELECT * FROM TeamMembers WHERE ORCID =%s""", [current_user.orcid])
     data = cur.fetchone()
     print(data)
     if data==None:
