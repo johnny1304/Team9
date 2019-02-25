@@ -19,6 +19,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
     'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -44,6 +45,8 @@ class proposalForm(FlaskForm):
     time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
     picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
+
+
 
 class Proposal(db.Model):
     __tablename__ = "Proposal"
@@ -71,7 +74,7 @@ class Proposal(db.Model):
         self.picture = picture
 
     def __repr__(self):
-        return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
+        return f"User('{self.Deadline}', '{selfr.TargetAudience}', '{self.TimeFrame}')"
 
 #form for submission
 class Submission_Form(FlaskForm):
@@ -393,6 +396,21 @@ class LoginForm(FlaskForm):
     remember = BooleanField('Remember me')
 
 
+class UpdateInfoForm(FlaskForm):
+   
+
+	#this is the class for the register form in the sign_up.html
+    first_name = StringField('First Name:'  , validators=[InputRequired(), Length(max=20)])
+    last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
+    email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
+    job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
+    prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
+    suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
+    phone = IntegerField('Phone: ')
+    phone_extension = IntegerField('Phone Extension: ')
+    submit = SubmitField('Edit')
+
+
 class RegisterForm(FlaskForm):
     #this is the class for the register form in the sign_up.html
     orcid = IntegerField('ORCID:', validators=[InputRequired()])
@@ -424,33 +442,79 @@ class formCreationForm(FlaskForm):
     primary_attribution = StringField('Primary Attribution', validators=[InputRequired()], render_kw={"placeholder": "Primary Attribution"})
     submit = SubmitField('Submit')
 
+class EducationForm(FlaskForm):
+	
+	degree = StringField('Degree:', validators=[ Length(max=50)])
+	institution = StringField('Institution:', validators=[ Length(max=50)])
+	location = StringField('Locations:', validators=[Length(max=50)])
+	year = IntegerField('Year ' )
+	submit = SubmitField('Edit')
+    
+
+class EmploymentForm(FlaskForm):
+
+	company = StringField('Company:', validators=[ Length(max=50)])
+	location = StringField('Location:', validators=[ Length(max=50)])
+	years = IntegerField('Years:')
+	submit = SubmitField('Edit')
+    
+class SocietiesForm(FlaskForm):
+	
+    start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    society = StringField('Society:', validators=[ Length(max=50)])
+    membership = StringField('Membership:',validators=[ Length(max=50)])
+    status = StringField('Status:',validators=[ Length(max=20)])
+    submit = SubmitField('Edit')
+
+class AwardsForm(FlaskForm):
+	
+	year = IntegerField('Year:')
+	awardingBody = StringField('Awarding Body:', validators=[ Length(max=50)])
+	details = StringField('Detail:', validators=[Length(max=50)])
+	team_member = StringField('Team Member ', validators=[Length(max=50)])
+	submit = SubmitField('Edit')
+
+class TeamMembersForm(FlaskForm):
+	
+    start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    departure_date = DateField('Departure Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    name = StringField('Name:', validators=[ Length(max=50)])
+    position = StringField('Position:',validators=[ Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:',validators=[ Length(max=20)])
+    submit = SubmitField('Edit')
+	
+
+
+
 @login_manager.user_loader
 def load_user(user_id):
     # this is a function that callsback the user by the user_id
     return User.query.get(int(user_id))
 
 
-def mail(content="", email="", password=""):
+def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    cur = mysql.get_db().cursor()
-    cur.execute("SELECT email FROM researchers")
-    rv = cur.fetchall()
-    
+	#cur = mysql.get_db().cursor()
+    #cur.execute("SELECT email FROM researchers")
+    #rv = cur.fetchall()
     if not content:
-        content = "default text"
+        content = "Account made confirmation message"
     if not email:
-        email = "default email address"
+        email = "team9sendermail@gmail.com"
     if not password:
         password = "default password"
     
+        password = "team9admin"
+	
     mail = smtplib.SMTP('smtp.gmail.com', 587)
-    mail.ehlo() #not a typo do not fix thanks
+    mail.ehlo()
     mail.starttls()
-    mail.login(email,password)
-    for email in rv:
-        mail.sendmail('sender(me)', 'receiver', content)
+    mail.login(email, password)
+    #for email in rv:
+    mail.sendmail(email, receiver,content)
     mail.close()
 
 @app.route('/')
@@ -462,6 +526,9 @@ def index():
     #    db.session.commit()
         # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
+
+
+
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
@@ -510,6 +577,8 @@ def signup():
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
+			# send confirmation email
+            mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
         if user:
@@ -759,6 +828,385 @@ def proposal_call():
     else:
         return render_template('proposal_call.html', form=form)
 
+@app.route('/generalInfo', methods=['GET', 'POST'])
+@login_required
+def generalInfo():
+    #Creates proposal form
+    form = UpdateInfoForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+    
+    #checks if form is submitted by post
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            first_name = form.first_name.data
+            last_name = form.last_name.data
+            email = form.email.data
+            job = form.job.data
+            prefix = form.prefix.data
+            suffix = form.suffix.data
+            phone = form.phone.data
+            phone_extension = form.phone_extension.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
+                    Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('generalInfo.html', form=form, data=data)
+
+
+@app.route('/educationInfo', methods=['GET', 'POST'])
+@login_required
+def educationInfo():
+    #Creates proposal form
+    form = EducationForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM Education WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+    print(data)
+    if data==None:
+        if request.method == 'POST':
+        
+            print(form.errors)
+            #if input validates pushes to db
+            if form.validate_on_submit():
+            
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+                degree = form.degree.data
+                institution= form.institution.data
+                location= form.location.data
+                year = form.year.data
+
+                conn = mysql.connect
+                cur= conn.cursor()
+                # execute a query
+                cur.execute(f"""INSERT INTO Education (Degree,Institution,
+                Location, Year, ORCID) VALUES ('{degree}','{institution}','{location}',{year},{current_user.orcid});  """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            degree = form.degree.data
+            institution= form.institution.data
+            location= form.location.data
+            year = form.year.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Education SET Degree='{degree}',Institution='{institution}',
+             Location='{location}', Year={year} WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('educationInfo.html', form=form, data=data)
+
+@app.route('/employmentInfo', methods=['GET', 'POST'])
+@login_required
+def employmentInfo():
+    #Creates proposal form
+    form = EmploymentForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM Employment WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+    print(data)
+    if data==None:
+        if request.method == 'POST':
+        
+            print(form.errors)
+            #if input validates pushes to db
+            if form.validate_on_submit():
+            
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+                company = form.company.data
+                location= form.location.data
+                years = form.years.data
+                
+
+                conn = mysql.connect
+                cur= conn.cursor()
+                # execute a query
+                cur.execute(f"""INSERT INTO Employment (Company,Location,Years, ORCID) VALUES ('{company}',
+                '{location}',{years},{current_user.orcid});  """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            company = form.company.data
+            location= form.location.data
+            years = form.years.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Employment SET Company='{company}',Location='{location}',
+             Years={years} WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('employmentInfo.html', form=form, data=data)
+
+
+@app.route('/societiesInfo', methods=['GET', 'POST'])
+@login_required
+def societiesInfo():
+    #Creates proposal form
+    form = SocietiesForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM Societies WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+    print(data)
+    if data==None:
+        if request.method == 'POST':
+        
+            print(form.errors)
+            #if input validates pushes to db
+            if form.validate_on_submit():
+            
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+                start_date = form.start_date.data
+                end_date= form.end_date.data
+                society = form.society.data
+                membership = form.membership.data
+                status = form.status.data
+
+                
+
+                conn = mysql.connect
+                cur= conn.cursor()
+                # execute a query
+                cur.execute(f"""INSERT INTO Societies (StartDate, EndDate, Society, Membership, Status, ORCID) VALUES ('{start_date}',
+                '{end_date}','{society}','{membership}', '{status}', {current_user.orcid});  """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            start_date = form.start_date.data
+            end_date= form.end_date.data
+            society = form.society.data
+            membership = form.membership.data
+            status = form.status.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Societies SET StartDate='{start_date}',EndDate='{end_date}',
+             Society='{society}' , Membership='{membership}' , Status='{status}' WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('societiesInfo.html', form=form, data=data)
+
+
+
+@app.route('/awardsInfo', methods=['GET', 'POST'])
+@login_required
+def awardsInfo():
+    #Creates proposal form
+    form = AwardsForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM Awards WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+    print(data)
+    if data==None:
+        if request.method == 'POST':
+        
+            print(form.errors)
+            #if input validates pushes to db
+            if form.validate_on_submit():
+            
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+                year= form.year.data
+                awardingBody= form.awardingBody.data
+                details= form.details.data
+                team_member = form.team_member.data
+                
+
+                
+
+                conn = mysql.connect
+                cur= conn.cursor()
+                # execute a query
+                cur.execute(f"""INSERT INTO Awards (Year, AwardingBody, Details, TeamMember, ORCID) VALUES ({year},
+                '{awardingBody}','{details}','{team_member}', {current_user.orcid} );  """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            year= form.year.data
+            awardingBody= form.awardingBody.data
+            details= form.details.data
+            team_member = form.team_member.data
+                
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Awards SET Year={year},awardingBody='{awardingBody}',
+             Details='{details}' , TeamMember='{team_member}'  WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('awardsInfo.html', form=form, data=data)
+
+@app.route('/team_members_info', methods=['GET', 'POST'])
+@login_required
+def team_members_info():
+    #Creates proposal form
+    form = TeamMembersForm(request.form)
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM TeamMembers WHERE ORCID =%s""", [current_user.orcid])
+    data = cur.fetchone()
+    print(data)
+    if data==None:
+        if request.method == 'POST':
+        
+            print(form.errors)
+            #if input validates pushes to db
+            if form.validate_on_submit():
+            
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+                start_date= form.start_date.data
+                departure_date= form.departure_date.data
+                name= form.name.data
+                position = form.position.data
+                primary_attribution = form.primary_attribution.data
+                
+
+                
+
+                conn = mysql.connect
+                cur= conn.cursor()
+                # execute a query
+                cur.execute(f"""INSERT INTO TeamMembers (StartDate, DepartureDate,Name,Position, PrimaryAttribution ORCID) VALUES ('{start_date}'',
+                '{departure_date}','{name}','{position}', '{primary_attribution}', '{current_user.orcid}' );  """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        
+    if request.method == 'POST':
+      
+        print(form.errors)
+        #if input validates pushes to db
+        if form.validate_on_submit():
+           
+            #if form.picture.data:         #image processing
+             #   print("here ttt")
+              #  picture_file = save_picture(form.picture.data)
+               # Image.open(picture_file)
+            year= form.year.data
+            awardingBody= form.awardingBody.data
+            details= form.details.data
+            team_member = form.team_member.data
+                
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE TeamMembers SET StartDate='{start_date}',DepartureDate='{departure_date}',
+            Name='{name}' , Position='{position}' WHERE ORCID ={current_user.orcid};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+    
+    return render_template('team_members_info.html', form=form, data=data)
+
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     return redirect('/sign_in?next=' + request.path)
@@ -766,7 +1214,13 @@ def unauthorized_callback():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html')
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+    cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+ 
+    return render_template('profile.html', data=data)
 
 @app.route('/logout')
 @login_required

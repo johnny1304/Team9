@@ -3,7 +3,7 @@ Coding convention: From now on
 Classes = UpperCamelCase
 Fuctions = spaces replaced by underscores [get_id]
 variables = same as functions
-calass variables = UPPERCASE
+class variables = UPPERCASE
 
 Admin user for all:
 email = john2@sample.com
@@ -18,6 +18,12 @@ what is this?
 
 
 Use this section of the README to put down todo things.
+- move sign in location (Eoghan)
+- dashboard grant management(user)(Calvin/Shiva)
+- dashboard call management(admin)(Eoghan)
+-profile page( adding all information )(Declan)
+- diagrams (maciej)
+- fix any bad looking css(Kayleigh)
 
 
 Use this section of the README to put down ideas.
