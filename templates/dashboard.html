@@ -11,21 +11,21 @@
       <div class="col-sm-4">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
-          <p><strong>Applications Pending Action</strong></p>
-          <p>{{applications|length}}</p> 
+          <p><strong>Current Applications</strong></p>
+          <p>{{applicatons.length()}}</p>
         </div>
       </div>
       <div class="col-sm-4">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
-          <p><strong>Scientific Reports Pending Action</strong></p>
+          <p><strong>Current Scientific Reports</strong></p>
           <p>1</p>
         </div>
       </div>
       <div class="col-sm-4">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
-          <p><strong>Financial Reports Pending Action</strong></p>
+          <p><strong>Current Financial Reports</strong></p>
           <p>0</p>
         </div>
       </div>
@@ -35,7 +35,7 @@
         <div class="col-sm-4">
           <div class="thumbnail">
             <img src="{{url_for('static', filename='budget.svg')}}" alt="Budget Icon">
-            <p><strong>Budgets Pending Action</strong></p>
+            <p><strong>Current Budgets</strong></p>
             <p>0</p> 
           </div>
         </div>

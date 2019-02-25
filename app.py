@@ -1,15 +1,17 @@
 import os
+from pathlib import Path
 import secrets
-
+import uuid
 from PIL import Image
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed
+from flask_wtf.file import FileAllowed,FileField
 from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField
 from wtforms.validators import InputRequired, Email, Length, length, DataRequired, EqualTo
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 import smtplib
@@ -18,8 +20,7 @@ import smtplib
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_test'  # set the database directory
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -45,8 +46,6 @@ class proposalForm(FlaskForm):
     time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
     picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
-
-
 
 class Proposal(db.Model):
     __tablename__ = "Proposal"
@@ -74,7 +73,7 @@ class Proposal(db.Model):
         self.picture = picture
 
     def __repr__(self):
-        return f"User('{self.Deadline}', '{selfr.TargetAudience}', '{self.TimeFrame}')"
+        return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
 
 #form for submission
 class Submission_Form(FlaskForm):
@@ -116,7 +115,7 @@ class Submission_Form(FlaskForm):
                                         validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
     lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
                                         validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
-    #pdf upload here
+    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
     submit = SubmitField('Submit')
 
@@ -145,8 +144,9 @@ class Submissions(db.Model):
     declaration = db.Column(db.Boolean,nullable=False)
     user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
     draft = db.Column(db.Boolean, nullable=False, default=True)
+    proposalPDF = db.Column(db.String(255),nullable=False)
 
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user):
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
         self.title=title
         self.propid=propid
         self.duration=duration
@@ -161,6 +161,7 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
+        self.proposalPDF=proposalPDF
         self.draft=True
 
 
@@ -397,7 +398,7 @@ class LoginForm(FlaskForm):
 
 
 class UpdateInfoForm(FlaskForm):
-   
+
 
 	#this is the class for the register form in the sign_up.html
     first_name = StringField('First Name:'  , validators=[InputRequired(), Length(max=20)])
@@ -426,7 +427,7 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField(u"User") 
+    researcher = SelectField(u"User")
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -443,13 +444,13 @@ class formCreationForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class EducationForm(FlaskForm):
-	
+
 	degree = StringField('Degree:', validators=[ Length(max=50)])
 	institution = StringField('Institution:', validators=[ Length(max=50)])
 	location = StringField('Locations:', validators=[Length(max=50)])
 	year = IntegerField('Year ' )
 	submit = SubmitField('Edit')
-    
+
 
 class EmploymentForm(FlaskForm):
 
@@ -457,9 +458,9 @@ class EmploymentForm(FlaskForm):
 	location = StringField('Location:', validators=[ Length(max=50)])
 	years = IntegerField('Years:')
 	submit = SubmitField('Edit')
-    
+
 class SocietiesForm(FlaskForm):
-	
+
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -468,7 +469,7 @@ class SocietiesForm(FlaskForm):
     submit = SubmitField('Edit')
 
 class AwardsForm(FlaskForm):
-	
+
 	year = IntegerField('Year:')
 	awardingBody = StringField('Awarding Body:', validators=[ Length(max=50)])
 	details = StringField('Detail:', validators=[Length(max=50)])
@@ -476,14 +477,14 @@ class AwardsForm(FlaskForm):
 	submit = SubmitField('Edit')
 
 class TeamMembersForm(FlaskForm):
-	
+
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     departure_date = DateField('Departure Date',render_kw={"placeholder": "YYYY-MM-DD"})
     name = StringField('Name:', validators=[ Length(max=50)])
     position = StringField('Position:',validators=[ Length(max=50)])
     primary_attribution = StringField('Primary Attribution:',validators=[ Length(max=20)])
     submit = SubmitField('Edit')
-	
+
 
 
 
@@ -497,16 +498,18 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
+    
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
+	
     if not content:
         content = "Account made confirmation message"
     if not email:
         email = "team9sendermail@gmail.com"
     if not password:
         password = "default password"
-    
+
         password = "team9admin"
 	
     mail = smtplib.SMTP('smtp.gmail.com', 587)
@@ -526,9 +529,6 @@ def index():
     #    db.session.commit()
         # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
-
-
-
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
@@ -673,16 +673,17 @@ def submissions():
     form.setPropId(post)
     conn = mysql.connect
     cur = conn.cursor()
+    previousFile=None
     cur.execute(f"""
                              SELECT *
                              FROM Submission
                              WHERE propid = {post} AND user='{current_user.orcid}';
                              """)
-    lst=[]
     for i in cur.fetchall():
+        print(i)
         if i[15]==0:
             return render_template("submitted.html")
-        form.propid=i[1]
+        form.propid=i[0]
         form.title.data=i[2]
         form.duration.data=i[3]
         form.NRP.data=i[4]
@@ -695,10 +696,10 @@ def submissions():
         form.scientific_abstract.data=i[11]
         form.lay_abstract.data=i[12]
         form.declaration.data=i[13]
+        previousFile=i[16]
 
-    #form.title.data=lst[0]
-    #form.duration.data=lst[1]
-    #form
+
+
     cur.close()
     conn.close()
 
@@ -707,6 +708,21 @@ def submissions():
         if form.validate.data:
             flash("Input Successfully Validated")
         elif form.draft.data:
+            filenamesecret=previousFile
+            if form.proposalPDF.data != None:
+                filenamesecret = uuid.uuid4().hex
+                while True:
+                    filecheck = Path(f"uploads/{filenamesecret}")
+                    if filecheck.is_file():
+                        filenamesecret = uuid.uuid4().hex
+                    else:
+                        break
+                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                if previousFile!=None:
+                    os.remove(f"uploads/{previousFile}")
+
+
+
             new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
                                        NRP=form.NRP.data,legal=form.legal_remit.data,
                                        ethicalAnimal=form.ethical_animal.data,
@@ -717,13 +733,28 @@ def submissions():
                                        scientific=form.scientific_abstract.data,
                                        lay=form.lay_abstract.data,
                                        declaration=form.declaration.data,
-                                       user=f"{current_user.orcid}"
+                                       user=f"{current_user.orcid}",
+                                       proposalPDF=f"{filenamesecret}"
                                        )
             db.session.add(new_submission)
             db.session.commit()
-            flash("successfully submitted")
+            flash("successfully Saved Draft")
             return redirect(url_for("submissions",id=form.propid,sub=sub))
         elif form.submit.data:
+            filenamesecret = previousFile
+            if form.proposalPDF.data!=None:
+                filenamesecret = uuid.uuid4().hex
+                while True:
+                    filecheck=Path(f"uploads/{filenamesecret}")
+                    if filecheck.is_file():
+                        filenamesecret = uuid.uuid4().hex
+                    else:
+                        break
+                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                if previousFile != None:
+                    os.remove(f"uploads/{previousFile}")
+
+
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
                                          NRP=form.NRP.data, legal=form.legal_remit.data,
                                          ethicalAnimal=form.ethical_animal.data,
@@ -735,6 +766,7 @@ def submissions():
                                          lay=form.lay_abstract.data,
                                          declaration=form.declaration.data,
                                          user=f"{current_user.orcid}",
+                                         proposalPDF=f"{filenamesecret}"
                                          )
             new_submission.setDraftFalse()
             db.session.add(new_submission)
@@ -838,14 +870,14 @@ def generalInfo():
             # execute a query
     cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
     data = cur.fetchone()
-    
+
     #checks if form is submitted by post
     if request.method == 'POST':
-      
+
         print(form.errors)
         #if input validates pushes to db
         if form.validate_on_submit():
-           
+
             #if form.picture.data:         #image processing
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
@@ -868,7 +900,7 @@ def generalInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-    
+
     return render_template('generalInfo.html', form=form, data=data)
 
 
@@ -885,11 +917,11 @@ def educationInfo():
     print(data)
     if data==None:
         if request.method == 'POST':
-        
+
             print(form.errors)
             #if input validates pushes to db
             if form.validate_on_submit():
-            
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -908,13 +940,13 @@ def educationInfo():
                 cur.close()
                 conn.close()
                 return redirect(url_for('profile'))
-        
+
     if request.method == 'POST':
-      
+
         print(form.errors)
         #if input validates pushes to db
         if form.validate_on_submit():
-           
+
             #if form.picture.data:         #image processing
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
@@ -933,7 +965,7 @@ def educationInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-    
+
     return render_template('educationInfo.html', form=form, data=data)
 
 @app.route('/employmentInfo', methods=['GET', 'POST'])
@@ -949,11 +981,11 @@ def employmentInfo():
     print(data)
     if data==None:
         if request.method == 'POST':
-        
+
             print(form.errors)
             #if input validates pushes to db
             if form.validate_on_submit():
-            
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -961,7 +993,7 @@ def employmentInfo():
                 company = form.company.data
                 location= form.location.data
                 years = form.years.data
-                
+
 
                 conn = mysql.connect
                 cur= conn.cursor()
@@ -972,13 +1004,13 @@ def employmentInfo():
                 cur.close()
                 conn.close()
                 return redirect(url_for('profile'))
-        
+
     if request.method == 'POST':
-      
+
         print(form.errors)
         #if input validates pushes to db
         if form.validate_on_submit():
-           
+
             #if form.picture.data:         #image processing
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
@@ -996,7 +1028,7 @@ def employmentInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-    
+
     return render_template('employmentInfo.html', form=form, data=data)
 
 
@@ -1013,11 +1045,11 @@ def societiesInfo():
     print(data)
     if data==None:
         if request.method == 'POST':
-        
+
             print(form.errors)
             #if input validates pushes to db
             if form.validate_on_submit():
-            
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1028,7 +1060,7 @@ def societiesInfo():
                 membership = form.membership.data
                 status = form.status.data
 
-                
+
 
                 conn = mysql.connect
                 cur= conn.cursor()
@@ -1039,13 +1071,13 @@ def societiesInfo():
                 cur.close()
                 conn.close()
                 return redirect(url_for('profile'))
-        
+
     if request.method == 'POST':
-      
+
         print(form.errors)
         #if input validates pushes to db
         if form.validate_on_submit():
-           
+
             #if form.picture.data:         #image processing
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
@@ -1065,7 +1097,7 @@ def societiesInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-    
+
     return render_template('societiesInfo.html', form=form, data=data)
 
 
@@ -1083,11 +1115,11 @@ def awardsInfo():
     print(data)
     if data==None:
         if request.method == 'POST':
-        
+
             print(form.errors)
             #if input validates pushes to db
             if form.validate_on_submit():
-            
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1096,9 +1128,9 @@ def awardsInfo():
                 awardingBody= form.awardingBody.data
                 details= form.details.data
                 team_member = form.team_member.data
-                
 
-                
+
+
 
                 conn = mysql.connect
                 cur= conn.cursor()
@@ -1109,13 +1141,13 @@ def awardsInfo():
                 cur.close()
                 conn.close()
                 return redirect(url_for('profile'))
-        
+
     if request.method == 'POST':
-      
+
         print(form.errors)
         #if input validates pushes to db
         if form.validate_on_submit():
-           
+
             #if form.picture.data:         #image processing
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
@@ -1124,7 +1156,7 @@ def awardsInfo():
             awardingBody= form.awardingBody.data
             details= form.details.data
             team_member = form.team_member.data
-                
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1135,7 +1167,7 @@ def awardsInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-    
+
     return render_template('awardsInfo.html', form=form, data=data)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
@@ -1151,11 +1183,11 @@ def team_members_info():
     print(data)
     if data==None:
         if request.method == 'POST':
-        
+
             print(form.errors)
             #if input validates pushes to db
             if form.validate_on_submit():
-            
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1165,9 +1197,9 @@ def team_members_info():
                 name= form.name.data
                 position = form.position.data
                 primary_attribution = form.primary_attribution.data
-                
 
-                
+
+
 
                 conn = mysql.connect
                 cur= conn.cursor()
@@ -1178,13 +1210,13 @@ def team_members_info():
                 cur.close()
                 conn.close()
                 return redirect(url_for('profile'))
-        
+
     if request.method == 'POST':
-      
+
         print(form.errors)
         #if input validates pushes to db
         if form.validate_on_submit():
-           
+
             #if form.picture.data:         #image processing
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
@@ -1193,7 +1225,7 @@ def team_members_info():
             awardingBody= form.awardingBody.data
             details= form.details.data
             team_member = form.team_member.data
-                
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1204,7 +1236,7 @@ def team_members_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-    
+
     return render_template('team_members_info.html', form=form, data=data)
 
 @login_manager.unauthorized_handler
@@ -1218,12 +1250,12 @@ def profile():
     conn = mysql.connect
     cur= conn.cursor()
             # execute a query
-   
+
     cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
     data = cur.fetchone()
 
 
- 
+
     return render_template('profile.html', data=data)
 
 @app.route('/logout')
