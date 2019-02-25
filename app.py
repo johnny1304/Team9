@@ -594,8 +594,8 @@ def signup():
 @login_required
 def dashboard():
     # return the dashboard html file with the user passed to it
-    applications = Submissions.query.filter_by(ORCID=current_user.orcid).all()
-    print(application.length())
+    applications = Submissions.query.filter_by(user=current_user.orcid).all()
+    print(len(applications))
     return render_template('dashboard.html', user=current_user, applications=applications)
 
 
