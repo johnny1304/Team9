@@ -1214,11 +1214,15 @@ def unauthorized_callback():
 @app.route('/profile')
 @login_required
 def profile():
+
     conn = mysql.connect
     cur= conn.cursor()
             # execute a query
+   
     cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
     data = cur.fetchone()
+
+
  
     return render_template('profile.html', data=data)
 
