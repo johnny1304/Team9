@@ -72,7 +72,7 @@
               
 
 
-                {% if current_user.is_authenticated and current_user.getType() == "admin" %}
+                {% if current_user.is_authenticated and current_user.type == "admin" %}
                  <li class="nav-item">
                     <a class="nav-link " href="/proposal_call" >Create Proposal</a>
                 </li>
