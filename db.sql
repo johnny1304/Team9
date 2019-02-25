@@ -17,21 +17,14 @@ CREATE TABLE Researcher(
 /*Education */
 DROP TABLE IF EXISTS Education;
 CREATE TABLE Education(
-<<<<<<< HEAD
-=======
 	ID int NOT NULL AUTO_INCREMENT,
->>>>>>> refine
 	ORCID int NOT NULL,
 	Degree varchar(255),Field varchar(255),
 	Institution varchar(255),
 	Location varchar(255),
-<<<<<<< HEAD
-	Year int
-=======
 	Year int,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Employment */
 DROP TABLE IF EXISTS Employment;
