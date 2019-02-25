@@ -55,8 +55,7 @@
                 </li>
                 {% endif %}
 
-
-                {% if current_user.is_authenticated %}
+                {% if current_user.is_authenticated and current_user.type == "Researcher" %}
                  <li class="nav-item">
                     <a class="nav-link " href="/proposals" >Proposals</a>
                 </li>

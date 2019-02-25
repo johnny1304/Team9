@@ -1,15 +1,17 @@
 import os
+from pathlib import Path
 import secrets
-
+import uuid
 from PIL import Image
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed
-from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField,FileField
-from wtforms.validators import InputRequired, Email, Length, length, DataRequired
+from flask_wtf.file import FileAllowed,FileField
+from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField
+from wtforms.validators import InputRequired, Email, Length, length, DataRequired, EqualTo
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 import smtplib
@@ -115,9 +117,13 @@ class Submission_Form(FlaskForm):
                                         validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
     lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
                                         validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
-    #pdf upload here
+    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
     submit = SubmitField('Submit')
+
+    validate = SubmitField('Validate form')
+
+    draft = SubmitField('Save Draft')
 
     def setPropId(self, propid):
         self.propid=propid
@@ -139,8 +145,10 @@ class Submissions(db.Model):
     lay = db.Column(db.Text,nullable=False)
     declaration = db.Column(db.Boolean,nullable=False)
     user = db.Column(db.String(20),nullable=False)
+    draft = db.Column(db.Boolean, nullable=False, default=True)
+    proposalPDF = db.Column(db.String(255),nullable=False)
 
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user):
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
         self.title=title
         self.propid=propid
         self.duration=duration
@@ -155,6 +163,12 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
+        self.proposalPDF=proposalPDF
+        self.draft=True
+
+
+    def setDraftFalse(self):
+        self.draft=False
 
 
 
@@ -215,14 +229,8 @@ class User(UserMixin, db.Model):
         self.phone_extension = phone_extension
         self.type = type
 
-    def getORCID(self):
+    def get_orcid(self):
         return self.orcid
-
-    def getType(self):
-        return self.type
-
-    def setType(self, type):
-        self.type = type
 
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
@@ -255,16 +263,23 @@ class UpdateInfoForm(FlaskForm):
 
 class RegisterForm(FlaskForm):
 	#this is the class for the register form in the sign_up.html
-	orcid = IntegerField('ORCID:', validators=[InputRequired()])
-	first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
-	last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
-	email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
-	password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80)])
-	job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
-	prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
-	suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
-	phone = IntegerField('Phone: ')
-	phone_extension = IntegerField('Phone Extension: ')
+    orcid = IntegerField('ORCID:', validators=[InputRequired()])
+    first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
+    last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
+    email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
+    password = PasswordField('Password:', validators=[InputRequired(), Length(min=8, max=80), EqualTo('confirm', message='Passwords must match')])
+    confirm = PasswordField('Repeat password')
+    job = StringField('Job: ', validators=[InputRequired(), Length(max=255)])
+    prefix = StringField('Prefix: ', validators=[InputRequired(), Length(max=20)])
+    suffix = StringField('Suffix: ', validators=[InputRequired(), Length(max=20)])
+    phone = IntegerField('Phone: ')
+    phone_extension = IntegerField('Phone Extension: ')
+
+class ManageForm(FlaskForm):
+    researcher = SelectField(u"User")
+    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
+    submit = SubmitField('Apply')
+
 
 #form for form creations
 class formCreationForm(FlaskForm):
@@ -327,33 +342,39 @@ def load_user(user_id):
     # this is a function that callsback the user by the user_id
     return User.query.get(int(user_id))
 
-def mail(content="", email="", password=""):
+
+def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    cur = mysql.get_db().cursor()
-    cur.execute("SELECT email FROM researchers")
-    rv = cur.fetchall()
+    
+	#cur = mysql.get_db().cursor()
+    #cur.execute("SELECT email FROM researchers")
+    #rv = cur.fetchall()
 	
     if not content:
-        content = "default text"
+        content = "Account made confirmation message"
     if not email:
-        email = "default email address"
+        email = "team9sendermail@gmail.com"
     if not password:
-        password = "default password"
+        password = "team9admin"
 	
     mail = smtplib.SMTP('smtp.gmail.com', 587)
-    mail.ehlo() #not a typo do not fix thanks
+    mail.ehlo()
     mail.starttls()
-    mail.login(email,password)
-    for email in rv:
-	    mail.sendmail('sender(me)', 'receiver', content)
+    mail.login(email, password)
+    #for email in rv:
+    mail.sendmail(email, receiver,content)
     mail.close()
 
 @app.route('/')
 @app.route('/home')
 def index():
-    # this route returns the home.html file
+    #if current_user.is_authenticated:
+    #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
+    #    updateType.type = "Admin"
+    #    db.session.commit()
+        # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
 
 
@@ -373,9 +394,9 @@ def signin():
             return redirect(url_for('signin'))
 
         # else logs in the user
-        if user.getType() == "Admin":
-            return redirect(url_for(''))
         login_user(user, remember=form.remember.data)
+        if user.type == "Admin":
+            return redirect(url_for('manage')) #returns the admin page
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('index'))
     return render_template('sign_in.html', form=form)
@@ -401,11 +422,13 @@ def signup():
         if not exist_orcid and not user:
             new_user = User(orcid=form.orcid.data, first_name=form.first_name.data, last_name=form.last_name.data,
                         email=form.email.data, job=form.job.data, prefix=form.prefix.data, suffix=form.suffix.data,
-                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password, type="Reasearcher")
+                        phone=form.phone.data, phone_extension=form.phone_extension.data, password=hashed_password, type="Researcher")
             # add the new user to the database
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
+			# send confirmation email
+            mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
         if user:
@@ -496,27 +519,107 @@ def submissions():
     form=Submission_Form()
     post=request.args.get("id")
     form.setPropId(post)
+    conn = mysql.connect
+    cur = conn.cursor()
+    previousFile=None
+    cur.execute(f"""
+                             SELECT *
+                             FROM Submission
+                             WHERE propid = {post} AND user='{current_user.orcid}';
+                             """)
+    for i in cur.fetchall():
+        print(i)
+        if i[15]==0:
+            return render_template("submitted.html")
+        form.propid=i[0]
+        form.title.data=i[2]
+        form.duration.data=i[3]
+        form.NRP.data=i[4]
+        form.legal_remit.data=i[5]
+        form.ethical_animal.data=i[6]
+        form.ethical_human.data=i[7]
+        form.location.data=i[8]
+        form.co_applicants.data=i[9]
+        form.collaborators.data=i[10]
+        form.scientific_abstract.data=i[11]
+        form.lay_abstract.data=i[12]
+        form.declaration.data=i[13]
+        previousFile=i[16]
 
-    print("66666")
+
+
+    cur.close()
+    conn.close()
+
 
     if form.validate_on_submit():
-        print("here")
-        new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
-                                   NRP=form.NRP.data,legal=form.legal_remit.data,
-                                   ethicalAnimal=form.ethical_animal.data,
-                                   ethicalHuman=form.ethical_human.data,
-                                   location=form.location.data,
-                                   coapplicants=form.co_applicants.data,
-                                   collaborators=form.collaborators.data,
-                                   scientific=form.scientific_abstract.data,
-                                   lay=form.lay_abstract.data,
-                                   declaration=form.declaration.data,
-                                   user=current_user
-                                   )
-        db.session.add(new_submission)
-        db.session.commit()
-        flash("successfully submitted")
-        return redirect(url_for("submissions",id=form.propid))
+        if form.validate.data:
+            flash("Input Successfully Validated")
+        elif form.draft.data:
+            filenamesecret=previousFile
+            if form.proposalPDF.data != None:
+                filenamesecret = uuid.uuid4().hex
+                while True:
+                    filecheck = Path(f"uploads/{filenamesecret}")
+                    if filecheck.is_file():
+                        filenamesecret = uuid.uuid4().hex
+                    else:
+                        break
+                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                if previousFile!=None:
+                    os.remove(f"uploads/{previousFile}")
+
+
+
+            new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
+                                       NRP=form.NRP.data,legal=form.legal_remit.data,
+                                       ethicalAnimal=form.ethical_animal.data,
+                                       ethicalHuman=form.ethical_human.data,
+                                       location=form.location.data,
+                                       coapplicants=form.co_applicants.data,
+                                       collaborators=form.collaborators.data,
+                                       scientific=form.scientific_abstract.data,
+                                       lay=form.lay_abstract.data,
+                                       declaration=form.declaration.data,
+                                       user=f"{current_user.orcid}",
+                                       proposalPDF=f"{filenamesecret}"
+                                       )
+            db.session.add(new_submission)
+            db.session.commit()
+            flash("successfully Saved Draft")
+            return redirect(url_for("submissions",id=form.propid,sub=sub))
+        elif form.submit.data:
+            filenamesecret = previousFile
+            if form.proposalPDF.data!=None:
+                while True:
+                    filecheck=Path(f"uploads/{filenamesecret}")
+                    if filecheck.is_file():
+                        filenamesecret = uuid.uuid4().hex
+                    else:
+                        break
+                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                os.remove(f"uploads/{previousFile}")
+
+
+            new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
+                                         NRP=form.NRP.data, legal=form.legal_remit.data,
+                                         ethicalAnimal=form.ethical_animal.data,
+                                         ethicalHuman=form.ethical_human.data,
+                                         location=form.location.data,
+                                         coapplicants=form.co_applicants.data,
+                                         collaborators=form.collaborators.data,
+                                         scientific=form.scientific_abstract.data,
+                                         lay=form.lay_abstract.data,
+                                         declaration=form.declaration.data,
+                                         user=f"{current_user.orcid}",
+                                         proposalPDF=f"{filenamesecret}"
+                                         )
+            new_submission.setDraftFalse()
+            db.session.add(new_submission)
+            db.session.commit()
+            flash("successfully submitted")
+            return redirect(url_for("submissions", id=form.propid, sub=sub))
+
 
     conn = mysql.connect
     cur = conn.cursor()
@@ -1002,6 +1105,35 @@ def profile():
 def logout():
     logout_user()  # logs the user out
     return redirect(url_for('index'))  # or return a log out page
+
+@app.route('/submitted')
+@login_required
+def submitted():
+    return render_template('submitted.html')
+
+@app.route('/manage', methods=['GET', 'POST'])
+@login_required
+def manage():
+    form = ManageForm()
+    if current_user.type == "Admin":
+        if form.validate_on_submit():
+            researcher = User.query.filter_by(orcid=form.researcher.data).first()
+            newRole = form.role.data
+            if researcher.orcid == current_user.orcid:
+                flash("You can't change your own role unfortunately", category="unauthorised")
+                return redirect(url_for('manage'))
+            if researcher.type == "Admin":
+                flash("You can't change another admin's role", category="unauthorised")
+                return redirect(url_for('manage'))
+            researcher.type = newRole
+            db.session.commit()
+            flash("Role have been updated", category="success")
+            return redirect(url_for('manage'))
+
+        return render_template('manage.html', form=form, researchers=researchers)
+    else:
+        flash("You need to be an admin to manage others.", category="unauthorised")
+        return redirect(url_for('manage'))
 
 
 if __name__ == "__main__":

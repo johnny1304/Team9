@@ -116,6 +116,12 @@
       </div>
 
       <div class="form-group col-lg-12">
+          <b>{{ form.proposalPDF.label }}</b><br>
+          {{form.proposalPDF}}
+
+      </div>
+
+      <div class="form-group col-lg-12">
           <p><i>Submission of an application confirms acceptance of and agreement with the SFI Terms and Conditions of
               Research Grants; that the applicant meets eligibility requirements; that the project is in full agreement
               with all legal and regulatory matters governing research in Ireland; that no aspect of this project is
@@ -124,7 +130,12 @@
           {{ form.declaration }}
 
       </div >
-          <div class="form-group col-lg-12">
+
+          <div class="form-group col-lg-4">{{ form.draft }}</div>
+
+          <div class="form-group col-lg-4">{{ form.validate }}</div>
+
+          <div class="form-group col-lg-4">
               {{ form.submit }}
           </div>
 

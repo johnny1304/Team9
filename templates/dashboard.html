@@ -5,14 +5,14 @@
 <br><br><br>
 
 <div class="container-fluid text-center bg-grey">
-    <h4>Your Dashboard</h4>
+    <h4>Hi {{current_user.first_name}}, this is your Dashboard</h4>
     <br>
     <div class="row text-center">
       <div class="col-sm-4">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
           <p><strong>Applications Pending Action</strong></p>
-          <p>0</p> 
+          <p>{{}}</p> 
         </div>
       </div>
       <div class="col-sm-4">
