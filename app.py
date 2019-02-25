@@ -1,17 +1,15 @@
 import os
-from pathlib import Path
 import secrets
-import uuid
+
 from PIL import Image
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed,FileField
+from flask_wtf.file import FileAllowed
 from wtforms import StringField, PasswordField, BooleanField, IntegerField, DateField, SelectField, SubmitField, TextAreaField, FileField
 from wtforms.validators import InputRequired, Email, Length, length, DataRequired, EqualTo
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
 import smtplib
@@ -51,6 +49,7 @@ class proposalForm(FlaskForm):
 
 
 class Proposal(db.Model):
+    __tablename__ = "Proposal"
     Deadline = db.Column(db.Date, nullable=False)
     title = db.Column(db.String(100),nullable=False)
     TextOfCall = db.Column(db.String(1000), nullable=False)
@@ -61,7 +60,7 @@ class Proposal(db.Model):
     TimeFrame = db.Column(db.String(200), nullable=False)
     picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-
+    team = db.relationship('Team', backref="Proposal")
 
     def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
@@ -117,7 +116,7 @@ class Submission_Form(FlaskForm):
                                         validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
     lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
                                         validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
-    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
+    #pdf upload here
     declaration = BooleanField('Agree?', validators=[DataRequired(), ])
     submit = SubmitField('Submit')
 
@@ -144,11 +143,10 @@ class Submissions(db.Model):
     scientific = db.Column(db.Text,nullable=False)
     lay = db.Column(db.Text,nullable=False)
     declaration = db.Column(db.Boolean,nullable=False)
-    user = db.Column(db.String(20),nullable=False)
+    user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
     draft = db.Column(db.Boolean, nullable=False, default=True)
-    proposalPDF = db.Column(db.String(255),nullable=False)
 
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user):
         self.title=title
         self.propid=propid
         self.duration=duration
@@ -163,7 +161,6 @@ class Submissions(db.Model):
         self.lay=lay
         self.declaration=declaration
         self.user=user
-        self.proposalPDF=proposalPDF
         self.draft=True
 
 
@@ -182,7 +179,7 @@ class Funding(db.Model):
     FundingProgramme = db.Column(db.String(255), nullable=False)
     Stats = db.Column(db.String(255), nullable=False)
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
-    orcid =db.Column(db.String(255), nullable=False)
+    orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
 
     def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
@@ -214,6 +211,20 @@ class User(UserMixin, db.Model):
     phone = db.Column('phone', db.Integer)
     phone_extension = db.Column('PhoneExtension', db.Integer)
     type = db.Column('Type', db.String(20))
+    education = db.relationship('Education', backref='Researcher')
+    employment = db.relationship('Employment', backref='Researcher')
+    societies = db.relationship('Societies', backref='Researcher')
+    awards = db.relationship('Awards', backref='Researcher')
+    funding = db.relationship('Funding', backref='Researcher')
+    team_members = db.relationship('TeamMembers', backref='Researcher')
+    impacts = db.relationship('Impacts', backref='Researcher')
+    inno_and_comm = db.relationship('InnovationAndCommercialisation', backref='Researcher')
+    publications = db.relationship('Publications', backref='Researcher')
+    presentations = db.relationship('Presentations', backref='Researcher')
+    collab = db.relationship('Collaborations', backref='Researcher')
+    organised_events = db.relationship('OrganisedEvents', backref='Researcher')
+    edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
+    submission = db.relationship('Submissions', backref='Researcher')
 
     def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
         # this initialises the class and maps the variables to the table (done by flask automatically)
@@ -235,6 +246,145 @@ class User(UserMixin, db.Model):
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
         return self.orcid
+
+class Education(db.Model):
+    __tablename__ = "Education"
+    id = db.Column(db.Integer, primary_key=True)
+    degree = db.Column('Degree', db.String(255))
+    field = db.Column('Field', db.String(255))
+    institution = db.Column('Institution', db.String(255))
+    location = db.Column('Location', db.String(255))
+    year = db.Column('Year', db.Integer)
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class Employment(db.Model):
+    __tablename__ = "Employment"
+    id = db.Column(db.Integer, primary_key=True)
+    company = db.Column('Company', db.String(255))
+    location = db.Column('Location', db.String(255))
+    years = db.Column('Years', db.Integer)
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class Societies(db.Model):
+    __tablename__ = "Societies"
+    id = db.Column(db.Integer, primary_key=True)
+    start_date = db.Column('StartDate', db.Date)
+    end_date = db.Column('EndDate', db.Date)
+    society = db.Column('Society', db.String(255))
+    membership = db.Column('Membership', db.String(255))
+    status = db.Column('Status', db.String(20))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class Awards(db.Model):
+    __tablename__ = "Awards"
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column('Year', db.Integer)
+    award_body = db.Column('AwardingBody', db.String(255))
+    details = db.Column('Details', db.String(255))
+    team_member = db.Column('TeamMember', db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class TeamMembers(db.Model):
+    __tablename__ = "TeamMembers"
+    id = db.Column(db.Integer, primary_key=True)
+    start_date = db.Column("StartDate", db.Date)
+    departure_date = db.Column("DepartureDate", db.Date)
+    name = db.Column("Name", db.String(255))
+    position = db.Column("position", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+    team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
+
+class Team(db.Model):
+    __tablename__ = "Team"
+    team_id = db.Column("TeamID", db.Integer, primary_key=True)
+    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
+    propasal_id = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
+
+class Impacts(db.Model):
+    __tablename__ = "Impacts"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column("Title", db.String(255))
+    category = db.Column("Category", db.String(255))
+    primary_beneficiary = db.Column("PrimaryBeneficiary", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class InnovationAndCommercialisation(db.Model):
+    __tablename__ = "InnovationAndCommercialisation"
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column("Year", db.Integer)
+    type = db.Column("Type", db.String(255))
+    title = db.Column("Title", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255), nullable=False)
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class Publications(db.Model):
+    __tablename__ = "Publications"
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column("Year", db.Integer)
+    type = db.Column("Type", db.String(255))
+    title = db.Column("Title", db.String(255))
+    name = db.Column("Name", db.String(255))
+    status = db.Column("Status", db.String(255))
+    doi = db.Column("DOI", db.String(255), primary_key=True)
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class Presentations(db.Model):
+    __tablename__ = "Presentations"
+    id = db.Column(db.Integer, primary_key=True)
+    year = db.Column("Year", db.Integer)
+    title = db.Column("Title", db.String(255))
+    type = db.Column("Type", db.String(255))
+    conference = db.Column("Conference", db.String(255))
+    invited_seminar = db.Column("InvitedSeminar", db.String(255))
+    keynote = db.Column("Keynote", db.String(255))
+    organising_body = db.Column("OrganisingBody", db.String(255))
+    location = db.Column("Location", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class Collaborations(db.Model):
+    __tablename__ = "Collaborations"
+    id = db.Column(db.Integer, primary_key=True)
+    start_date = db.Column("StartDate", db.Date)
+    end_date = db.Column("EndDate", db.Date)
+    institution = db.Column("Institution", db.String(255))
+    department = db.Column("Department", db.String(255))
+    location = db.Column("Location", db.String(255))
+    name_collaborator = db.Column("NameCollaborator", db.String(255))
+    primary_goal = db.Column("PrimaryGoal", db.String(255))
+    frequency_of_interaction = db.Column("FrequencyOfInteraction", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    academic = db.Column("Academic", db.Boolean)
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class OrganisedEvents(db.Model):
+    __tablename__ = "OrganisedEvents"
+    id = db.Column(db.Integer, primary_key=True)
+    start_date = db.Column("StartDate", db.Date)
+    end_date = db.Column("EndDate", db.Date)
+    title = db.Column("Title", db.String(255))
+    type = db.Column("Type", db.String(255))
+    role = db.Column("Role", db.String(255))
+    location = db.Column("Location", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+class EducationAndPublicEngagement(db.Model):
+    __tablename__ = "EducationAndPublicEngagement"
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column("Name", db.String(255))
+    start_date = db.Column("StartDate", db.Date)
+    end_date = db.Column("EndDate", db.Date)
+    activity = db.Column("Activity", db.String(255))
+    topic = db.Column("Topic", db.String(255))
+    target_area = db.Column("TargetArea", db.String(255))
+    primary_attribution = db.Column("PrimaryAttribution", db.String(255))
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+
 
 
 # Below are the form classes that inherit the FlaskForm class.
@@ -262,7 +412,7 @@ class UpdateInfoForm(FlaskForm):
 
 
 class RegisterForm(FlaskForm):
-	#this is the class for the register form in the sign_up.html
+    #this is the class for the register form in the sign_up.html
     orcid = IntegerField('ORCID:', validators=[InputRequired()])
     first_name = StringField('First Name:', validators=[InputRequired(), Length(max=20)])
     last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
@@ -276,7 +426,7 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField(u"User")
+    researcher = SelectField(u"User") 
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -347,16 +497,16 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
-	
     if not content:
         content = "Account made confirmation message"
     if not email:
         email = "team9sendermail@gmail.com"
     if not password:
+        password = "default password"
+    
         password = "team9admin"
 	
     mail = smtplib.SMTP('smtp.gmail.com', 587)
@@ -444,7 +594,9 @@ def signup():
 @login_required
 def dashboard():
     # return the dashboard html file with the user passed to it
-    return render_template('dashboard.html', user=current_user)
+    applications = Submissions.query.filter_by(ORCID=current_user.orcid).all()
+    print(application.length())
+    return render_template('dashboard.html', user=current_user, applications=applications)
 
 
 # @app.route('/edit')
@@ -521,17 +673,16 @@ def submissions():
     form.setPropId(post)
     conn = mysql.connect
     cur = conn.cursor()
-    previousFile=None
     cur.execute(f"""
                              SELECT *
                              FROM Submission
                              WHERE propid = {post} AND user='{current_user.orcid}';
                              """)
+    lst=[]
     for i in cur.fetchall():
-        print(i)
         if i[15]==0:
             return render_template("submitted.html")
-        form.propid=i[0]
+        form.propid=i[1]
         form.title.data=i[2]
         form.duration.data=i[3]
         form.NRP.data=i[4]
@@ -544,10 +695,10 @@ def submissions():
         form.scientific_abstract.data=i[11]
         form.lay_abstract.data=i[12]
         form.declaration.data=i[13]
-        previousFile=i[16]
 
-
-
+    #form.title.data=lst[0]
+    #form.duration.data=lst[1]
+    #form
     cur.close()
     conn.close()
 
@@ -556,21 +707,6 @@ def submissions():
         if form.validate.data:
             flash("Input Successfully Validated")
         elif form.draft.data:
-            filenamesecret=previousFile
-            if form.proposalPDF.data != None:
-                filenamesecret = uuid.uuid4().hex
-                while True:
-                    filecheck = Path(f"uploads/{filenamesecret}")
-                    if filecheck.is_file():
-                        filenamesecret = uuid.uuid4().hex
-                    else:
-                        break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
-                if previousFile!=None:
-                    os.remove(f"uploads/{previousFile}")
-
-
-
             new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
                                        NRP=form.NRP.data,legal=form.legal_remit.data,
                                        ethicalAnimal=form.ethical_animal.data,
@@ -581,26 +717,13 @@ def submissions():
                                        scientific=form.scientific_abstract.data,
                                        lay=form.lay_abstract.data,
                                        declaration=form.declaration.data,
-                                       user=f"{current_user.orcid}",
-                                       proposalPDF=f"{filenamesecret}"
+                                       user=f"{current_user.orcid}"
                                        )
             db.session.add(new_submission)
             db.session.commit()
-            flash("successfully Saved Draft")
+            flash("successfully submitted")
             return redirect(url_for("submissions",id=form.propid,sub=sub))
         elif form.submit.data:
-            filenamesecret = previousFile
-            if form.proposalPDF.data!=None:
-                while True:
-                    filecheck=Path(f"uploads/{filenamesecret}")
-                    if filecheck.is_file():
-                        filenamesecret = uuid.uuid4().hex
-                    else:
-                        break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
-                os.remove(f"uploads/{previousFile}")
-
-
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
                                          NRP=form.NRP.data, legal=form.legal_remit.data,
                                          ethicalAnimal=form.ethical_animal.data,
@@ -612,7 +735,6 @@ def submissions():
                                          lay=form.lay_abstract.data,
                                          declaration=form.declaration.data,
                                          user=f"{current_user.orcid}",
-                                         proposalPDF=f"{filenamesecret}"
                                          )
             new_submission.setDraftFalse()
             db.session.add(new_submission)
@@ -1120,6 +1242,13 @@ def submitted():
 def manage():
     form = ManageForm()
     if current_user.type == "Admin":
+        researchers = []
+        all_users = User.query.all()
+        for each in all_users:
+            if each.type != "Admin":
+                researchers.append(each)
+        form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
+
         if form.validate_on_submit():
             researcher = User.query.filter_by(orcid=form.researcher.data).first()
             newRole = form.role.data
