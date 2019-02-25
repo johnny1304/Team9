@@ -12,7 +12,8 @@
     <title>Home</title>
   </head>
   <body style="background-color:#f2f2f2 ; width:100% !important;">
- 
+      <script text="text/javascript" src="{{url_for('static', filename='particles.js')}}"></script>
+      <script text="text/javascript" src="{{url_for('static', filename='app.js')}}"></script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -90,13 +91,13 @@
                     <button class="btn btn-outline-light my-2 my-sm-0" style="background-color:green" type="submit">Search</button>
                     
             </form>-->
-            <ul class="navbar-nav mr-auto d-none d-lg-block d-xl-block ">
-            <li class="nav-item dropdown float-right">
-                    <a class="nav-link dropdown-toggle " style="padding-left: 35em; " href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <ul class="navbar-nav mr-auto d-none d-lg-block d-xl-block  " style="padding-left: 25em;">
+            <li class="nav-item dropdown float-right" >
+                    <a class="nav-link dropdown-toggle "   href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             <img class='d-none d-lg-block d-xl-block 'src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50" />
                     </a>
                     {% if not current_user.is_authenticated %}
-                    <div class="dropdown-menu" >
+                    <div class="dropdown-menu" ">
                       <a class="dropdown-item" href="/sign_in">Sign In</a>
                     </div>
                     {% endif %}
