@@ -45,7 +45,7 @@
                 </li>
                 {% endif %}
 
-                {% if not current_user.is_authenticated %}
+                {% if not current_user.type == "admin" %}
                 <li class="nav-item">
                     <a class="nav-link " href="/sign_up" >Sign Up</a>
                 </li>
