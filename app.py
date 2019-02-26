@@ -59,7 +59,6 @@ class Proposal(db.Model):
     TimeFrame = db.Column(db.String(200), nullable=False)
     picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    team = db.relationship('Team', backref="Proposal")
 
     def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
@@ -673,11 +672,7 @@ def submissions():
     conn = mysql.connect
     cur = conn.cursor()
     previousFile=None
-    cur.execute(f"""
-                             SELECT *
-                             FROM Submission
-                             WHERE propid = {post} AND user='{current_user.orcid}';
-                             """)
+    cur.execute(f"""SELECT * FROM Submission WHERE propid = {post} AND user='{current_user.orcid}';""")
     for i in cur.fetchall():
         print(i)
         if i[15]==0:
