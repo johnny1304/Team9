@@ -44,15 +44,15 @@
            {% block form %}
            <div class="card " style="width: 18rem;">
                 <ul class="list-group list-group-flush">
-                  <li class="list-group-item">First Name: {{ data[0]}}</li>
-                  <li class="list-group-item">Last Name: {{ data[1]}}</li>
-                  <li class="list-group-item">Occupation: {{ data[2]}}</li>
-                  <li class="list-group-item">Prefix: {{ data[3]}}</li>
-                  <li class="list-group-item">Suffix: {{ data[4]}}</li>
-                  <li class="list-group-item">Phone Number: {{ data[5]}}</li>
-                  <li class="list-group-item">Phone Extenstion: {{ data[6]}}</li>
-                  <li class="list-group-item">Email: {{ data[7]}}</li>
-                  <li class="list-group-item">ORCID:{{ data[8]}}</li>
+                  <li class="list-group-item">First Name: {{current_user.first_name}}</li>
+                  <li class="list-group-item">Last Name: {{current_user.last_name}}</li>
+                  <li class="list-group-item">Occupation: {{current_user.job}}</li>
+                  <li class="list-group-item">Prefix: {{current_user.prefix}}</li>
+                  <li class="list-group-item">Suffix: {{current_user.suffix}}</li>
+                  <li class="list-group-item">Phone Number: {{current_user.phone}}</li>
+                  <li class="list-group-item">Phone Extenstion: {{current_user.phone_extension}}</li>
+                  <li class="list-group-item">Email: {{current_user.email}}</li>
+                  <li class="list-group-item">ORCID:{{current_user.orcid}}</li>
                 </ul>
                 
             </div>
