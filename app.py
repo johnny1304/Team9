@@ -20,7 +20,7 @@ import smtplib
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_test'  # set the database directory
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -528,12 +528,6 @@ def index():
     #    updateType.type = "Admin"
     #    db.session.commit()
         # this route returns the home.html file
-    conn = mysql.connect
-    cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS Submission;")
-    conn.commit()
-    cur.close()
-    conn.close()
     return render_template("/home.html")  # directs to the index.html
 
 
@@ -601,7 +595,6 @@ def signup():
 def dashboard():
     # return the dashboard html file with the user passed to it
     applications = Submissions.query.filter_by(user=current_user.orcid).all()
-    print(len(applications))
     return render_template('dashboard.html', user=current_user, applications=applications)
 
 
@@ -871,11 +864,11 @@ def proposal_call():
 def generalInfo():
     #Creates proposal form
     form = UpdateInfoForm(request.form)
-    conn = mysql.connect
-    cur= conn.cursor()
+    #conn = mysql.connect
+    #cur= conn.cursor()
             # execute a query
-    cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
-    data = cur.fetchone()
+    #cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
+    #data = cur.fetchone()
 
     #checks if form is submitted by post
     if request.method == 'POST':
@@ -888,26 +881,28 @@ def generalInfo():
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
                # Image.open(picture_file)
-            first_name = form.first_name.data
-            last_name = form.last_name.data
-            email = form.email.data
-            job = form.job.data
-            prefix = form.prefix.data
-            suffix = form.suffix.data
-            phone = form.phone.data
-            phone_extension = form.phone_extension.data
+            current_user.first_name = form.first_name.data
+            current_user.last_name = form.last_name.data
+            current_user.email = form.email.data
+            current_user.job = form.job.data
+            current_user.prefix = form.prefix.data
+            current_user.suffix = form.suffix.data
+            current_user.phone = form.phone.data
+            current_user.phone_extension = form.phone_extension.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            db.session.commit()
+
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
-                    Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
+            #        Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
 
-    return render_template('generalInfo.html', form=form, data=data)
+    return render_template('generalInfo.html', form=form)
 
 
 @app.route('/educationInfo', methods=['GET', 'POST'])
