@@ -66,6 +66,7 @@ class Proposal(db.Model):
     TimeFrame = db.Column(db.String(200), nullable=False)
     picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    team = db.relationship('Team', backref="Proposal")
 
     def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
@@ -466,7 +467,7 @@ class EmploymentForm(FlaskForm):
 	submit = SubmitField('Edit')
 
 class SocietiesForm(FlaskForm):
-
+	
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -504,11 +505,11 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    
+
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
-	
+
     if not content:
         content = "Account made confirmation message"
     if not email:
@@ -535,6 +536,9 @@ def index():
     #    db.session.commit()
         # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
+
+
+
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
@@ -681,7 +685,6 @@ def submissions():
     previousFile=None
     cur.execute(f"""SELECT * FROM Submission WHERE propid = {post} AND user='{current_user.orcid}';""")
     for i in cur.fetchall():
-        print(i)
         if i[15]==0:
             return render_template("submitted.html")
         form.propid=i[0]
@@ -1183,7 +1186,7 @@ def awardsInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-
+    
     return render_template('awardsInfo.html', form=form, data=data)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
