@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
+from flask_dropzone import Dropzone
 import smtplib
 
 
@@ -26,6 +27,12 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
+
+dropzone = Dropzone(app)
+#drag and drop file upload settings
+app.config['DROPZONE_MAX_FILE_SIZE'] = 20
+app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
+app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.pdf'
 
 #setup for proposal call form
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
