@@ -3,7 +3,7 @@ from pathlib import Path
 import secrets
 import uuid
 from PIL import Image
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request,send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed,FileField
@@ -805,6 +805,13 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
+@app.route('/download')
+@login_required
+def download():
+    filename=request.args.get("file")
+    dir="uploads"
+    return send_from_directory(dir,filename,as_attachment=True)
 
 @app.route('/external_review',methods=['GET','POST'])
 @login_required
