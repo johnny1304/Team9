@@ -827,6 +827,8 @@ def download():
 @login_required
 def external_review():
     file=request.args.get("file")
+    if file==None:
+        return redirect(url_for("index"))
     return render_template('external_review.html',file=file)
 
 @app.route('/proposal_call', methods=['GET', 'POST'])
