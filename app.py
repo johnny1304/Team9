@@ -811,6 +811,12 @@ def save_picture(form_picture):
 
     return picture_fn
 
+@app.route('/external_review',methods=['GET','POST'])
+@login_required
+def external_review():
+    file=request.args.get("file")
+    return render_template('external_review.html',file=file)
+
 @app.route('/proposal_call', methods=['GET', 'POST'])
 @login_required
 def proposal_call():

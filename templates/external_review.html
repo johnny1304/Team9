@@ -1,6 +1,9 @@
 {% extends 'layout.html' %}
 {% block content%}
     <body style="margin-top:20em">
-        <a href="uploads/CA3.pdf" download> CV download</a>
+    <div style="margin:10em">
+        <h3>Paper for Review</h3>
+        <a href="uploads/{{file}}}" download> Paper for review</a>
+    </div>
     </body>
 {% endblock %}
