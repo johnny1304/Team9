@@ -59,7 +59,6 @@ class Proposal(db.Model):
     TimeFrame = db.Column(db.String(200), nullable=False)
     picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    team = db.relationship('Team', backref="Proposal")
 
     def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
@@ -145,8 +144,9 @@ class Submissions(db.Model):
     user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
     draft = db.Column(db.Boolean, nullable=False, default=True)
     proposalPDF = db.Column(db.String(255),nullable=False)
+    status = db.Column(db.String(255), default="pending")
 
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF,status):
         self.title=title
         self.propid=propid
         self.duration=duration
@@ -163,12 +163,11 @@ class Submissions(db.Model):
         self.user=user
         self.proposalPDF=proposalPDF
         self.draft=True
+        self.status = status
 
 
     def setDraftFalse(self):
         self.draft=False
-
-
 
 
 class Funding(db.Model):
@@ -290,7 +289,6 @@ class TeamMembers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_date = db.Column("StartDate", db.Date)
     departure_date = db.Column("DepartureDate", db.Date)
-    name = db.Column("Name", db.String(255))
     position = db.Column("position", db.String(255))
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
@@ -300,7 +298,7 @@ class Team(db.Model):
     __tablename__ = "Team"
     team_id = db.Column("TeamID", db.Integer, primary_key=True)
     team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    propasal_id = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
+    submssion_id = db.Column("SubmissionID", db.Integer, db.ForeignKey('Submission.id'))
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -1247,17 +1245,7 @@ def unauthorized_callback():
 @app.route('/profile')
 @login_required
 def profile():
-
-    conn = mysql.connect
-    cur= conn.cursor()
-            # execute a query
-
-    cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
-    data = cur.fetchone()
-
-
-
-    return render_template('profile.html', data=data)
+    return render_template('profile.html')
 
 @app.route('/logout')
 @login_required
