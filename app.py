@@ -523,17 +523,17 @@ def mail(receiver, content="", email="", password=""):
 @app.route('/')
 @app.route('/home')
 def index():
-    #if current_user.is_authenticated:
-    #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
-    #    updateType.type = "Admin"
-    #    db.session.commit()
+    if current_user.is_authenticated:
+       updateType = User.query.filter_by(orcid=current_user.orcid).first()
+       updateType.type = "Admin"
+       db.session.commit()
         # this route returns the home.html file
-    conn = mysql.connect
-    cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS Submission;")
-    conn.commit()
-    cur.close()
-    conn.close()
+    #conn = mysql.connect
+    #cur = conn.cursor()
+    #cur.execute("DROP TABLE IF EXISTS Submission;")
+    #conn.commit()
+    #cur.close()
+    #conn.close()
     return render_template("/home.html")  # directs to the index.html
 
 
