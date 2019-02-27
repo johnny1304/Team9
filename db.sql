@@ -249,3 +249,14 @@ CREATE TABLE ExternalReview (
   FOREIGN KEY (reviewer) REFERENCES Researcher (ORCID),
   FOREIGN KEY  (Submission) REFERENCES Submission (subid)
 );
+
+DROP TABLE IF EXISTS Report;
+CREATE TABLE Report (
+  id INT NOT NULL AUTO_INCREMENT,
+  title varchar(255),
+  pdf varchar(255),
+  type varchar(255),
+  ORCID INT NOT NULL,
+  PRIMARY KEY (id),
+  FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
+);
