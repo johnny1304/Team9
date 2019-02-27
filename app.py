@@ -3,7 +3,7 @@ from pathlib import Path
 import secrets
 import uuid
 from PIL import Image
-from flask import Flask, render_template, redirect, url_for, flash, request,send_from_directory
+from flask import Flask, render_template, redirect, url_for, flash, request,send_file,send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed,FileField
@@ -21,7 +21,7 @@ import smtplib
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -38,9 +38,11 @@ app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.pdf'
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
 app.config["MYSQL_USER"] = "seintu"
 app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_project"
+app.config["MYSQL_DB"] = "seintu_project2"
 mysql = MySQL(app)
 mysql.init_app(app)
+
+
 
 class proposalForm(FlaskForm):
     title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
@@ -232,6 +234,7 @@ class User(UserMixin, db.Model):
     organised_events = db.relationship('OrganisedEvents', backref='Researcher')
     edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
     submission = db.relationship('Submissions', backref='Researcher')
+    ExternalReview = db.relationship('ExternalReview',backref='Researcher')
 
     def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
         # this initialises the class and maps the variables to the table (done by flask automatically)
@@ -253,6 +256,20 @@ class User(UserMixin, db.Model):
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
         return self.orcid
+
+class ExternalReview(db.Model):
+    __tablename__="ExternalReview"
+    id=db.Column(db.Integer,primary_key=True,nullable=False)
+    Submission=db.Column(db.Integer,db.ForeignKey('Submission.subid'),nullable=False)
+    reviewer=db.Column(db.Integer,db.ForeignKey('Researcher.orcid'),nullable=False)
+    Complete=db.Column(db.Boolean,default=False,nullable=False)
+    review=db.Column(db.String(255),nullable=False)
+
+    def __init__(self,Submission,reviewer,Complete,review):
+        self.Submission=Submission
+        self.reviewer=reviewer
+        self.Complete=Complete
+        self.review=review
 
 class Education(db.Model):
     __tablename__ = "Education"
@@ -405,7 +422,7 @@ class LoginForm(FlaskForm):
 class UpdateInfoForm(FlaskForm):
 
 
-    #this is the class for the register form in the sign_up.html
+	#this is the class for the register form in the sign_up.html
     first_name = StringField('First Name:'  , validators=[InputRequired(), Length(max=20)])
     last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
     email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
@@ -450,19 +467,19 @@ class formCreationForm(FlaskForm):
 
 class EducationForm(FlaskForm):
 
-    degree = StringField('Degree:', validators=[ Length(max=50)])
-    institution = StringField('Institution:', validators=[ Length(max=50)])
-    location = StringField('Locations:', validators=[Length(max=50)])
-    year = IntegerField('Year ' )
-    submit = SubmitField('Edit')
+	degree = StringField('Degree:', validators=[ Length(max=50)])
+	institution = StringField('Institution:', validators=[ Length(max=50)])
+	location = StringField('Locations:', validators=[Length(max=50)])
+	year = IntegerField('Year ' )
+	submit = SubmitField('Edit')
 
 
 class EmploymentForm(FlaskForm):
 
-    company = StringField('Company:', validators=[ Length(max=50)])
-    location = StringField('Location:', validators=[ Length(max=50)])
-    years = IntegerField('Years:')
-    submit = SubmitField('Edit')
+	company = StringField('Company:', validators=[ Length(max=50)])
+	location = StringField('Location:', validators=[ Length(max=50)])
+	years = IntegerField('Years:')
+	submit = SubmitField('Edit')
 
 class SocietiesForm(FlaskForm):
 	
@@ -475,11 +492,11 @@ class SocietiesForm(FlaskForm):
 
 class AwardsForm(FlaskForm):
 
-    year = IntegerField('Year:')
-    awardingBody = StringField('Awarding Body:', validators=[ Length(max=50)])
-    details = StringField('Detail:', validators=[Length(max=50)])
-    team_member = StringField('Team Member ', validators=[Length(max=50)])
-    submit = SubmitField('Edit')
+	year = IntegerField('Year:')
+	awardingBody = StringField('Awarding Body:', validators=[ Length(max=50)])
+	details = StringField('Detail:', validators=[Length(max=50)])
+	team_member = StringField('Team Member ', validators=[Length(max=50)])
+	submit = SubmitField('Edit')
 
 class TeamMembersForm(FlaskForm):
 
@@ -489,6 +506,11 @@ class TeamMembersForm(FlaskForm):
     position = StringField('Position:',validators=[ Length(max=50)])
     primary_attribution = StringField('Primary Attribution:',validators=[ Length(max=20)])
     submit = SubmitField('Edit')
+
+class ExternalReviewForm(FlaskForm):
+
+    pdfReview=FileField('PDF of Review',validators=[InputRequired()])
+    submit = SubmitField('submit')
 
 
 
@@ -514,7 +536,7 @@ def mail(receiver, content="", email="", password=""):
         password = "default password"
 
         password = "team9admin"
-    
+	
     mail = smtplib.SMTP('smtp.gmail.com', 587)
     mail.ehlo()
     mail.starttls()
@@ -526,15 +548,12 @@ def mail(receiver, content="", email="", password=""):
 @app.route('/')
 @app.route('/home')
 def index():
-    #if current_user.is_authenticated:
-    #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
-    #    updateType.type = "Admin"
-    #    db.session.commit()
+    if current_user.is_authenticated:
+        updateType = User.query.filter_by(orcid=current_user.orcid).first()
+        updateType.type = "Admin"
+        db.session.commit()
         # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
-
-
-
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
@@ -583,7 +602,7 @@ def signup():
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
-            # send confirmation email
+			# send confirmation email
             mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
@@ -618,7 +637,7 @@ def create_submission_page():
 
     cur.execute("""
                 SELECT *
-                FROM Proposals;
+                FROM Proposal;
                 """)
     for i in cur.fetchall():
         post={}
@@ -648,21 +667,22 @@ def proposals():
 
     cur.execute("""
                  SELECT *
-                 FROM Proposals;
+                 FROM Proposal;
                  """)
     for i in cur.fetchall():
         post = {}
-        post["id"] = i[0]
-        post["deadline"] = i[1]
+        print(i)
+        post["id"] = i[9]
+        post["deadline"] = i[0]
         post["text"] = i[2]
         post["audience"] = i[3]
         post["eligibility"] = i[4]
         post["duration"] = i[5]
         post["guidelines"] = i[6]
         post["timeframe"] = i[7]
-        post["title"] = i[9]
+        post["title"] = i[1]
         posts.append(post)
-    conn.commit()
+    #conn.commit()
 
     cur.close()
     conn.close()
@@ -779,8 +799,8 @@ def submissions():
     cur = conn.cursor()
     cur.execute(f"""
                          SELECT *
-                         FROM Proposals
-                         WHERE proposalID = {post};
+                         FROM Proposal
+                         WHERE ID = {post};
                          """)
     i = cur.fetchone()
     sub["id"] = i[0]
@@ -822,10 +842,23 @@ def download():
 @app.route('/external_review',methods=['GET','POST'])
 @login_required
 def external_review():
+    form = ExternalReviewForm()
     file=request.args.get("file")
-    if file==None:
+    review=request.args.get("pdfReview")
+    print(form.pdfReview.data)
+    if form.pdfReview.data!=None:
+        filenamesecret = uuid.uuid4().hex
+        print("here")
+        print(filenamesecret)
+        form.pdfReview.data.save('uploads/' + filenamesecret)
+        #add old fashion db select here.
+        new_review = ExternalReview(id,current_user.orcid,True,filenamesecret)
+        db.session.add(new_review)
+        db.session.commit()
+
+    if file==None and review==None:
         return redirect(url_for("index"))
-    return render_template('external_review.html',file=file)
+    return render_template('external_review.html',file=file,form=form)
 
 @app.route('/proposal_call', methods=['GET', 'POST'])
 @login_required
@@ -862,7 +895,7 @@ def proposal_call():
             conn = mysql.connect
             cur = conn.cursor()
             # execute a query
-            cur.execute("""INSERT INTO Proposals(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
+            cur.execute("""INSERT INTO Proposal(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(deadline,title, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
             # rv contains the result of the execute
             conn.commit()

@@ -101,8 +101,10 @@ CREATE TABLE TeamMembers(
 	Name VARCHAR(255),
 	Position VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
+	TeamID int not null,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
+	FOREIGN KEY (TeamID) REFERENCES Team(ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 /*Impacts */
@@ -231,9 +233,8 @@ CREATE TABLE Submission (
     user varchar(255) NOT NULL,
   	draft Boolean DEFAULT True,
   	proposalPDF varchar(255) NOT NULL,
-	ORCID int NOT NULl,
-	status varchar(255) set default 'pending',
-	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
+	status varchar(255) default 'pending',
+	FOREIGN KEY ("user") REFERENCES Researcher (ORCID)
 );
 
 /*External Review*/
