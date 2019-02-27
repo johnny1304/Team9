@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+{% block content%}
+    <body style="margin-top:20em">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul>
+                    {% for message in messages %}
+ 	<li>{{ message[1] }}</li>
+{% endfor %}</ul>
+{% endif %}
+{% endwith %}
+    <div style="margin:10em">
+        <h3>Paper for Review</h3>
+        <a href="download?file={{ file }}">Download</a>
+    </div>
+    </body>
+{% endblock %}

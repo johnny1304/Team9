@@ -24,7 +24,7 @@
    
    
     <!-- NAVBAR -->
-    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color:#6c92dd ;">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color:#a1887f; color:#161616;">
         
         <a class="navbar-brand" href="/home"><img src="{{url_for('static', filename='sfi-logo.svg')}}"/></a>
 
@@ -34,17 +34,18 @@
            
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav mr-auto" >
                 <li class="nav-item active">
                     <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                 </li>
+                
                 {% if not current_user.is_authenticated %}
-                <li class="nav-item  d-block d-xs-block d-lg-none">
+                <li class="nav-item ">
                     <a class="nav-link " href="/sign_in" >Sign In</a>
                 </li>
                 {% endif %}
 
-                {% if not current_user.type == "admin" %}
+                {% if not current_user.is_authenticated %}
                 <li class="nav-item">
                     <a class="nav-link " href="/sign_up" >Sign Up</a>
                 </li>
@@ -56,34 +57,36 @@
                 </li>
                 {% endif %}
 
-                {% if current_user.is_authenticated and current_user.type == "Researcher" %}
+                {% if current_user.is_authenticated %}
                  <li class="nav-item">
-                    <a class="nav-link " href="/proposals" >Proposals</a>
+                    <a class="nav-link " href="/proposals" >Calls</a>
                 </li>
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link " href="/profile" >Profile</a>
                 </li>
-                
+                {% endif %}
+
+                {% if current_user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link " href="/logout" >Sign Out</a>
                 </li>
-                
                 {% endif %}
 
-              
-
-
                 {% if current_user.is_authenticated and current_user.type == "admin" %}
-                 <li class="nav-item">
+                <li class="nav-item">
                     <a class="nav-link " href="/proposal_call" >Create Proposal</a>
                 </li>
                 {% endif %}
-                
-                {% if not current_user.is_authenticated %}
+
+                {% if current_user.is_authenticated and current_user.type == "admin" %}
                 <li class="nav-item">
-                    <a class="nav-link " href="/sign_in" >Sign in</a>
+                    <a class="nav-link " href="/manage" >Admin stuff</a>
                 </li>
                 {% endif %}
+                
             </ul>
             <!---
             <form class="form-inline my-2 my-lg-0" style="">

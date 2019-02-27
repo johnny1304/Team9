@@ -3,7 +3,7 @@ from pathlib import Path
 import secrets
 import uuid
 from PIL import Image
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request,send_from_directory
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed,FileField
@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
+from flask_dropzone import Dropzone
 import smtplib
 
 
@@ -26,6 +27,12 @@ db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
+
+dropzone = Dropzone(app)
+#drag and drop file upload settings
+app.config['DROPZONE_MAX_FILE_SIZE'] = 20
+app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
+app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.pdf'
 
 #setup for proposal call form
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
@@ -458,7 +465,7 @@ class EmploymentForm(FlaskForm):
 	submit = SubmitField('Edit')
 
 class SocietiesForm(FlaskForm):
-
+	
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -496,11 +503,11 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    
+
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
-	
+
     if not content:
         content = "Account made confirmation message"
     if not email:
@@ -527,6 +534,9 @@ def index():
     #    db.session.commit()
         # this route returns the home.html file
     return render_template("/home.html")  # directs to the index.html
+
+
+
 
 
 @app.route('/sign_in', methods=['GET', 'POST'])
@@ -671,13 +681,8 @@ def submissions():
     conn = mysql.connect
     cur = conn.cursor()
     previousFile=None
-    cur.execute(f"""
-                             SELECT *
-                             FROM Submission
-                             WHERE propid = {post} AND user='{current_user.orcid}';
-                             """)
+    cur.execute(f"""SELECT * FROM Submission WHERE propid = {post} AND user='{current_user.orcid}';""")
     for i in cur.fetchall():
-        print(i)
         if i[15]==0:
             return render_template("submitted.html")
         form.propid=i[0]
@@ -808,6 +813,21 @@ def save_picture(form_picture):
     i.save(picture_path)
 
     return picture_fn
+
+@app.route('/download')
+@login_required
+def download():
+    filename=request.args.get("file")
+    dir="uploads"
+    return send_from_directory(dir,filename,as_attachment=True)
+
+@app.route('/external_review',methods=['GET','POST'])
+@login_required
+def external_review():
+    file=request.args.get("file")
+    if file==None:
+        return redirect(url_for("index"))
+    return render_template('external_review.html',file=file)
 
 @app.route('/proposal_call', methods=['GET', 'POST'])
 @login_required
@@ -1166,7 +1186,7 @@ def awardsInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-
+    
     return render_template('awardsInfo.html', form=form, data=data)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
