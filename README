@@ -37,3 +37,5 @@ Don't forget to git push after you are done
 Meeting 20/02/2019
 
 In the dashboard, the applications pending action will be changed to Current Applications. Basically the backend of it will be querying the database and see if there has been a change to it.
+
+mysql -h mysql.netsoc.co -u seintu -p 
