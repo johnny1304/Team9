@@ -20,7 +20,7 @@ import smtplib
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_test'  # set the database directory
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -818,7 +818,7 @@ def save_picture(form_picture):
 
     return picture_fn
 
-@app.route('/proposal_call', methods=['GET', 'POST'])
+@app.route('p', methods=['GET', 'POST'])
 @login_required
 def proposal_call():
     #Creates proposal form
