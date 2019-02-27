@@ -69,23 +69,22 @@
                 </li>
                 {% endif %}
 
+                {% if current_user.is_authenticated and current_user.type == "Admin" %}
+                <li class="nav-item">
+                    <a class="nav-link " href="/proposal_call" >Create Proposal</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link " href="/manage" >Admin stuff</a>
+                </li>
+                {% endif %}
+
                 {% if current_user.is_authenticated %}
                 <li class="nav-item">
                   <a class="nav-link " href="/logout" >Sign Out</a>
                 </li>
                 {% endif %}
 
-                {% if current_user.is_authenticated and current_user.type == "admin" %}
-                <li class="nav-item">
-                    <a class="nav-link " href="/proposal_call" >Create Proposal</a>
-                </li>
-                {% endif %}
-
-                {% if current_user.is_authenticated and current_user.type == "admin" %}
-                <li class="nav-item">
-                    <a class="nav-link " href="/manage" >Admin stuff</a>
-                </li>
-                {% endif %}
                 
             </ul>
             <!---
