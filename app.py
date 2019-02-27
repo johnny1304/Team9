@@ -38,7 +38,11 @@ app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.pdf'
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
 app.config["MYSQL_USER"] = "seintu"
 app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
+<<<<<<< Updated upstream
 app.config["MYSQL_DB"] = "seintu_project2"
+=======
+app.config["MYSQL_DB"] = "seintu_test"
+>>>>>>> Stashed changes
 mysql = MySQL(app)
 mysql.init_app(app)
 
@@ -152,8 +156,13 @@ class Submissions(db.Model):
     declaration = db.Column(db.Boolean,nullable=False)
     user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
     draft = db.Column(db.Boolean, nullable=False, default=True)
+<<<<<<< Updated upstream
     proposalPDF = db.Column(db.String(255),nullable=False)
     status = db.Column(db.String(255), default="pending")
+=======
+    proposalPDF = db.Column(db.String(200),nullable=False)
+    
+>>>>>>> Stashed changes
 
     def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF,status):
         self.title=title
@@ -553,6 +562,15 @@ def index():
     #    updateType.type = "Admin"
     #    db.session.commit()
         # this route returns the home.html file
+<<<<<<< Updated upstream
+=======
+    #conn = mysql.connect
+    #cur = conn.cursor()
+    #cur.execute("DROP TABLE Submission;")
+    #conn.commit()
+    #cur.close()
+    #conn.close()
+>>>>>>> Stashed changes
     return render_template("/home.html")  # directs to the index.html
 
 
@@ -619,8 +637,14 @@ def signup():
 @login_required
 def dashboard():
     # return the dashboard html file with the user passed to it
+<<<<<<< Updated upstream
     applications = Submissions.query.filter_by(user=current_user.orcid).all()
     return render_template('dashboard.html', user=current_user, applications=applications)
+=======
+    #applications = Submissions.query.filter_by(user=current_user.orcid).all()
+    #print(len(applications))
+    return render_template('dashboard.html', user=current_user)#, applications=applications)
+>>>>>>> Stashed changes
 
 
 # @app.route('/edit')
@@ -1342,4 +1366,4 @@ def manage():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
