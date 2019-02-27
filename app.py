@@ -562,6 +562,12 @@ def index():
     #    updateType.type = "Admin"
     #    db.session.commit()
         # this route returns the home.html file
+    #conn = mysql.connect
+    #cur = conn.cursor()
+    #cur.execute("DROP TABLE Submission;")
+    #conn.commit()
+    #cur.close()
+    #conn.close()
     return render_template("/home.html")  # directs to the index.html
 
 
@@ -1352,4 +1358,4 @@ def manage():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
