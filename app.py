@@ -235,6 +235,7 @@ class User(UserMixin, db.Model):
     edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
     submission = db.relationship('Submissions', backref='Researcher')
     ExternalReview = db.relationship('ExternalReview',backref='Researcher')
+    #reports = db.relationship('Report', backref='Researcher')
 
     def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
         # this initialises the class and maps the variables to the table (done by flask automatically)
@@ -322,7 +323,7 @@ class Team(db.Model):
     __tablename__ = "Team"
     team_id = db.Column("TeamID", db.Integer, primary_key=True)
     team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    submssion_id = db.Column("SubmissionID", db.Integer, db.ForeignKey('Submission.id'))
+    submission_id = db.Column("SubmissionID", db.Integer, db.ForeignKey('Submission.id'))
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -406,6 +407,14 @@ class EducationAndPublicEngagement(db.Model):
     target_area = db.Column("TargetArea", db.String(255))
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
+
+#    __tablename__ = "Report"
+#    id = db.Column(db.Integer, primary_key=True)
+#    title = db.Column(db.String(255), nullable=False)
+#    pdf = db.Column(db.String(255))
+#    type = db.Column(db.String(255), nullable=False)
+#    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
 
 
@@ -620,6 +629,7 @@ def signup():
 def dashboard():
     # return the dashboard html file with the user passed to it
     applications = Submissions.query.filter_by(user=current_user.orcid).all()
+    print(applications)
     return render_template('dashboard.html', user=current_user, applications=applications)
 
 
