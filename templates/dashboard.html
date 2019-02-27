@@ -9,11 +9,13 @@
     <br>
     <div class="row text-center">
       <div class="col-sm-4">
+          <a href="current_applications">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
           <p><strong>Current Applications</strong></p>
           <p>{{applications|length}}</p>
         </div>
+          </a>
       </div>
       <div class="col-sm-4">
         <div class="thumbnail">
@@ -61,7 +63,7 @@
   <div class="card">
     <div class="card-header" id="headingOne">
       <h5 class="mb-0">
-        <a href="proposals.html"><button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        <a href="proposals"><button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
           Open Calls
         </button></a>
       </h5>

@@ -69,6 +69,7 @@ class Proposal(db.Model):
     picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
+
     def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
         self.title = title
@@ -314,6 +315,7 @@ class TeamMembers(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_date = db.Column("StartDate", db.Date)
     departure_date = db.Column("DepartureDate", db.Date)
+    name = db.Column("Name", db.String(255))
     position = db.Column("position", db.String(255))
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
@@ -557,10 +559,10 @@ def mail(receiver, content="", email="", password=""):
 @app.route('/')
 @app.route('/home')
 def index():
-    #if current_user.is_authenticated:
-    #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
-    #    updateType.type = "Admin"
-    #    db.session.commit()
+    if current_user.is_authenticated:
+        updateType = User.query.filter_by(orcid=current_user.orcid).first()
+        updateType.type = "Admin"
+        db.session.commit()
         # this route returns the home.html file
     #conn = mysql.connect
     #cur = conn.cursor()
@@ -641,6 +643,19 @@ def dashboard():
 
 # @app.route('/edit')
 # @login_required
+
+@app.route('/current_applications')
+@login_required
+def current_applications():
+    posts = []
+    entries=Submissions.query.filter_by(user=current_user.orcid).all()
+    for i in entries:
+        post={}
+        post["status"]=i.status
+        post["title"]=i.title
+        posts.append(post)
+    return render_template("current_applications.html",posts=posts)
+
 
 @app.route('/create_submission_form')
 @login_required
@@ -1312,7 +1327,17 @@ def unauthorized_callback():
 @app.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html')
+
+    conn = mysql.connect
+    cur= conn.cursor()
+            # execute a query
+
+    cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
+    data = cur.fetchone()
+
+
+
+    return render_template('profile.html', data=data)
 
 @app.route('/logout')
 @login_required
