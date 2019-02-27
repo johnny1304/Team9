@@ -405,7 +405,7 @@ class LoginForm(FlaskForm):
 class UpdateInfoForm(FlaskForm):
 
 
-	#this is the class for the register form in the sign_up.html
+    #this is the class for the register form in the sign_up.html
     first_name = StringField('First Name:'  , validators=[InputRequired(), Length(max=20)])
     last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
     email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
@@ -450,19 +450,19 @@ class formCreationForm(FlaskForm):
 
 class EducationForm(FlaskForm):
 
-	degree = StringField('Degree:', validators=[ Length(max=50)])
-	institution = StringField('Institution:', validators=[ Length(max=50)])
-	location = StringField('Locations:', validators=[Length(max=50)])
-	year = IntegerField('Year ' )
-	submit = SubmitField('Edit')
+    degree = StringField('Degree:', validators=[ Length(max=50)])
+    institution = StringField('Institution:', validators=[ Length(max=50)])
+    location = StringField('Locations:', validators=[Length(max=50)])
+    year = IntegerField('Year ' )
+    submit = SubmitField('Edit')
 
 
 class EmploymentForm(FlaskForm):
 
-	company = StringField('Company:', validators=[ Length(max=50)])
-	location = StringField('Location:', validators=[ Length(max=50)])
-	years = IntegerField('Years:')
-	submit = SubmitField('Edit')
+    company = StringField('Company:', validators=[ Length(max=50)])
+    location = StringField('Location:', validators=[ Length(max=50)])
+    years = IntegerField('Years:')
+    submit = SubmitField('Edit')
 
 class SocietiesForm(FlaskForm):
 	
@@ -475,11 +475,11 @@ class SocietiesForm(FlaskForm):
 
 class AwardsForm(FlaskForm):
 
-	year = IntegerField('Year:')
-	awardingBody = StringField('Awarding Body:', validators=[ Length(max=50)])
-	details = StringField('Detail:', validators=[Length(max=50)])
-	team_member = StringField('Team Member ', validators=[Length(max=50)])
-	submit = SubmitField('Edit')
+    year = IntegerField('Year:')
+    awardingBody = StringField('Awarding Body:', validators=[ Length(max=50)])
+    details = StringField('Detail:', validators=[Length(max=50)])
+    team_member = StringField('Team Member ', validators=[Length(max=50)])
+    submit = SubmitField('Edit')
 
 class TeamMembersForm(FlaskForm):
 
@@ -503,11 +503,9 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
-
     if not content:
         content = "Account made confirmation message"
     if not email:
@@ -516,7 +514,7 @@ def mail(receiver, content="", email="", password=""):
         password = "default password"
 
         password = "team9admin"
-	
+    
     mail = smtplib.SMTP('smtp.gmail.com', 587)
     mail.ehlo()
     mail.starttls()
@@ -585,7 +583,7 @@ def signup():
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
-			# send confirmation email
+            # send confirmation email
             mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
