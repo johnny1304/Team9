@@ -20,7 +20,7 @@ import smtplib
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_test'  # set the database directory
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -528,12 +528,12 @@ def index():
     #    updateType.type = "Admin"
     #    db.session.commit()
         # this route returns the home.html file
-    conn = mysql.connect
-    cur = conn.cursor()
-    cur.execute("DROP TABLE IF EXISTS Submission;")
-    conn.commit()
-    cur.close()
-    conn.close()
+    #conn = mysql.connect
+    #cur = conn.cursor()
+    #cur.execute("DROP TABLE IF EXISTS Submission;")
+    #conn.commit()
+    #cur.close()
+    #conn.close()
     return render_template("/home.html")  # directs to the index.html
 
 
