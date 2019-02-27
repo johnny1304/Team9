@@ -18,17 +18,19 @@
           </a>
       </div>
       <div class="col-sm-4">
+      <a href="scientific_reports">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
           <p><strong>Current Scientific Reports</strong></p>
-          <p>1</p>
+          <p>{{s_reports|length}}</p>
         </div>
+      </a>
       </div>
       <div class="col-sm-4">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
           <p><strong>Current Financial Reports</strong></p>
-          <p>0</p>
+          <p>{{f_reports|length}}</p>
         </div>
       </div>
       

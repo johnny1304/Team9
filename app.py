@@ -156,7 +156,7 @@ class Submissions(db.Model):
     proposalPDF = db.Column(db.String(255),nullable=False)
     status = db.Column(db.String(255), default="pending")
 
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF,status):
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
         self.title=title
         self.propid=propid
         self.duration=duration
@@ -173,7 +173,6 @@ class Submissions(db.Model):
         self.user=user
         self.proposalPDF=proposalPDF
         self.draft=True
-        self.status = status
 
 
     def setDraftFalse(self):
@@ -236,7 +235,7 @@ class User(UserMixin, db.Model):
     edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
     submission = db.relationship('Submissions', backref='Researcher')
     ExternalReview = db.relationship('ExternalReview',backref='Researcher')
-    #reports = db.relationship('Report', backref='Researcher')
+    reports = db.relationship('Report', backref='Researcher')
 
     def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
         # this initialises the class and maps the variables to the table (done by flask automatically)
@@ -410,13 +409,13 @@ class EducationAndPublicEngagement(db.Model):
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
-
-#    __tablename__ = "Report"
-#    id = db.Column(db.Integer, primary_key=True)
-#    title = db.Column(db.String(255), nullable=False)
-#    pdf = db.Column(db.String(255))
-#    type = db.Column(db.String(255), nullable=False)
-#    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+class Report(db.Model):
+    __tablename__ = "Report"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    pdf = db.Column(db.String(255))
+    type = db.Column(db.String(255), nullable=False)
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
 
 
@@ -637,10 +636,25 @@ def signup():
 def dashboard():
     # return the dashboard html file with the user passed to it
     applications = Submissions.query.filter_by(user=current_user.orcid).all()
-    print(applications)
-    return render_template('dashboard.html', user=current_user, applications=applications)
+    reports = current_user.reports
+    scientific_reports = []
+    financial_reports = []
+    for each in reports:
+        if each.type == "Scientific":
+            scientific_reports.append(each)
+        elif each.type == "Financial":
+            financial_reports.append(each)
+    return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports)
 
-
+@app.route('/scientific_reports')
+@login_required
+def scientific_reports():
+    reports = current_user.reports
+    s_reports = []
+    for each in reports:
+        if each.type == "Scientific":
+            s_reports.append(each)
+    return render_template("scientific_reports.html", reports=s_reports)
 # @app.route('/edit')
 # @login_required
 
@@ -1383,4 +1397,4 @@ def manage():
 
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
