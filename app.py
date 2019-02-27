@@ -505,19 +505,9 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-<<<<<<< HEAD
-    
-    #cur = mysql.get_db().cursor()
-    #cur.execute("SELECT email FROM researchers")
-    #rv = cur.fetchall()
-    
-=======
-
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
-
->>>>>>> 543a2031685904f41e0be84c1b71d4b615b9920b
     if not content:
         content = "Account made confirmation message"
     if not email:
