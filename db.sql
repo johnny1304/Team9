@@ -232,6 +232,7 @@ CREATE TABLE Submission (
   	draft Boolean DEFAULT True,
   	proposalPDF varchar(255) NOT NULL,
 	ORCID int NOT NULl,
+	status varchar(255) set default 'pending',
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
 
