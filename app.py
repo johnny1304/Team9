@@ -459,8 +459,8 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField("User")
-    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
+    researcher = SelectField("User", validators=[InputRequired()])
+    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')], validators=[InputRequired()])
     submit = SubmitField('Apply')
 
 
@@ -522,7 +522,11 @@ class ExternalReviewForm(FlaskForm):
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
     submit = SubmitField('submit')
 
+class ReportsForm(FlaskForm):
 
+    title = StringField('Title: ', validators=[InputRequired(), Length(max=50)])
+    pdf = FileField('PDF of Report: ', validators=[InputRequired()])
+    submit = SubmitField('Submit')
 
 
 @login_manager.user_loader
@@ -646,15 +650,16 @@ def dashboard():
             financial_reports.append(each)
     return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports)
 
-@app.route('/scientific_reports')
+@app.route('/scientific_reports', methods=['GET', 'POST'])
 @login_required
 def scientific_reports():
+    form = ReportsForm()
     reports = current_user.reports
     s_reports = []
     for each in reports:
         if each.type == "Scientific":
             s_reports.append(each)
-    return render_template("scientific_reports.html", reports=s_reports)
+    return render_template("scientific_reports.html", reports=s_reports, form=form)
 # @app.route('/edit')
 # @login_required
 
