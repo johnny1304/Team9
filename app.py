@@ -818,7 +818,7 @@ def save_picture(form_picture):
 
     return picture_fn
 
-@app.route('p', methods=['GET', 'POST'])
+@app.route('/p', methods=['GET', 'POST'])
 @login_required
 def proposal_call():
     #Creates proposal form
