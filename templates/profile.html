@@ -6,8 +6,7 @@
         <div class="container">
             <img src="{{url_for('static', filename='profileIcon2.svg')}}" height="80" width="80"></img>
             <h1 class="display-5">{{ current_user.first_name }} {{ current_user.last_name}}</h1>
-            <p class="lead">Researcher title</p>
-            <button type="button" class="btn btn-light" href="details.html">Change details</button>
+            <p class="lead">{{ current_user.type }}</p>
         </div>
     </div>
   
