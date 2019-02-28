@@ -39,7 +39,7 @@ html {
 }
 body {
   /* Margin bottom by footer height */
-  margin-bottom: 80px;
+  margin-bottom: 115px;
 }
 
 .footer {
@@ -47,19 +47,19 @@ body {
   bottom: 0;
   width: 100%;
   /* Set the fixed height of the footer here */
-  height: 80px;
+  height: 115px;
   background-color: #6c92dd;
   text-align: center;
 }
 
 .fa {
   padding: 20px;
-  font-size: 30px;
+  font-size: 20px;
   width: 50px;
   text-align: center;
   text-decoration: none;
-  margin: 5px 2px;
-  border-radius: 50%;
+  margin: 8px 20px;
+  border-radius: 10%;
 }
 
 .fa:hover {
@@ -67,16 +67,21 @@ body {
 }
 
 .fa-facebook {
-  background: #3B5998;
+  
   color: white;
 }
 
 .fa-twitter {
-  background: #55ACEE;
+
   color: white;
 }
 
 .fa-linkedin {
-  background: #007bb5;
+  
+  color: white;
+}
+
+.fa-youtube {
+  
   color: white;
 }
