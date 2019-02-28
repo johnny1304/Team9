@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="col-lg-12" style="margin-top:5em">
+
+            <h1>{{ sub.title }}</h1>
+
+            <div class="col-lg-12">
+                <p><b>Deadline: </b>{{ sub.deadline }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Text of Call: </b>{{ sub.text }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Target Audience: </b>{{ sub.audience }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Eligibility Criteria: </b>{{ sub.eligibility }}</p>
+            </div>
+
+            <div class=" col-lg-12">
+                <p><b>Duration: </b>{{ sub.duration }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Reporting Guidelines: </b>{{ sub.guidelines }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Time Frame: </b>{{ sub.timeframe }}</p>
+            </div>
+    </div>
+{% endblock %}

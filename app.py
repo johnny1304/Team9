@@ -56,6 +56,11 @@ class proposalForm(FlaskForm):
     picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
 
+class sendExternalReview(FlaskForm):
+    ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
+    submit=SubmitField('Send for review')
+    complete=SubmitField('External Reviews Sent: Mark as under Review')
+
 class Proposal(db.Model):
     __tablename__ = "Proposal"
     Deadline = db.Column(db.Date, nullable=False)
@@ -670,6 +675,39 @@ def current_applications():
         posts.append(post)
     return render_template("current_applications.html",posts=posts)
 
+@app.route('/admin_external_review')
+@login_required
+def admin_external_review():
+    posts = []
+    entries = Submissions.query.filter_by(status="pending").all()
+    for i in entries:
+        post = {}
+        post["status"] = i.status
+        post["title"] = i.title
+        post["id"] = i.subid
+        posts.append(post)
+    return render_template("admin_external_review.html", posts=posts)
+
+@app.route('/admin_send_review')
+@login_required
+def admin_send_review():
+    form=sendExternalReview()
+    post=request.args.get("id")
+    sub={}
+    i = Proposal.query.filter_by(id=f"{post}").first()
+    sub["id"] = i.id
+    sub["deadline"] = i.Deadline
+    sub["text"] = i.TextOfCall
+    sub["audience"] = i.TargetAudience
+    sub["eligibility"] = i.EligibilityCriteria
+    sub["duration"] = i.Duration
+    sub["guidelines"] = i.ReportingGuidelines
+    sub["timeframe"] = i.TimeFrame
+    sub["title"] = i.title
+
+    return render_template("admin_send_review.html",sub=sub,form=form)
+
+
 
 @app.route('/create_submission_form')
 @login_required
@@ -840,26 +878,17 @@ def submissions():
             return redirect(url_for("submissions", id=form.propid, sub=sub))
 
 
-    conn = mysql.connect
-    cur = conn.cursor()
-    cur.execute(f"""
-                         SELECT *
-                         FROM Proposal
-                         WHERE ID = {post};
-                         """)
-    i = cur.fetchone()
-    sub["id"] = i[0]
-    sub["deadline"] = i[1]
-    sub["text"] = i[2]
-    sub["audience"] = i[3]
-    sub["eligibility"] = i[4]
-    sub["duration"] = i[5]
-    sub["guidelines"] = i[6]
-    sub["timeframe"] = i[7]
-    sub["title"] = i[9]
-    conn.commit()
-    cur.close()
-    conn.close()
+
+    i=Proposal.query.filter_by(id=f"{post}").first()
+    sub["id"] = i.id
+    sub["deadline"] = i.Deadline
+    sub["text"] = i.TextOfCall
+    sub["audience"] = i.TargetAudience
+    sub["eligibility"] = i.EligibilityCriteria
+    sub["duration"] = i.Duration
+    sub["guidelines"] = i.ReportingGuidelines
+    sub["timeframe"] = i.TimeFrame
+    sub["title"] = i.title
 
     return render_template('submissions.html', user=current_user, sub=sub,form=form)
 
