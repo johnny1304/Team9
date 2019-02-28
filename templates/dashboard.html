@@ -10,24 +10,28 @@
     {% if current_user.is_authenticated and current_user.type == "Researcher" %}
     <div class="row text-center">
       <div class="col-sm-4">
+          <a href="current_applications">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
           <p><strong>Current Applications</strong></p>
-          <p>{{applicatons|length}}</p>
+          <p>{{applications|length}}</p>
         </div>
+          </a>
       </div>
       <div class="col-sm-4">
+      <a href="scientific_reports">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
           <p><strong>Current Scientific Reports</strong></p>
-          <p>1</p>
+          <p>{{s_reports|length}}</p>
         </div>
+      </a>
       </div>
       <div class="col-sm-4">
         <div class="thumbnail">
           <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
           <p><strong>Current Financial Reports</strong></p>
-          <p>0</p>
+          <p>{{f_reports|length}}</p>
         </div>
       </div>
       
@@ -62,9 +66,9 @@
   <div class="card">
     <div class="card-header" id="headingOne">
       <h5 class="mb-0">
-        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        <a href="proposals"><button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
           Open Calls
-        </button>
+        </button></a>
       </h5>
     </div>
     
@@ -85,9 +89,14 @@
       </h5>
     </div>
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-      <div class="card-body">
-        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+      {% if applications %}
+      {% for each in applications %}
+        {% if each.status == "under" %}
+      <div class="card-body">{{each.title}}
       </div>
+        {% endif %}
+      {% endfor %}
+      {% endif %}
     </div>
   </div>
   <div class="card">

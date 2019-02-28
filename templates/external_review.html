@@ -13,5 +13,13 @@
         <h3>Paper for Review</h3>
         <a href="download?file={{ file }}">Download</a>
     </div>
+    <div>
+        {{form.hidden_tag()}}
+        <form action = "" enctype="multipart/form-data" method = "post">
+            {{form.pdfReview.label}}
+            {{form.pdfReview}}
+            {{form.submit}}
+        </form>
+    </div>
     </body>
 {% endblock %}

@@ -2,7 +2,7 @@
 {% block content %}
 
     {% from "_formhelpers.html" import render_field %}
-{% if current_user.is_authenticated and current_user.getType() == "admin" %}
+{% if current_user.is_authenticated and current_user.type == "Admin" %}
 
 
 <div class="row justify-content-center">
