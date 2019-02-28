@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="row justify-content-center col-lg-12">
+        {% for report in reports %}
+            <div class="Justify-content-center col-lg-12 dropdown" style="background-color:white ; border:5px ; margin-top:5em; border-radius: 10px;">
+            <button class="col-lg-9 btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <h3>{{ report.title }}</h3>
+          </div>
+        {% endfor %}
+    </div>
+
+{% endblock content %}
