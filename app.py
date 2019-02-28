@@ -1038,7 +1038,7 @@ def employmentInfo():
     return render_template('employmentInfo.html', form=form, data=data)
 
 
-('/societiesInfo', methods=['GET', 'POST'])
+@app.route('/societiesInfo', methods=['GET', 'POST'])
 @login_required
 def societiesInfo():
     #Creates proposal form
