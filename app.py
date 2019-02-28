@@ -3,7 +3,7 @@ from pathlib import Path
 import secrets
 import uuid
 from PIL import Image
-from flask import Flask, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request, jsonify
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed,FileField
@@ -444,6 +444,7 @@ class formCreationForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class UpdateEducationForm(FlaskForm):
+    id = StringField('ID:', validators=[ Length(max=50)])
     degree = StringField('Degree:', validators=[ Length(max=50)])
     institution = StringField('Institution:', validators=[ Length(max=50)])
     location = StringField('Locations:', validators=[Length(max=50)])
@@ -926,18 +927,19 @@ def edit_info():
             return redirect(url_for('profile'))
 
         if update_education.validate_on_submit():
-
             degree = update_education.degree.data
             institution = update_education.institution.data
             location = update_education.location.data
             year = update_education.year.data
             field = update_education.field.data
+            id = update_education.id.data
+            print(update_education.id.data)
 
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
             cur.execute(f"""UPDATE Education SET Degree = '{degree}', Institution = '{institution}', Location= '{location}',
-             Year= '{year}', Field = '{field}' WHERE ORCID ={current_user.orcid};  """)
+             Year= '{year}', Field = '{field}' WHERE ID ={id};  """)
             conn.commit()
             cur.close()
             conn.close()
