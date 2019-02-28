@@ -6,8 +6,8 @@
         <div class="container">
             <img src="{{url_for('static', filename='profileIcon2.svg')}}" height="80" width="80"></img>
             <h1 class="display-5">{{ current_user.first_name }} {{ current_user.last_name}}</h1>
-            <p class="lead">Researcher title</p>
-            <button type="button" class="btn btn-light" href="details.html">Change details</button>
+            <p class="lead">{{ current_user.job}}</p>
+            <button type="button" class="btn btn-light" ><a href="/edit_info">Change details</a></button>
         </div>
     </div>
   
@@ -24,9 +24,9 @@
                         <a href="/awardsInfo"> Distinctions & Awards</a>
                         <a> Funding Diversification</a>
                         <a href="/team_members_info">Team Members</a>
-                        <a>Impacts</a>
+                        <a href='/impacts_info'>Impacts</a>
                         <a>Innovation & Commercialisation</li>
-                        <a>Publications</a>
+                        <a href='/publications_info'>Publications</a>
                         <a>Presentations</a>
                         <a> Academic Collaborations</a>
                         <a> Non academic Collaborations</a>
@@ -39,28 +39,28 @@
             </div>
         </div>
         
-        <div class="col-7 justify-content-center" style="background-color:white  ; border:5px ; padding: 10px; border-radius: 10px ;" >
-        
-           {% block form %}
-           <div class="card " style="width: 18rem;">
-                <ul class="list-group list-group-flush">
-                  <li class="list-group-item">First Name: {{ data[0]}}</li>
-                  <li class="list-group-item">Last Name: {{ data[1]}}</li>
-                  <li class="list-group-item">Occupation: {{ data[2]}}</li>
-                  <li class="list-group-item">Prefix: {{ data[3]}}</li>
-                  <li class="list-group-item">Suffix: {{ data[4]}}</li>
-                  <li class="list-group-item">Phone Number: {{ data[5]}}</li>
-                  <li class="list-group-item">Phone Extenstion: {{ data[6]}}</li>
-                  <li class="list-group-item">Email: {{ data[7]}}</li>
-                  <li class="list-group-item">ORCID:{{ data[8]}}</li>
-                </ul>
+        <div class="col-7 justify-content-center" style="background-color:white  ; border:5px ; ; border-radius: 10px ;" >
+        <div class="row justify-content-center" style="background-color:white  ; border:5px ; border-radius: 10px ; padding-top:5px; padding-bottom:2em;" >
                 
+            {% block form %}
+            <div class="card " style="width: 18rem;">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">First Name: {{ current_user.first_name}}</li>
+                        <li class="list-group-item">Last Name: {{ current_user.last_name}}</li>
+                        <li class="list-group-item">Occupation: {{ current_user.job}}</li>
+                        <li class="list-group-item">Prefix: {{ current_user.prefix}}</li>
+                        <li class="list-group-item">Suffix: {{ current_user.suffix}}</li>
+                        <li class="list-group-item">Phone Number: {{ current_user.phone}}</li>
+                        <li class="list-group-item">Phone Extenstion: {{ current_user.phone_extension}}</li>
+                        <li class="list-group-item">Email: {{ current_user.email}}</li>
+                        <li class="list-group-item">ORCID: {{ current_user.orcid}}</li>
+                    </ul>
+                    
             </div>
-            <div class="col-6" >
-                    <a href='/generalInfo'><button type="submit" class="btn btn-primary" >Edit</button></a>
-                </div>
+            
             {% endblock %}
-
+            
+        </div>
         </div>
     </div>
 
