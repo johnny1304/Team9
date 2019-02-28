@@ -464,7 +464,7 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField(u"User")
+    researcher = SelectField("User")
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -1404,21 +1404,25 @@ def manage():
             if each.type != "Admin":
                 researchers.append(each)
         form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
-
-        if form.validate_on_submit():
-            researcher = User.query.filter_by(orcid=form.researcher.data).first()
-            newRole = form.role.data
-            if researcher.orcid == current_user.orcid:
-                flash("You can't change your own role unfortunately", category="unauthorised")
+        print(researchers)
+        if request.method == "POST":
+            print(form.researcher.data)
+            print(form.role.data)
+            if form.submit.data:
+                researcher = User.query.filter_by(orcid=form.researcher.data).first()
+                newRole = form.role.data
+                if researcher.orcid == current_user.orcid:
+                    flash("You can't change your own role unfortunately", category="unauthorised")
+                    return redirect(url_for('manage'))
+                if researcher.type == "Admin":
+                    flash("You can't change another admin's role", category="unauthorised")
+                    return redirect(url_for('manage'))
+                researcher.type = newRole
+                db.session.commit()
+                flash("Role have been updated", category="success")
                 return redirect(url_for('manage'))
-            if researcher.type == "Admin":
-                flash("You can't change another admin's role", category="unauthorised")
-                return redirect(url_for('manage'))
-            researcher.type = newRole
-            db.session.commit()
-            flash("Role have been updated", category="success")
-            return redirect(url_for('manage'))
 
+            return render_template('manage.html', form=form, researchers=researchers)
         return render_template('manage.html', form=form, researchers=researchers)
     else:
         flash("You need to be an admin to manage others.", category="unauthorised")
