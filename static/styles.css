@@ -48,40 +48,23 @@ body {
   width: 100%;
   /* Set the fixed height of the footer here */
   height: 115px;
-  background-color: #6c92dd;
+  background-color: #fcca35;
   text-align: center;
 }
 
 .fa {
   padding: 20px;
-  font-size: 20px;
-  width: 50px;
+  font-size: 50px;
+  width: 100px;
   text-align: center;
   text-decoration: none;
   margin: 8px 20px;
   border-radius: 10%;
+  color: white;
 }
 
 .fa:hover {
     opacity: 0.7;
 }
 
-.fa-facebook {
-  
-  color: white;
-}
 
-.fa-twitter {
-
-  color: white;
-}
-
-.fa-linkedin {
-  
-  color: white;
-}
-
-.fa-youtube {
-  
-  color: white;
-}

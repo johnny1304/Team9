@@ -5,56 +5,72 @@
 <br><br><br>
 
 <div class="container-fluid text-center bg-grey">
-    <h4>Hi {{current_user.first_name}}, this is your Dashboard</h4>
-    <br>
+    <h3>Hi {{current_user.first_name}}, this is your Dashboard</h3>
+    <br><br>
     <div class="row text-center">
       <div class="col-sm-4">
           <a href="current_applications">
+            
         <div class="thumbnail">
-          <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
+            <span class="notify-badge">{{applications|length}}</span>
+            <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
           <p><strong>Current Applications</strong></p>
-          <p>{{applications|length}}</p>
+        </a>
+          
+          
         </div>
-          </a>
+        
+          
       </div>
+
       <div class="col-sm-4">
       <a href="scientific_reports">
         <div class="thumbnail">
+            <span class="notify-badge">{{s_reports|length}}</span>
           <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
           <p><strong>Current Scientific Reports</strong></p>
-          <p>{{s_reports|length}}</p>
         </div>
       </a>
       </div>
+
       <div class="col-sm-4">
+          <a href="#">
         <div class="thumbnail">
+            <span class="notify-badge">{{f_reports|length}}</span>
           <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
           <p><strong>Current Financial Reports</strong></p>
-          <p>{{f_reports|length}}</p>
+          </a>
         </div>
       </div>
       
 <div class="container-fluid text-center bg-grey">
       <div class="row text-center">
         <div class="col-sm-4">
+            <a href="#">
           <div class="thumbnail">
+              <span class="notify-badge">0</span>
             <img src="{{url_for('static', filename='budget.svg')}}" alt="Budget Icon">
             <p><strong>Current Budgets</strong></p>
-            <p>0</p> 
+            </a>
           </div>
         </div>
         <div class="col-sm-4">
+            <a href="#">
           <div class="thumbnail">
+              <span class="notify-badge">0</span>
             <img src="{{url_for('static', filename='award.svg')}}" alt="Award Icon">
-            <p><strong>Pre Award Applicant Response Pending Action</strong></p>
-            <p>1</p>
+            <p><strong>Pre Award Applications</strong></p>
+            </a>
           </div>
         </div>
+
         <div class="col-sm-4">
+            <a href="#">
           <div class="thumbnail">
+              <span class="notify-badge">0</span>
             <img src="{{url_for('static', filename='other.svg')}}" alt="Other Icon">
             <p><strong>Other Items Pending Action</strong></p>
-            <p>0</p>
+            </a>
           </div>
         </div>
   </div>
