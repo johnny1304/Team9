@@ -179,6 +179,47 @@
                     </div>
 
 
+                    <div id="headingFive" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
+                            Edit Awards Info
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseFive" class="collapse  aria-labelledby="headingFive" data-parent="#accordionExample">
+                        {% for j in user.awards %}
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+                                
+                                    {{form5.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none;'>
+                                                {{render_field(form5.id, value= j.id,class="col-lg-12")}}
+                                         </div>
+                                         
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form5.year, value= j.year,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form5.award_body,value=j.award_body, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form5.details,value= j.details,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form5.team_member, value= j.team_member,class="col-lg-12")}}
+                                        </div>
+                                       
+                                
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form5.submit_awrd}}
+                                        </div>
+                                    
+                            </form>
+                        {% endfor %}
+                    </div>
+
+
 
         
                     

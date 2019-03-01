@@ -1023,12 +1023,12 @@ def edit_info():
             award_body = update_awards.award_body.data
             details = update_awards.details.data
             team_member = update_awards.team_member.data
-            id3 = update_employment.id.data
+            id3 = update_awards.id.data
 
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Award  WHERE ID ={id3};  """)
+            cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',TeamMember = '{team_member}' WHERE ID ={id3};  """)
             conn.commit()
             cur.close()
             conn.close()
@@ -1038,7 +1038,8 @@ def edit_info():
             
        
         
-    return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment, user=user)
+    return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
+    form5 = update_awards, user=user)
 
 
 
