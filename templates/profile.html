@@ -7,7 +7,7 @@
             <img src="{{url_for('static', filename='profileIcon2.svg')}}" height="80" width="80"></img>
             <h1 class="display-5">{{ current_user.first_name }} {{ current_user.last_name}}</h1>
             <p class="lead">{{ current_user.job}}</p>
-            <button type="button" class="btn btn-light" ><a href="/edit_info">Change details</a></button>
+            <a href="/edit_info">Change details</a>
         </div>
     </div>
   

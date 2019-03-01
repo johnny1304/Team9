@@ -20,7 +20,7 @@ import smtplib
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_test'  # set the database directory
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -31,7 +31,7 @@ login_manager.login_view = 'signin'
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
 app.config["MYSQL_USER"] = "seintu"
 app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_test"
+app.config["MYSQL_DB"] = "seintu_project2"
 mysql = MySQL(app)
 mysql.init_app(app)
 
@@ -444,14 +444,15 @@ class formCreationForm(FlaskForm):
     submit = SubmitField('Submit')
 
 class UpdateEducationForm(FlaskForm):
+    idd = "edu"
     id = StringField('ID:', validators=[ Length(max=50)])
     degree = StringField('Degree:', validators=[ Length(max=50)])
     institution = StringField('Institution:', validators=[ Length(max=50)])
     location = StringField('Locations:', validators=[Length(max=50)])
     year = IntegerField('Year ' )
     field = StringField('Field:', validators=[ Length(max=50)])
-    submit = SubmitField('Edit')
-    remove = SubmitField('Remove')
+    submit_edu = SubmitField('Edit Education')
+    remove_edu = SubmitField('Remove')
 
 class AddEducationForm(FlaskForm):
     degree = StringField('Degree:', validators=[ Length(max=50)])
@@ -478,6 +479,23 @@ class AddEmploymentForm(FlaskForm):
 	years = IntegerField('Years:')
 	submit = SubmitField('Add')
 
+class UpdateEmploymentForm(FlaskForm):
+	company = StringField('Company:', validators=[ Length(max=50)])
+	location = StringField('Location:', validators=[ Length(max=50)])
+	years = IntegerField('Years:')
+	submit_emp = SubmitField('Edit Employment')
+    remove_emp = SubmitField('Remove')
+
+class UpdateSocietiesForm(FlaskForm):
+    idd = "socc"
+    id = StringField('ID:', validators=[ Length(max=50)])
+    start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
+    society = StringField('Society:', validators=[ Length(max=50)])
+    membership = StringField('Membership:',validators=[ Length(max=50)])
+    status = StringField('Status:',validators=[ Length(max=20)])
+    submit_soc = SubmitField('Edit Societies')
+    remove_soc = SubmitField('Remove')
 
 
 class AddSocietiesForm(FlaskForm):
@@ -486,7 +504,7 @@ class AddSocietiesForm(FlaskForm):
     society = StringField('Society:', validators=[ Length(max=50)])
     membership = StringField('Membership:',validators=[ Length(max=50)])
     status = StringField('Status:',validators=[ Length(max=20)])
-    submit = SubmitField('Add')
+    submit = SubmitField('Add Society')
     
 
 
@@ -630,7 +648,7 @@ def dashboard():
     print(len(applications))
     return render_template('dashboard.html', user=current_user, applications=applications)
 
-
+ 
 # @app.route('/edit')
 # @login_required
 
@@ -898,14 +916,17 @@ def proposal_call():
 def edit_info():
     update_general = UpdateInfoForm(request.form)
     update_education = UpdateEducationForm(request.form)
-    
+    update_societies = UpdateSocietiesForm(request.form)
+    update_employment = UpdateEmploymentForm(request.form)
     user = current_user
+    print(user.societies)
     
     if request.method == 'POST':
 
-        print(update_general.errors)
+        #print(update_general.errors)
         #if input validates pushes to db
-        if update_general.validate_on_submit():
+        # 
+        if update_general.validate_on_submit() :
 
             first_name = update_general.first_name.data
             last_name = update_general.last_name.data
@@ -926,26 +947,71 @@ def edit_info():
             conn.close()
             return redirect(url_for('profile'))
 
-        if update_education.validate_on_submit():
+
+        #print(update_educa
+        # 
+        # tion.errors)
+       
+        elif update_societies.validate_on_submit and "submit_soc" in request.form:
+            print("here")
+            start_date = update_societies.start_date.data
+            end_date = update_societies.end_date.data
+            society = update_societies.society.data
+            membership = update_societies.membership.data
+            status = update_societies.status.data
+            id1 = update_societies.id.data
+            
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Societies SET StartDate= '{start_date}', EndDate='{end_date}', Society = '{society}', Membership = '{membership}',
+            Status = '{status}' WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+
+        elif update_education.validate_on_submit and "submit_edu" in request.form:
             degree = update_education.degree.data
             institution = update_education.institution.data
             location = update_education.location.data
             year = update_education.year.data
             field = update_education.field.data
             id = update_education.id.data
-            print(update_education.id.data)
+            
 
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
             cur.execute(f"""UPDATE Education SET Degree = '{degree}', Institution = '{institution}', Location= '{location}',
-             Year= '{year}', Field = '{field}' WHERE ID ={id};  """)
+             Year= {year}, Field = '{field}' WHERE ID ={id};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        
+         elif update_employment.validate_on_submit and "submit_emp" in request.form:
+            company = update_employment.company.data
+            location = update_employment.location.data
+            years = update_employment.years.data
+            id = update_employment.id.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Employment SET Company = '{company}',  Location= '{location}',
+             Years= {years},  WHERE ID ={id};  """)
             conn.commit()
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
 
-    return render_template('edit_info.html', form1=update_general, form2=update_education , user=user)
+   
+            
+       
+        
+    return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, user=user)
 
 
 
@@ -1111,7 +1177,7 @@ def societiesInfo():
                 #  picture_file = save_picture(form.picture.data)
                 # Image.open(picture_file)
             start_date = form.start_date.data
-            end_date = form.start_date.data
+            end_date = form.end_date.data
             society = form.society.data
             membership = form.membership.data
             status = form.status.data
