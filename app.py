@@ -28,12 +28,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
 
-dropzone = Dropzone(app)
-#drag and drop file upload settings
-app.config['DROPZONE_MAX_FILE_SIZE'] = 20
-app.config['DROPZONE_ALLOWED_FILE_CUSTOM'] = True
-app.config['DROPZONE_ALLOWED_FILE_TYPE'] = '.pdf'
-
 #setup for proposal call form
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
 app.config["MYSQL_USER"] = "seintu"
@@ -60,6 +54,11 @@ class sendExternalReview(FlaskForm):
     ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
     submit=SubmitField('Send for review')
     complete=SubmitField('External Reviews Sent: Mark as under Review')
+
+class ConfirmationForm(FlaskForm):
+    Approve=SubmitField("Approve Application")
+    Decline=SubmitField("Decline Application")
+
 
 class Proposal(db.Model):
     __tablename__ = "Proposal"
@@ -277,6 +276,19 @@ class ExternalReview(db.Model):
         self.Complete=Complete
         self.review=review
 
+class ExternalPendingReviews(db.Model):
+    __tablename__="ExternalPendingReviews"
+    id=db.Column(db.Integer,primary_key=True,nullable=False)
+    Submission = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable=False)
+    reviewer = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
+    Complete = db.Column(db.Boolean, default=False, nullable=False)
+
+    def __init__(self,Submission,reviewer,Complete):
+        self.Submission=Submission
+        self.reviewer=reviewer
+        self.Complete=Complete
+
+
 class Education(db.Model):
     __tablename__ = "Education"
     id = db.Column(db.Integer, primary_key=True)
@@ -329,7 +341,7 @@ class Team(db.Model):
     __tablename__ = "Team"
     team_id = db.Column("TeamID", db.Integer, primary_key=True)
     team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    submission_id = db.Column("SubmissionID", db.Integer, db.ForeignKey('Submission.id'))
+    propasal_id = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -464,8 +476,8 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField("User", validators=[InputRequired()])
-    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')], validators=[InputRequired()])
+    researcher = SelectField("User")
+    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
 
@@ -527,11 +539,7 @@ class ExternalReviewForm(FlaskForm):
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
     submit = SubmitField('submit')
 
-class ReportsForm(FlaskForm):
 
-    title = StringField('Title: ', validators=[InputRequired(), Length(max=50)])
-    pdf = FileField('PDF of Report: ', validators=[InputRequired()])
-    submit = SubmitField('Submit')
 
 
 @login_manager.user_loader
@@ -655,10 +663,9 @@ def dashboard():
             financial_reports.append(each)
     return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports)
 
-@app.route('/scientific_reports', methods=['GET', 'POST'])
+@app.route('/scientific_reports')
 @login_required
 def scientific_reports():
-    form = ReportsForm()
     reports = current_user.reports
     s_reports = []
     for each in reports:
@@ -716,6 +723,71 @@ def current_applications():
         posts.append(post)
     return render_template("current_applications.html",posts=posts)
 
+@app.route('/completed reviews_list')
+@login_required
+def completed_reviews_list():
+    completed = Submissions.query.filter_by(status="Approval Pending").all()
+    subs=[]
+    for i in completed:
+        sub={}
+        sub["title"] = i.title
+        sub["id"]=i.subid
+        sub["status"]=i.status
+        subs.append(sub)
+    return render_template("completed_reviews_list.html",sub=subs)
+
+
+@app.route('/completed_reviews')
+@login_required
+def completed_review():
+    #complete display of submission,review of submission and approval button
+    id=request.args.get("id")
+    rev = {}
+    sub = {}
+    prop = {}
+    if id!=None:
+        #display submission data
+
+        i = Submissions.query.filter_by(subid=id).first()
+        props = Proposal.query.filter_by(id=i.propid).first()
+        prop["subid"] = props.id
+        prop["deadline"] = props.Deadline
+        prop["text"] = props.TextOfCall
+        prop["audience"] = props.TargetAudience
+        prop["eligibility"] = props.EligibilityCriteria
+        prop["duration"] = props.Duration
+        prop["guidelines"] = props.ReportingGuidelines
+        prop["timeframe"] = props.TimeFrame
+        prop["title"] = props.title
+
+        sub["title"] = i.title
+        sub["duration"] = i.duration
+        sub["NRP"] = i.NRP
+        sub["legal"] = i.legal
+        sub["ethicalAnimal"] = i.ethicalAnimal
+        sub["ethicalHuman"] = i.ethicalHuman
+        sub["location"] = i.location
+        sub["coapplicants"] = i.coapplicants
+        sub["collaborators"] = i.collaborators
+        sub["scientific"] = i.scientific
+        sub["lay"] = i.lay
+        sub["file"] = i.proposalPDF
+
+        review=ExternalReview.query.filter_by(Submission=i.subid).first()
+
+        rev["file"]=review.review
+        rev["reviewer"]=review.reviewer
+
+    form=ConfirmationForm()
+    if form.Decline.data:
+        i.status="declined"
+        return redirect(url_for("dashboard"))
+    if form.Approve.data:
+        i.status="Approved"
+        return redirect(url_for("dashboard"))
+    return render_template("completed_reviews.html",form=form,sub=sub,rev=rev,prop=prop)
+
+
 @app.route('/admin_external_review')
 @login_required
 def admin_external_review():
@@ -729,25 +801,65 @@ def admin_external_review():
         posts.append(post)
     return render_template("admin_external_review.html", posts=posts)
 
-@app.route('/admin_send_review')
+@app.route('/admin_send_review',methods=['GET', 'POST'])
 @login_required
 def admin_send_review():
     form=sendExternalReview()
     post=request.args.get("id")
     sub={}
-    i = Proposal.query.filter_by(id=f"{post}").first()
-    sub["id"] = i.id
-    sub["deadline"] = i.Deadline
-    sub["text"] = i.TextOfCall
-    sub["audience"] = i.TargetAudience
-    sub["eligibility"] = i.EligibilityCriteria
-    sub["duration"] = i.Duration
-    sub["guidelines"] = i.ReportingGuidelines
-    sub["timeframe"] = i.TimeFrame
-    sub["title"] = i.title
+    prop={}
+    i = Submissions.query.filter_by(subid=f"{post}").first()
+    props=Proposal.query.filter_by(id=i.propid).first()
+    prop["subid"] = props.id
+    prop["deadline"] = props.Deadline
+    prop["text"] = props.TextOfCall
+    prop["audience"] = props.TargetAudience
+    prop["eligibility"] = props.EligibilityCriteria
+    prop["duration"] = props.Duration
+    prop["guidelines"] = props.ReportingGuidelines
+    prop["timeframe"] = props.TimeFrame
+    prop["title"] = props.title
 
-    return render_template("admin_send_review.html",sub=sub,form=form)
+    sub["title"]=i.title
+    sub["duration"]=i.duration
+    sub["NRP"]=i.NRP
+    sub["legal"]=i.legal
+    sub["ethicalAnimal"]=i.ethicalAnimal
+    sub["ethicalHuman"]=i.ethicalHuman
+    sub["location"]=i.location
+    sub["coapplicants"]=i.coapplicants
+    sub["collaborators"]=i.collaborators
+    sub["scientific"]=i.scientific
+    sub["lay"]=i.lay
 
+    if form.ORCID.data!=None:
+        print("here")
+        #database push external review link to user
+        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
+        db.session.add(new_external_review)
+        db.session.commit()
+    if form.complete.data:
+        #change submission to external review when done button is pressed
+        i.status="review"
+
+        flash("sent for external review")
+    return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
+
+@app.route('/reviewer_pending_list')
+@login_required
+def reviewer_pending_list():
+    posts = []
+    entries = ExternalPendingReviews.query.filter_by(reviewer=current_user.orcid).all()
+    #change this DB request to look for reveiews appropropriate to the current_user.orcid
+    for i in entries:
+        sub=Submissions.query.filter_by(subid=i.Submission).first()
+        post = {}
+        post["status"] = sub.status
+        post["title"] = sub.title
+        post["id"] = sub.subid
+        post["file"]=sub.proposalPDF
+        posts.append(post)
+    return render_template("reviewer_pending_list.html", posts=posts)
 
 
 @app.route('/create_submission_form')
@@ -806,7 +918,7 @@ def proposals():
         post["timeframe"] = i[7]
         post["title"] = i[1]
         posts.append(post)
-    #conn.commit()
+    conn.commit()
 
     cur.close()
     conn.close()
@@ -823,7 +935,11 @@ def submissions():
     conn = mysql.connect
     cur = conn.cursor()
     previousFile=None
-    cur.execute(f"""SELECT * FROM Submission WHERE propid = {post} AND user='{current_user.orcid}';""")
+    cur.execute(f"""
+                             SELECT *
+                             FROM Submission
+                             WHERE propid = {post} AND user='{current_user.orcid}';
+                             """)
     for i in cur.fetchall():
         if i[15]==0:
             return render_template("submitted.html")
@@ -960,14 +1076,13 @@ def external_review():
     form = ExternalReviewForm()
     file=request.args.get("file")
     review=request.args.get("pdfReview")
-    print(form.pdfReview.data)
     if form.pdfReview.data!=None:
-        filenamesecret = uuid.uuid4().hex
         print("here")
-        print(filenamesecret)
+        filenamesecret = uuid.uuid4().hex
         form.pdfReview.data.save('uploads/' + filenamesecret)
-        #add old fashion db select here.
-        new_review = ExternalReview(id,current_user.orcid,True,filenamesecret)
+        sub=Submissions.query.filter_by(proposalPDF=file).first()
+        new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
+        sub.status="Approval Pending"
         db.session.add(new_review)
         db.session.commit()
 
