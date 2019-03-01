@@ -664,9 +664,45 @@ def scientific_reports():
     for each in reports:
         if each.type == "Scientific":
             s_reports.append(each)
+    if request.method == "POST":
+        print(form.title.data)
+        print(form.pdf.data)
+        if form.is_submitted():
+            print("submitted")
+        if form.validate():
+            print("validated")
+    if form.validate_on_submit():
+        file = request.files['pdf']
+        if file.filename=="":
+            flash('No selected file')
+            return redirect(url_for(scientific_reports))
+        if file:
+            filename = secure_filename(file.filename)
+            file.save('uploads/'+filename)
+            filenamesecret = uuid.uuid4().hex
+            print("file saved")
+
+        newReport = Report(title=form.title.data, type="Scientific", pdf=filenamesecret, ORCID=current_user.orcid)
+        db.session.add(newReport)
+        db.session.commit()
+        return redirect(url_for('scientific_reports'))
     return render_template("scientific_reports.html", reports=s_reports, form=form)
 # @app.route('/edit')
 # @login_required
+'''if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        # if user does not select file, browser also
+        # submit an empty part without filename
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))'''
 
 @app.route('/current_applications')
 @login_required
