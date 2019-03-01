@@ -111,7 +111,7 @@
                             <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
                                 
                                     {{form3.hidden_tag()}}
-                                            <div class="form-group col-lg-12 " style='display:hidden;'>
+                                            <div class="form-group col-lg-12 " style='display:none;'>
                                                 {{render_field(form3.id, value= j.id,class="col-lg-12")}}
                                          </div>
                                          
@@ -141,43 +141,37 @@
                         {% endfor %}
                     </div>
                     
-                    <div id="headingThree" style="padding-left:5em;">
+                    <div id="headingFour" style="padding-left:5em;">
                         
-                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
-                            Edit Societies Info
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+                            Edit Employment Info
                         </button>
                         
                     </div>
                 
-                    <div id="collapseThree" class="collapse  aria-labelledby="headingThree" data-parent="#accordionExample">
-                        {% for j in user.societies %}
+                    <div id="collapseFour" class="collapse  aria-labelledby="headingFour" data-parent="#accordionExample">
+                        {% for j in user.employment %}
                             <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
                                 
-                                    {{form3.hidden_tag()}}
-                                            <div class="form-group col-lg-12 " style='display:hidden;'>
-                                                {{render_field(form3.id, value= j.id,class="col-lg-12")}}
+                                    {{form4.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none;'>
+                                                {{render_field(form4.id, value= j.id,class="col-lg-12")}}
                                          </div>
                                          
                                         <div class="form-group col-lg-12 ">
-                                            {{render_field(form3.start_date, value= j.start_date,class="col-lg-12")}}
+                                            {{render_field(form4.company, value= j.company,class="col-lg-12")}}
                                         </div>
                                         <div class="form-group col-lg-12">
-                                            {{render_field(form3.end_date,value=j.end_date, class="col-lg-12")}}
+                                            {{render_field(form4.location,value=j.location, class="col-lg-12")}}
                                         </div>
                             
                                         <div class="form-group col-lg-12">
-                                            {{render_field(form3.society,value= j.society,class="col-lg-12")}}
-                                        </div>
-                                        <div class="form-group col-lg-12">
-                                            {{render_field(form3.membership,value =j.membership,class="col-lg-12")}}
-                                        </div>
-                                        <div class="form-group col-lg-12">
-                                            {{render_field(form3.status,value =j.status,class="col-lg-12")}}
+                                            {{render_field(form4.years,value= j.years,class="col-lg-12")}}
                                         </div>
                                        
-                                        
+                                
                                         <div class="form-group col-lg-6 " id="edit soc">
-                                            {{ form3.submit_soc}}
+                                            {{ form4.submit_emp}}
                                         </div>
                                     
                             </form>

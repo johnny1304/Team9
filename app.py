@@ -480,11 +480,13 @@ class AddEmploymentForm(FlaskForm):
 	submit = SubmitField('Add')
 
 class UpdateEmploymentForm(FlaskForm):
-	company = StringField('Company:', validators=[ Length(max=50)])
-	location = StringField('Location:', validators=[ Length(max=50)])
-	years = IntegerField('Years:')
-	submit_emp = SubmitField('Edit Employment')
-    remove_emp = SubmitField('Remove')
+    id = StringField('ID:', validators=[ Length(max=50)])
+    company = StringField('Company:', validators=[ Length(max=50)])
+    location = StringField('Location:', validators=[ Length(max=50)])
+    years = IntegerField('Years:')
+    submit_emp = SubmitField('Edit Employment')
+
+
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
@@ -497,6 +499,14 @@ class UpdateSocietiesForm(FlaskForm):
     submit_soc = SubmitField('Edit Societies')
     remove_soc = SubmitField('Remove')
 
+class UpdateAwardsForm(FlaskForm):
+    id = StringField('ID:', validators=[ Length(max=50)])
+    year = IntegerField('Year:')
+    award_body = StringField('Awarding Body:', validators=[ Length(max=50)])
+    details = StringField('Detail:', validators=[Length(max=50)])
+    team_member = StringField('Team Member ', validators=[Length(max=50)])
+    submit_awrd = SubmitField('Edit Awards')
+    remove_awrd = SubmitField('Remove')
 
 class AddSocietiesForm(FlaskForm):
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
@@ -918,6 +928,7 @@ def edit_info():
     update_education = UpdateEducationForm(request.form)
     update_societies = UpdateSocietiesForm(request.form)
     update_employment = UpdateEmploymentForm(request.form)
+    update_awards = UpdateAwardsForm(request.form)
     user = current_user
     print(user.societies)
     
@@ -991,17 +1002,33 @@ def edit_info():
             conn.close()
             return redirect(url_for('profile'))
         
-         elif update_employment.validate_on_submit and "submit_emp" in request.form:
+        elif update_employment.validate_on_submit and "submit_emp" in request.form:
             company = update_employment.company.data
             location = update_employment.location.data
             years = update_employment.years.data
-            id = update_employment.id.data
+            id2 = update_employment.id.data
 
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
             cur.execute(f"""UPDATE Employment SET Company = '{company}',  Location= '{location}',
-             Years= {years},  WHERE ID ={id};  """)
+             Years= {years}  WHERE ID ={id2};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        
+        elif update_awards.validate_on_submit and "submit_awrd" in request.form:
+            year = update_awards.year.data
+            award_body = update_awards.award_body.data
+            details = update_awards.details.data
+            team_member = update_awards.team_member.data
+            id3 = update_employment.id.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE Award  WHERE ID ={id3};  """)
             conn.commit()
             cur.close()
             conn.close()
@@ -1011,7 +1038,7 @@ def edit_info():
             
        
         
-    return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, user=user)
+    return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment, user=user)
 
 
 
