@@ -14,13 +14,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mysqldb import MySQL
+from flask_dropzone import Dropzone
 import smtplib
 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
 app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project'  # set the database directory
+    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
 Bootstrap(app)
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -31,9 +32,11 @@ login_manager.login_view = 'signin'
 app.config["MYSQL_HOST"] = "mysql.netsoc.co"
 app.config["MYSQL_USER"] = "seintu"
 app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_project"
+app.config["MYSQL_DB"] = "seintu_project2"
 mysql = MySQL(app)
 mysql.init_app(app)
+
+
 
 class proposalForm(FlaskForm):
     title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
@@ -47,6 +50,16 @@ class proposalForm(FlaskForm):
     picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Submit')
 
+class sendExternalReview(FlaskForm):
+    ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
+    submit=SubmitField('Send for review')
+    complete=SubmitField('External Reviews Sent: Mark as under Review')
+
+class ConfirmationForm(FlaskForm):
+    Approve=SubmitField("Approve Application")
+    Decline=SubmitField("Decline Application")
+
+
 class Proposal(db.Model):
     __tablename__ = "Proposal"
     Deadline = db.Column(db.Date, nullable=False)
@@ -59,7 +72,7 @@ class Proposal(db.Model):
     TimeFrame = db.Column(db.String(200), nullable=False)
     picture = db.Column(db.String(200),nullable=True)
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    team = db.relationship('Team', backref="Proposal")
+
 
     def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
         self.Deadline = Deadline
@@ -145,6 +158,7 @@ class Submissions(db.Model):
     user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
     draft = db.Column(db.Boolean, nullable=False, default=True)
     proposalPDF = db.Column(db.String(255),nullable=False)
+    status = db.Column(db.String(255), default="pending")
 
     def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
         self.title=title
@@ -167,8 +181,6 @@ class Submissions(db.Model):
 
     def setDraftFalse(self):
         self.draft=False
-
-
 
 
 class Funding(db.Model):
@@ -226,6 +238,8 @@ class User(UserMixin, db.Model):
     organised_events = db.relationship('OrganisedEvents', backref='Researcher')
     edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
     submission = db.relationship('Submissions', backref='Researcher')
+    ExternalReview = db.relationship('ExternalReview',backref='Researcher')
+    reports = db.relationship('Report', backref='Researcher')
 
     def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
         # this initialises the class and maps the variables to the table (done by flask automatically)
@@ -247,6 +261,33 @@ class User(UserMixin, db.Model):
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
         return self.orcid
+
+class ExternalReview(db.Model):
+    __tablename__="ExternalReview"
+    id=db.Column(db.Integer,primary_key=True,nullable=False)
+    Submission=db.Column(db.Integer,db.ForeignKey('Submission.subid'),nullable=False)
+    reviewer=db.Column(db.Integer,db.ForeignKey('Researcher.orcid'),nullable=False)
+    Complete=db.Column(db.Boolean,default=False,nullable=False)
+    review=db.Column(db.String(255),nullable=False)
+
+    def __init__(self,Submission,reviewer,Complete,review):
+        self.Submission=Submission
+        self.reviewer=reviewer
+        self.Complete=Complete
+        self.review=review
+
+class ExternalPendingReviews(db.Model):
+    __tablename__="ExternalPendingReviews"
+    id=db.Column(db.Integer,primary_key=True,nullable=False)
+    Submission = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable=False)
+    reviewer = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
+    Complete = db.Column(db.Boolean, default=False, nullable=False)
+
+    def __init__(self,Submission,reviewer,Complete):
+        self.Submission=Submission
+        self.reviewer=reviewer
+        self.Complete=Complete
+
 
 class Education(db.Model):
     __tablename__ = "Education"
@@ -385,6 +426,14 @@ class EducationAndPublicEngagement(db.Model):
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
+class Report(db.Model):
+    __tablename__ = "Report"
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    pdf = db.Column(db.String(255))
+    type = db.Column(db.String(255), nullable=False)
+    ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+
 
 
 
@@ -427,7 +476,7 @@ class RegisterForm(FlaskForm):
     phone_extension = IntegerField('Phone Extension: ')
 
 class ManageForm(FlaskForm):
-    researcher = SelectField(u"User")
+    researcher = SelectField("User")
     role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
     submit = SubmitField('Apply')
 
@@ -460,7 +509,7 @@ class EmploymentForm(FlaskForm):
 	submit = SubmitField('Edit')
 
 class SocietiesForm(FlaskForm):
-
+	
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -485,6 +534,11 @@ class TeamMembersForm(FlaskForm):
     primary_attribution = StringField('Primary Attribution:',validators=[ Length(max=20)])
     submit = SubmitField('Edit')
 
+class ExternalReviewForm(FlaskForm):
+
+    pdfReview=FileField('PDF of Review',validators=[InputRequired()])
+    submit = SubmitField('submit')
+
 
 
 
@@ -498,11 +552,9 @@ def mail(receiver, content="", email="", password=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-    
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
-	
     if not content:
         content = "Account made confirmation message"
     if not email:
@@ -523,14 +575,14 @@ def mail(receiver, content="", email="", password=""):
 @app.route('/')
 @app.route('/home')
 def index():
-    if current_user.is_authenticated:
-       updateType = User.query.filter_by(orcid=current_user.orcid).first()
-       updateType.type = "Admin"
-       db.session.commit()
+    #if current_user.is_authenticated:
+    #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
+    #    updateType.type = "Admin"
+    #    db.session.commit()
         # this route returns the home.html file
     #conn = mysql.connect
     #cur = conn.cursor()
-    #cur.execute("DROP TABLE IF EXISTS Submission;")
+    #cur.execute("DROP TABLE Submission;")
     #conn.commit()
     #cur.close()
     #conn.close()
@@ -601,12 +653,178 @@ def signup():
 def dashboard():
     # return the dashboard html file with the user passed to it
     applications = Submissions.query.filter_by(user=current_user.orcid).all()
-    print(len(applications))
-    return render_template('dashboard.html', user=current_user, applications=applications)
+    reports = current_user.reports
+    scientific_reports = []
+    financial_reports = []
+    for each in reports:
+        if each.type == "Scientific":
+            scientific_reports.append(each)
+        elif each.type == "Financial":
+            financial_reports.append(each)
+    return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports)
 
-
+@app.route('/scientific_reports')
+@login_required
+def scientific_reports():
+    reports = current_user.reports
+    s_reports = []
+    for each in reports:
+        if each.type == "Scientific":
+            s_reports.append(each)
+    return render_template("scientific_reports.html", reports=s_reports)
 # @app.route('/edit')
 # @login_required
+
+@app.route('/current_applications')
+@login_required
+def current_applications():
+    posts = []
+    entries=Submissions.query.filter_by(user=current_user.orcid).all()
+    for i in entries:
+        post={}
+        post["status"]=i.status
+        post["title"]=i.title
+        posts.append(post)
+    return render_template("current_applications.html",posts=posts)
+
+@app.route('/completed reviews_list')
+@login_required
+def completed_reviews_list():
+    completed = Submissions.query.filter_by(status="Approval Pending").all()
+    subs=[]
+    for i in completed:
+        sub={}
+        sub["title"] = i.title
+        sub["id"]=i.subid
+        sub["status"]=i.status
+        subs.append(sub)
+    return render_template("completed_reviews_list.html",sub=subs)
+
+
+@app.route('/completed_reviews')
+@login_required
+def completed_review():
+    #complete display of submission,review of submission and approval button
+    id=request.args.get("id")
+    rev = {}
+    sub = {}
+    prop = {}
+    if id!=None:
+        #display submission data
+
+        i = Submissions.query.filter_by(subid=id).first()
+        props = Proposal.query.filter_by(id=i.propid).first()
+        prop["subid"] = props.id
+        prop["deadline"] = props.Deadline
+        prop["text"] = props.TextOfCall
+        prop["audience"] = props.TargetAudience
+        prop["eligibility"] = props.EligibilityCriteria
+        prop["duration"] = props.Duration
+        prop["guidelines"] = props.ReportingGuidelines
+        prop["timeframe"] = props.TimeFrame
+        prop["title"] = props.title
+
+        sub["title"] = i.title
+        sub["duration"] = i.duration
+        sub["NRP"] = i.NRP
+        sub["legal"] = i.legal
+        sub["ethicalAnimal"] = i.ethicalAnimal
+        sub["ethicalHuman"] = i.ethicalHuman
+        sub["location"] = i.location
+        sub["coapplicants"] = i.coapplicants
+        sub["collaborators"] = i.collaborators
+        sub["scientific"] = i.scientific
+        sub["lay"] = i.lay
+        sub["file"] = i.proposalPDF
+
+        review=ExternalReview.query.filter_by(Submission=i.subid).first()
+
+        rev["file"]=review.review
+        rev["reviewer"]=review.reviewer
+
+    form=ConfirmationForm()
+    if form.Decline.data:
+        i.status="declined"
+        return redirect(url_for("dashboard"))
+    if form.Approve.data:
+        i.status="Approved"
+        return redirect(url_for("dashboard"))
+    return render_template("completed_reviews.html",form=form,sub=sub,rev=rev,prop=prop)
+
+
+@app.route('/admin_external_review')
+@login_required
+def admin_external_review():
+    posts = []
+    entries = Submissions.query.filter_by(status="pending").all()
+    for i in entries:
+        post = {}
+        post["status"] = i.status
+        post["title"] = i.title
+        post["id"] = i.subid
+        posts.append(post)
+    return render_template("admin_external_review.html", posts=posts)
+
+@app.route('/admin_send_review',methods=['GET', 'POST'])
+@login_required
+def admin_send_review():
+    form=sendExternalReview()
+    post=request.args.get("id")
+    sub={}
+    prop={}
+    i = Submissions.query.filter_by(subid=f"{post}").first()
+    props=Proposal.query.filter_by(id=i.propid).first()
+    prop["subid"] = props.id
+    prop["deadline"] = props.Deadline
+    prop["text"] = props.TextOfCall
+    prop["audience"] = props.TargetAudience
+    prop["eligibility"] = props.EligibilityCriteria
+    prop["duration"] = props.Duration
+    prop["guidelines"] = props.ReportingGuidelines
+    prop["timeframe"] = props.TimeFrame
+    prop["title"] = props.title
+
+    sub["title"]=i.title
+    sub["duration"]=i.duration
+    sub["NRP"]=i.NRP
+    sub["legal"]=i.legal
+    sub["ethicalAnimal"]=i.ethicalAnimal
+    sub["ethicalHuman"]=i.ethicalHuman
+    sub["location"]=i.location
+    sub["coapplicants"]=i.coapplicants
+    sub["collaborators"]=i.collaborators
+    sub["scientific"]=i.scientific
+    sub["lay"]=i.lay
+
+    if form.ORCID.data!=None:
+        print("here")
+        #database push external review link to user
+        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
+        db.session.add(new_external_review)
+        db.session.commit()
+    if form.complete.data:
+        #change submission to external review when done button is pressed
+        i.status="review"
+
+        flash("sent for external review")
+    return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
+
+@app.route('/reviewer_pending_list')
+@login_required
+def reviewer_pending_list():
+    posts = []
+    entries = ExternalPendingReviews.query.filter_by(reviewer=current_user.orcid).all()
+    #change this DB request to look for reveiews appropropriate to the current_user.orcid
+    for i in entries:
+        sub=Submissions.query.filter_by(subid=i.Submission).first()
+        post = {}
+        post["status"] = sub.status
+        post["title"] = sub.title
+        post["id"] = sub.subid
+        post["file"]=sub.proposalPDF
+        posts.append(post)
+    return render_template("reviewer_pending_list.html", posts=posts)
+
 
 @app.route('/create_submission_form')
 @login_required
@@ -619,7 +837,7 @@ def create_submission_page():
 
     cur.execute("""
                 SELECT *
-                FROM Proposals;
+                FROM Proposal;
                 """)
     for i in cur.fetchall():
         post={}
@@ -649,19 +867,20 @@ def proposals():
 
     cur.execute("""
                  SELECT *
-                 FROM Proposals;
+                 FROM Proposal;
                  """)
     for i in cur.fetchall():
         post = {}
-        post["id"] = i[0]
-        post["deadline"] = i[1]
+        print(i)
+        post["id"] = i[9]
+        post["deadline"] = i[0]
         post["text"] = i[2]
         post["audience"] = i[3]
         post["eligibility"] = i[4]
         post["duration"] = i[5]
         post["guidelines"] = i[6]
         post["timeframe"] = i[7]
-        post["title"] = i[9]
+        post["title"] = i[1]
         posts.append(post)
     conn.commit()
 
@@ -686,7 +905,6 @@ def submissions():
                              WHERE propid = {post} AND user='{current_user.orcid}';
                              """)
     for i in cur.fetchall():
-        print(i)
         if i[15]==0:
             return render_template("submitted.html")
         form.propid=i[0]
@@ -781,26 +999,17 @@ def submissions():
             return redirect(url_for("submissions", id=form.propid, sub=sub))
 
 
-    conn = mysql.connect
-    cur = conn.cursor()
-    cur.execute(f"""
-                         SELECT *
-                         FROM Proposals
-                         WHERE proposalID = {post};
-                         """)
-    i = cur.fetchone()
-    sub["id"] = i[0]
-    sub["deadline"] = i[1]
-    sub["text"] = i[2]
-    sub["audience"] = i[3]
-    sub["eligibility"] = i[4]
-    sub["duration"] = i[5]
-    sub["guidelines"] = i[6]
-    sub["timeframe"] = i[7]
-    sub["title"] = i[9]
-    conn.commit()
-    cur.close()
-    conn.close()
+
+    i=Proposal.query.filter_by(id=f"{post}").first()
+    sub["id"] = i.id
+    sub["deadline"] = i.Deadline
+    sub["text"] = i.TextOfCall
+    sub["audience"] = i.TargetAudience
+    sub["eligibility"] = i.EligibilityCriteria
+    sub["duration"] = i.Duration
+    sub["guidelines"] = i.ReportingGuidelines
+    sub["timeframe"] = i.TimeFrame
+    sub["title"] = i.title
 
     return render_template('submissions.html', user=current_user, sub=sub,form=form)
 
@@ -818,7 +1027,34 @@ def save_picture(form_picture):
 
     return picture_fn
 
-@app.route('/p', methods=['GET', 'POST'])
+@app.route('/download')
+@login_required
+def download():
+    filename=request.args.get("file")
+    dir="uploads"
+    return send_from_directory(dir,filename,as_attachment=True)
+
+@app.route('/external_review',methods=['GET','POST'])
+@login_required
+def external_review():
+    form = ExternalReviewForm()
+    file=request.args.get("file")
+    review=request.args.get("pdfReview")
+    if form.pdfReview.data!=None:
+        print("here")
+        filenamesecret = uuid.uuid4().hex
+        form.pdfReview.data.save('uploads/' + filenamesecret)
+        sub=Submissions.query.filter_by(proposalPDF=file).first()
+        new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
+        sub.status="Approval Pending"
+        db.session.add(new_review)
+        db.session.commit()
+
+    if file==None and review==None:
+        return redirect(url_for("index"))
+    return render_template('external_review.html',file=file,form=form)
+
+@app.route('/proposal_call', methods=['GET', 'POST'])
 @login_required
 def proposal_call():
     #Creates proposal form
@@ -853,7 +1089,7 @@ def proposal_call():
             conn = mysql.connect
             cur = conn.cursor()
             # execute a query
-            cur.execute("""INSERT INTO Proposals(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
+            cur.execute("""INSERT INTO Proposal(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
                         VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(deadline,title, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
             # rv contains the result of the execute
             conn.commit()
@@ -871,11 +1107,11 @@ def proposal_call():
 def generalInfo():
     #Creates proposal form
     form = UpdateInfoForm(request.form)
-    conn = mysql.connect
-    cur= conn.cursor()
+    #conn = mysql.connect
+    #cur= conn.cursor()
             # execute a query
-    cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
-    data = cur.fetchone()
+    #cur.execute("""SELECT * FROM Researcher WHERE ORCID=%s""", [current_user.orcid])
+    #data = cur.fetchone()
 
     #checks if form is submitted by post
     if request.method == 'POST':
@@ -888,26 +1124,28 @@ def generalInfo():
              #   print("here ttt")
               #  picture_file = save_picture(form.picture.data)
                # Image.open(picture_file)
-            first_name = form.first_name.data
-            last_name = form.last_name.data
-            email = form.email.data
-            job = form.job.data
-            prefix = form.prefix.data
-            suffix = form.suffix.data
-            phone = form.phone.data
-            phone_extension = form.phone_extension.data
+            current_user.first_name = form.first_name.data
+            current_user.last_name = form.last_name.data
+            current_user.email = form.email.data
+            current_user.job = form.job.data
+            current_user.prefix = form.prefix.data
+            current_user.suffix = form.suffix.data
+            current_user.phone = form.phone.data
+            current_user.phone_extension = form.phone_extension.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            db.session.commit()
+
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
-                    Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
+            #        Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
 
-    return render_template('generalInfo.html', form=form, data=data)
+    return render_template('generalInfo.html', form=form)
 
 
 @app.route('/educationInfo', methods=['GET', 'POST'])
@@ -1173,7 +1411,7 @@ def awardsInfo():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-
+    
     return render_template('awardsInfo.html', form=form, data=data)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
@@ -1286,21 +1524,25 @@ def manage():
             if each.type != "Admin":
                 researchers.append(each)
         form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
-
-        if form.validate_on_submit():
-            researcher = User.query.filter_by(orcid=form.researcher.data).first()
-            newRole = form.role.data
-            if researcher.orcid == current_user.orcid:
-                flash("You can't change your own role unfortunately", category="unauthorised")
+        print(researchers)
+        if request.method == "POST":
+            print(form.researcher.data)
+            print(form.role.data)
+            if form.submit.data:
+                researcher = User.query.filter_by(orcid=form.researcher.data).first()
+                newRole = form.role.data
+                if researcher.orcid == current_user.orcid:
+                    flash("You can't change your own role unfortunately", category="unauthorised")
+                    return redirect(url_for('manage'))
+                if researcher.type == "Admin":
+                    flash("You can't change another admin's role", category="unauthorised")
+                    return redirect(url_for('manage'))
+                researcher.type = newRole
+                db.session.commit()
+                flash("Role have been updated", category="success")
                 return redirect(url_for('manage'))
-            if researcher.type == "Admin":
-                flash("You can't change another admin's role", category="unauthorised")
-                return redirect(url_for('manage'))
-            researcher.type = newRole
-            db.session.commit()
-            flash("Role have been updated", category="success")
-            return redirect(url_for('manage'))
 
+            return render_template('manage.html', form=form, researchers=researchers)
         return render_template('manage.html', form=form, researchers=researchers)
     else:
         flash("You need to be an admin to manage others.", category="unauthorised")
