@@ -485,6 +485,7 @@ class UpdateEmploymentForm(FlaskForm):
     location = StringField('Location:', validators=[ Length(max=50)])
     years = IntegerField('Years:')
     submit_emp = SubmitField('Edit Employment')
+    remove_emp = SubmitField('Remove')
 
 
 
@@ -959,10 +960,8 @@ def edit_info():
             return redirect(url_for('profile'))
 
 
-        #print(update_educa
-        # 
-        # tion.errors)
-       
+        
+       # Edit societies
         elif update_societies.validate_on_submit and "submit_soc" in request.form:
             print("here")
             start_date = update_societies.start_date.data
@@ -982,7 +981,21 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-
+        # Remove societies
+        elif update_societies.validate_on_submit and "remove_soc" in request.form:
+            print("here")
+            
+            id1 = update_societies.id.data
+        
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Societies WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        # Edit Education
         elif update_education.validate_on_submit and "submit_edu" in request.form:
             degree = update_education.degree.data
             institution = update_education.institution.data
@@ -1001,7 +1014,22 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
+        #Remove Edu
+        elif update_education.validate_on_submit and "remove_edu" in request.form:
+            print("here")
+            
+            id1 = update_education.id.data
         
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Education WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+
+        #Edit Employment
         elif update_employment.validate_on_submit and "submit_emp" in request.form:
             company = update_employment.company.data
             location = update_employment.location.data
@@ -1017,7 +1045,22 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
+        #Remove Employment
+        elif update_employment.validate_on_submit and "remove_emp" in request.form:
+            print("here")
+            
+            id1 = update_employment.id.data
         
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Employment WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+
+        #Edit Awards
         elif update_awards.validate_on_submit and "submit_awrd" in request.form:
             year = update_awards.year.data
             award_body = update_awards.award_body.data
@@ -1029,6 +1072,20 @@ def edit_info():
             cur= conn.cursor()
             # execute a query
             cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',TeamMember = '{team_member}' WHERE ID ={id3};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        #Remove Awards
+        elif update_awards.validate_on_submit and "remove_awrd" in request.form:
+            print("here")
+            
+            id1 = update_awards.id.data
+        
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Awards WHERE ID ={id1};  """)
             conn.commit()
             cur.close()
             conn.close()
