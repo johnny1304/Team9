@@ -16,10 +16,8 @@
             <span class="notify-badge">{{applications|length}}</span>
             <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
           <p><strong>Current Applications</strong></p>
+           </div>
         </a>
-          
-          
-        </div>
         
           
       </div>
@@ -35,15 +33,15 @@
       </div>
 
       <div class="col-sm-4">
-          <a href="#">
+      <a href="#">
         <div class="thumbnail">
             <span class="notify-badge">{{f_reports|length}}</span>
           <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
           <p><strong>Current Financial Reports</strong></p>
-          </a>
         </div>
+          </a>
       </div>
-      
+<!--       
 <div class="container-fluid text-center bg-grey">
       <div class="row text-center">
         <div class="col-sm-4">
@@ -55,16 +53,16 @@
             </a>
           </div>
         </div>
-        <div class="col-sm-4">
-            <a href="#">
+ -->        <div class="col-sm-4">
+            <a href="profile">
           <div class="thumbnail">
-              <span class="notify-badge">0</span>
+              <span class="notify-badge">{{info}}</span>
             <img src="{{url_for('static', filename='award.svg')}}" alt="Award Icon">
-            <p><strong>Pre Award Applications</strong></p>
-            </a>
+            <p><strong>Profile</strong></p>
           </div>
+          </a>
         </div>
-
+<!-- 
         <div class="col-sm-4">
             <a href="#">
           <div class="thumbnail">
@@ -74,9 +72,9 @@
             </a>
           </div>
         </div>
-  </div>
+ -->  </div>
 </div>
-
+<!-- 
 <div class="container">
 <div id="accordion">
   <div class="card">
@@ -159,7 +157,7 @@
       </div>
     </div>
   </div>
-
+ -->
 </div>
 </div>
 {% endif %}
