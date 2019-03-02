@@ -1,7 +1,12 @@
 {% extends "layout.html" %}
 {% block content %}
+
+<div class="container-fluid text-center bg-grey">
+
     <div class="row justify-content-center col-lg-12">
+        {% if post|length != 0 %}
         {% for post in posts %}
+
             <div class="Justify-content-center col-lg-12 dropdown" style="background-color:white ; border:5px ; margin-top:5em; border-radius: 10px;">
             <button class="col-lg-9 btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 <h3>{{ post.title }}</h3>
@@ -10,6 +15,13 @@
 
           </div>
         {% endfor %}
+        {% else %}
+    <div class="col-sm-4">
+        <br><br><br><br><br>
+        <span>No Applications made. <a href="proposals">Click here to apply.</a></span>
     </div>
+        {% endif %}
+
+</div>    </div>
 
 {% endblock content %}
