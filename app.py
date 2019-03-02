@@ -56,9 +56,12 @@ class sendExternalReview(FlaskForm):
     complete=SubmitField('External Reviews Sent: Mark as under Review')
 
 class ConfirmationForm(FlaskForm):
+    Sub=StringField("Submission id")
     Approve=SubmitField("Approve Application")
     Decline=SubmitField("Decline Application")
 
+    def setSub(self,sub):
+        self.Sub=sub
 
 class Proposal(db.Model):
     __tablename__ = "Proposal"
@@ -737,7 +740,7 @@ def completed_reviews_list():
     return render_template("completed_reviews_list.html",sub=subs)
 
 
-@app.route('/completed_reviews')
+@app.route('/completed_reviews',methods=['GET','POST'])
 @login_required
 def completed_review():
     #complete display of submission,review of submission and approval button
@@ -745,9 +748,8 @@ def completed_review():
     rev = {}
     sub = {}
     prop = {}
-    if id!=None:
         #display submission data
-
+    if id!=None:
         i = Submissions.query.filter_by(subid=id).first()
         props = Proposal.query.filter_by(id=i.propid).first()
         prop["subid"] = props.id
@@ -778,12 +780,17 @@ def completed_review():
         rev["file"]=review.review
         rev["reviewer"]=review.reviewer
 
+
     form=ConfirmationForm()
+    form.setSub(i)
     if form.Decline.data:
-        i.status="declined"
+        print("declined")
+        form.Sub.status="declined"
+        db.session.commit()
         return redirect(url_for("dashboard"))
     if form.Approve.data:
-        i.status="Approved"
+        form.Sub.status="Approved"
+        db.session.commit()
         return redirect(url_for("dashboard"))
     return render_template("completed_reviews.html",form=form,sub=sub,rev=rev,prop=prop)
 

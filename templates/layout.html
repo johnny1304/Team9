@@ -71,6 +71,12 @@
                 </li>
                 {% endif %}
 
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link " href="reviewer_pending_list" >Pending External Reviews</a>
+                </li>
+                {% endif %}
+
                 {% if current_user.is_authenticated and current_user.type == "Admin" %}
                 <li class="nav-item">
                     <a class="nav-link " href="/proposal_call" >Create Proposal</a>
