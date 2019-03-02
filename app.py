@@ -652,6 +652,7 @@ def signup():
 @login_required
 def dashboard():
     # return the dashboard html file with the user passed to it
+    profile = getProfileInfo()
     applications = Submissions.query.filter_by(user=current_user.orcid).all()
     reports = current_user.reports
     scientific_reports = []
@@ -661,7 +662,8 @@ def dashboard():
             scientific_reports.append(each)
         elif each.type == "Financial":
             financial_reports.append(each)
-    return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports)
+
+    return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports, info=profile)
 
 @app.route('/scientific_reports')
 @login_required
@@ -1584,6 +1586,48 @@ def manage():
         flash("You need to be an admin to manage others.", category="unauthorised")
         return redirect(url_for('manage'))
 
+def getProfileInfo():
+    profileInfo = 0
+    education = current_user.education
+    employment = current_user.education
+    societies = current_user.societies
+    awards = current_user.awards
+    funding = current_user.funding
+    team_members = current_user.team_members
+    impacts = current_user.impacts
+    inno_and_comm = current_user.inno_and_comm
+    publications = current_user.publications
+    presentations = current_user.presentations
+    collab = current_user.collab
+    organised_events = current_user.organised_events
+    edu_and_public_engagement = current_user.edu_and_public_engagement
+    if len(education) < 1:
+        profileInfo += 1
+    if len(employment) < 1:
+        profileInfo += 1
+    if len(societies) < 1:
+        profileInfo += 1
+    if len(awards) < 1:
+        profileInfo += 1
+    if len(funding) < 1:
+        profileInfo += 1
+    if len(impacts) < 1:
+        profileInfo += 1
+    if len(team_members) < 1:
+        profileInfo += 1
+    if len(inno_and_comm) < 1:
+        profileInfo += 1
+    if len(publications) < 1:
+        profileInfo += 1
+    if len(presentations) < 1:
+        profileInfo += 1
+    if len(collab) < 1:
+        profileInfo += 1
+    if len(organised_events) < 1:
+        profileInfo += 1
+    if len(edu_and_public_engagement) < 1:
+        profileInfo += 1
+    return profileInfo
 
 if __name__ == "__main__":
     app.run(debug=True)
