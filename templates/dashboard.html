@@ -9,37 +9,51 @@
     <br>
     {% if current_user.is_authenticated and current_user.type != "Admin" %}
     <div class="row text-center">
-      <div class="col-sm-4">
-          <a href="current_applications">
-            
-        <div class="thumbnail">
-            <span class="notify-badge">{{applications|length}}</span>
-            <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
-          <p><strong>Current Applications</strong></p>
-           </div>
-        </a>
-        
-          
-      </div>
-
-      <div class="col-sm-4">
-      <a href="scientific_reports">
-        <div class="thumbnail">
-            <span class="notify-badge">{{s_reports|length}}</span>
-          <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
-          <p><strong>Current Scientific Reports</strong></p>
-        </div>
-      </a>
-      </div>
-
-      <div class="col-sm-4">
-      <a href="#">
-        <div class="thumbnail">
-            <span class="notify-badge">{{f_reports|length}}</span>
-          <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
-          <p><strong>Current Financial Reports</strong></p>
-        </div>
+        <div class="col-sm-4">
+            <a href="current_applications">
+              
+          <div class="thumbnail">
+              <span class="notify-badge">{{applications|length}}</span>
+              <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
+            <p><strong>Current Applications</strong></p>
+            </div>
           </a>
+          
+            
+        </div>
+
+        <div class="col-sm-4">
+        <a href="scientific_reports">
+          <div class="thumbnail">
+              <span class="notify-badge">{{s_reports|length}}</span>
+            <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
+            <p><strong>Current Scientific Reports</strong></p>
+          </div>
+        </a>
+        </div>
+
+        <div class="col-sm-4">
+        <a href="#">
+          <div class="thumbnail">
+              <span class="notify-badge">{{f_reports|length}}</span>
+            <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
+            <p><strong>Current Financial Reports</strong></p>
+          </div>
+            </a>
+        </div>
+    </div>
+
+      <div class="row justify-content-md-center">
+      <div class="col-sm-4">
+        <a href="profile">
+          <div class="thumbnail">
+              <span class="notify-badge">{{info}}</span>
+            <img src="{{url_for('static', filename='profileIcon2.svg')}}" alt="Profile Icon">
+            <p><strong>Researcher Profile Page</strong></p>
+          </div>
+          
+            </a>
+        </div>
       </div>
 <!--       
 <div class="container-fluid text-center bg-grey">
@@ -53,15 +67,9 @@
             </a>
           </div>
         </div>
- -->        <div class="col-sm-4">
-            <a href="profile">
-          <div class="thumbnail">
-              <span class="notify-badge">{{info}}</span>
-            <img src="{{url_for('static', filename='award.svg')}}" alt="Award Icon">
-            <p><strong>Profile</strong></p>
-          </div>
-          </a>
-        </div>
+      
+  -->      
+  
 <!-- 
         <div class="col-sm-4">
             <a href="#">
