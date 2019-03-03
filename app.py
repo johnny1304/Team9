@@ -1505,7 +1505,7 @@ def educationInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('educationInfo'))
 
 
     return render_template('educationInfo.html', form=form, list=education_list)
@@ -1539,7 +1539,7 @@ def employmentInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('employmentInfo'))
 
    
 
@@ -1577,7 +1577,7 @@ def societiesInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('societiesInfo'))
 
    
 
@@ -1616,7 +1616,7 @@ def awardsInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('awardsInfo'))
 
  
     return render_template('awardsInfo.html', form=form, list=awards_list)
@@ -1653,7 +1653,7 @@ def team_members_info():
                 conn.commit()
                 cur.close()
                 conn.close()
-                return redirect(url_for('profile'))
+                return redirect(url_for('team_member_info'))
         return render_template('team_members_info.html', form=form)
 
    #team_members_list= TeamMembers.query.filter_by(team_id=team.team_id).all()
