@@ -260,3 +260,14 @@ CREATE TABLE Report (
   PRIMARY KEY (id),
   FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
 );
+
+/*External reviews pending*/
+DROP TABLE IF EXISTS ExternalPendingReviews;
+CREATE TABLE ExternalPendingReviews(
+  id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  Submission INT NOT NULL,
+  reviewer INT NOT NULL,
+  Complete BOOLEAN NOT NULL DEFAULT FALSE,
+  FOREIGN KEY (Submission) REFERENCES Submission (subid),
+  FOREIGN KEY (reviewer) REFERENCES Researcher (ORCID)
+);
