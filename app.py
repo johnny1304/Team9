@@ -52,6 +52,7 @@ class proposalForm(FlaskForm):
 
 class sendExternalReview(FlaskForm):
     ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
+    Decline=SubmitField('Decline application')
     submit=SubmitField('Send for review')
     complete=SubmitField('External Reviews Sent: Mark as under Review')
 
@@ -840,8 +841,15 @@ def admin_send_review():
     sub["collaborators"]=i.collaborators
     sub["scientific"]=i.scientific
     sub["lay"]=i.lay
+    sub["file"]=i.proposalPDF
 
-    if form.ORCID.data!=None:
+    if form.Decline.data:
+        i.status="declined"
+        db.session.add(i)
+        db.session.commit()
+        return redirect(url_for("admin_external_review"))
+
+    elif form.ORCID.data!=None:
         print("here")
         #database push external review link to user
         new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
@@ -850,6 +858,10 @@ def admin_send_review():
     if form.complete.data:
         #change submission to external review when done button is pressed
         i.status="review"
+        db.session.add(i)
+        db.session.commit()
+
+
 
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
