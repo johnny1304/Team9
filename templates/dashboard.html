@@ -5,9 +5,9 @@
 <br><br><br>
 
 <div class="container-fluid text-center bg-grey">
-  <h4>Hi {{current_user.first_name}},{{current_user.type}} this is your Dashboard</h4>
+  <h4>Hi {{current_user.first_name}}, this is your Dashboard</h4>
     <br>
-    {% if current_user.is_authenticated and current_user.type == "Researcher" %}
+    {% if current_user.is_authenticated and current_user.type != "Admin" %}
     <div class="row text-center">
       <div class="col-sm-4">
           <a href="current_applications">
