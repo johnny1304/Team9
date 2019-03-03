@@ -544,9 +544,7 @@ class UpdateEmploymentForm(FlaskForm):
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
-    id = StringField('ID:', validators=[ Length(max=50)])
-class SocietiesForm(FlaskForm):
-	
+    id = StringField('ID:', validators=[ Length(max=50)])	
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
