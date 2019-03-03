@@ -671,7 +671,7 @@ def signin():
         if user.type == "Admin":
             return redirect(url_for('manage')) #returns the admin page
         # and redirect to the index page which will be the profile page once its done
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     return render_template('sign_in.html', form=form)
 
 
@@ -1789,7 +1789,8 @@ def manage():
         return redirect(url_for('manage'))
 
 def getProfileInfo():
-    profileInfo = 0
+    #for the demo the profileInfo will start at -9
+    profileInfo = -9
     education = current_user.education
     employment = current_user.education
     societies = current_user.societies
