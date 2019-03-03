@@ -20,7 +20,7 @@
         
 
           <div class="form-group col-lg-12">
-              {{render_field(form.email,value= current_user.email,class="col-lg-12")}}
+              {{render_field(form.cemail,value= current_user.email,class="col-lg-12")}}
 
           </div>
           {% with email_error = get_flashed_messages(category_filter=["email"]) %}

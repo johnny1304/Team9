@@ -1,0 +1,246 @@
+{% extends "profile.html" %}
+{% block form %}
+
+     
+          {% from "_formhelpers.html" import render_field %}
+     
+<div class="container">
+     
+     
+        <div class="row justify-content-center ">
+         
+        <div class="row  justify-content-center">
+        <div class=" col-12 justify-content-center accordion" id="accordionExample">
+                    <div id="headingOne" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Edit General Info
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseOne" class="collapse  aria-labelledby="headingOne" data-parent="#accordionExample">
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+        
+                                    {{form1.hidden_tag()}}
+                             
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form1.first_name, value= current_user.first_name,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.last_name,value=current_user.last_name, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.email,value= current_user.email,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.job,value =current_user.job,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.prefix,value =current_user.prefix,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.suffix,value =current_user.suffix,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.phone,value =current_user.phone,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form1.phone_extension,value =current_user.phone_extension,class="col-lg-12")}}
+                                        </div>
+                                        
+                                        <div class="form-group col-lg-12 " id="edit">
+                                                {{ form1.submit }}
+                                        </div>
+                                    
+                            </form>
+                    </div>
+
+                    <div id="headingTwo" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="true" aria-controls="collapseTwo">
+                            Edit Education Info
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseTwo" class="collapse  aria-labelledby="headingOne" data-parent="#accordionExample">
+                        {% for i in user.education %}
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+                                
+                                    {{form2.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none'>
+                                                {{render_field(form2.id, value= i.id,class="col-lg-12")}}
+                                         </div>
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form2.degree, value= i.degree,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form2.institution,value=i.institution, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form2.location,value= i.location,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form2.year,value =i.year,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form2.field,value =i.field,class="col-lg-12")}}
+                                        </div>
+                                       
+                                        
+                                        <div class="form-group col-lg-6 " id="edit edu">
+                                            {{ form2.submit_edu}}
+                                        </div>
+                                        <div class="form-group col-lg-6 " id="edit edu">
+                                            {{ form2.remove_edu}}
+                                        </div>
+                                        
+                            </form>
+                        {% endfor %}
+                    </div>
+                    <div id="headingThree" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="true" aria-controls="collapseThree">
+                            Edit Societies Info
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseThree" class="collapse  aria-labelledby="headingThree" data-parent="#accordionExample">
+                        {% for j in user.societies %}
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+                                
+                                    {{form3.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none;'>
+                                                {{render_field(form3.id, value= j.id,class="col-lg-12")}}
+                                         </div>
+                                         
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form3.start_date, value= j.start_date,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form3.end_date,value=j.end_date, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form3.society,value= j.society,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form3.membership,value =j.membership,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form3.status,value =j.status,class="col-lg-12")}}
+                                        </div>
+                                       
+                                        
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form3.submit_soc}}
+                                        </div>
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form3.remove_soc}}
+                                        </div>
+                                    
+                            </form>
+                        {% endfor %}
+                    </div>
+                    
+                    <div id="headingFour" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFour" aria-expanded="true" aria-controls="collapseFour">
+                            Edit Employment Info
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseFour" class="collapse  aria-labelledby="headingFour" data-parent="#accordionExample">
+                        {% for j in user.employment %}
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+                                
+                                    {{form4.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none;'>
+                                                {{render_field(form4.id, value= j.id,class="col-lg-12")}}
+                                         </div>
+                                         
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form4.company, value= j.company,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form4.location,value=j.location, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form4.years,value= j.years,class="col-lg-12")}}
+                                        </div>
+                                       
+                                
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form4.submit_emp}}
+                                        </div>
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form4.remove_emp}}
+                                        </div>
+                                    
+                            </form>
+                        {% endfor %}
+                    </div>
+
+
+                    <div id="headingFive" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseFive" aria-expanded="true" aria-controls="collapseFive">
+                            Edit Awards Info
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseFive" class="collapse  aria-labelledby="headingFive" data-parent="#accordionExample">
+                        {% for j in user.awards %}
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+                                
+                                    {{form5.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none;'>
+                                                {{render_field(form5.id, value= j.id,class="col-lg-12")}}
+                                         </div>
+                                         
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form5.year, value= j.year,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form5.award_body,value=j.award_body, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form5.details,value= j.details,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form5.team_member, value= j.team_member,class="col-lg-12")}}
+                                        </div>
+                                       
+                                
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form5.submit_awrd}}
+                                        </div>
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form5.remove_awrd}}
+                                        </div>
+                                    
+                            </form>
+                        {% endfor %}
+                    </div>
+
+
+
+        
+                    
+            </div>
+        </div>
+    </div>
+  
+     
+     
+     
+     {% endblock form %}
+
