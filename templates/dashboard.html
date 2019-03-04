@@ -9,7 +9,8 @@
     <br>
     {% if current_user.is_authenticated and current_user.type != "Admin" %}
     <div class="row text-center">
-        <div class="col-sm-4">
+        <div class="col"></div>
+        <div class="col">
             <a href="current_applications">
               
           <div class="thumbnail">
@@ -17,12 +18,10 @@
               <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
             <p><strong>Current Applications</strong></p>
             </div>
-          </a>
-          
-            
+          </a>   
         </div>
-
-        <div class="col-sm-4">
+        
+        <div class="col">
         <a href="scientific_reports">
           <div class="thumbnail">
               <span class="notify-badge">{{s_reports|length}}</span>
@@ -31,9 +30,14 @@
           </div>
         </a>
         </div>
+        <div class="col"></div>
+    </div>
 
-        <div class="col-sm-4">
-        <a href="#">
+        <div class="row text-center">
+
+        <div class="col"></div>
+        <div class="col">
+        <a href="financial_reports">
           <div class="thumbnail">
               <span class="notify-badge">{{f_reports|length}}</span>
             <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
@@ -41,10 +45,10 @@
           </div>
             </a>
         </div>
-    </div>
+    
 
-      <div class="row justify-content-md-center">
-      <div class="col-sm-4">
+    
+      <div class="col">
         <a href="profile">
           <div class="thumbnail">
               <span class="notify-badge">{{info}}</span>
@@ -54,7 +58,10 @@
           
             </a>
         </div>
+        <div class="col"></div>
       </div>
+    </div>
+    
 <!--       
 <div class="container-fluid text-center bg-grey">
       <div class="row text-center">
@@ -80,8 +87,7 @@
             </a>
           </div>
         </div>
- -->  </div>
-</div>
+ -->  
 <!-- 
 <div class="container">
 <div id="accordion">
@@ -166,40 +172,46 @@
     </div>
   </div>
  -->
-</div>
-</div>
+
 {% endif %}
 
 {% if current_user.is_authenticated and current_user.type == "Admin" %}
 <div class="row text-center">
-  <div class="col-sm-4">
+  <div class="col"></div>
+  <div class="col">
     <div class="thumbnail">
       <a href="/proposal_call"><img  src="{{url_for('static', filename='app.svg')}}" alt="Application Icon"></a>
         <a href="proposal_call"><p><strong>Create calls for proposal</strong></p></a>
       
     </div>
   </div>
-  <div class="col-sm-4">
+
+  <div class="col">
     <div class="thumbnail">
       <img src="{{url_for('static', filename='send.svg')}}" alt="Scientific Icon">
         <a href="admin_external_review"><p><strong>Review submissions</strong></p></a>
     </div>
   </div>
-  <div class="col-sm-4">
+  <div class="col"></div>
+</div>
+
+<div class="row text-center">
+  <div class="col"></div>
+  <div class="col">
     <div class="thumbnail">
       <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
       <a href="completed reviews_list"><p><strong>Completed Reviews</strong></p></a>
     </div>
   </div>
   
-<div class="container-fluid text-center bg-grey">
-  <div class="row text-center">
-    <div class="col-sm-12">
-      <div class="thumbnail">
-        <img src="{{url_for('static', filename='budget.svg')}}" alt="Budget Icon">
+  <div class="col">
+    <div class="thumbnail">
+        <img src="{{url_for('static', filename='manage.svg')}}" alt="Budget Icon">
           <a href="manage"><p><strong>Manage Users</strong></p></a>
-      </div>
     </div>
+  </div>
+  <div class ="col"></div>
+</div>
    <!--- <div class="col-sm-4">
       <div class="thumbnail">
         <img src="{{url_for('static', filename='award.svg')}}" alt="Award Icon">

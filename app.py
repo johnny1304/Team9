@@ -604,7 +604,10 @@ class ExternalReviewForm(FlaskForm):
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
     submit = SubmitField('submit')
 
-
+class ReportForm(FlaskForm):
+    title = StringField('Title: ', validators=[Length(max=50), InputRequired()])
+    pdf = FileField('PDF: ', validators=[InputRequired()])
+    submit = SubmitField('Add')
 
 
 @login_manager.user_loader
@@ -733,6 +736,7 @@ def dashboard():
 @app.route('/scientific_reports')
 @login_required
 def scientific_reports():
+    form = ReportForm()
     reports = current_user.reports
     s_reports = []
     for each in reports:
@@ -777,6 +781,39 @@ def scientific_reports():
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             return redirect(url_for('uploaded_file',
                                     filename=filename))'''
+
+@app.route('/financial_reports')
+@login_required
+def financial_reports():
+    form = ReportForm()
+    reports = current_user.reports
+    f_reports = []
+    for each in reports:
+        if each.type == "Financial":
+            f_reports.append(each)
+    if request.method == "POST":
+        print(form.title.data)
+        print(form.pdf.data)
+        if form.is_submitted():
+            print("submitted")
+        if form.validate():
+            print("validated")
+    if form.validate_on_submit():
+        file = request.files['pdf']
+        if file.filename=="":
+            flash('No selected file')
+            return redirect(url_for(finanical_reports))
+        if file:
+            filename = secure_filename(file.filename)
+            file.save('uploads/'+filename)
+            filenamesecret = uuid.uuid4().hex
+            print("file saved")
+
+        newReport = Report(title=form.title.data, type="Financial", pdf=filenamesecret, ORCID=current_user.orcid)
+        db.session.add(newReport)
+        db.session.commit()
+        return redirect(url_for('financial_reports'))
+    return render_template("financial_reports.html", reports=f_reports, form=form)
 
 @app.route('/current_applications')
 @login_required
