@@ -671,7 +671,7 @@ def signin():
         if user.type == "Admin":
             return redirect(url_for('manage')) #returns the admin page
         # and redirect to the index page which will be the profile page once its done
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     return render_template('sign_in.html', form=form)
 
 
@@ -1505,7 +1505,7 @@ def educationInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('educationInfo'))
 
 
     return render_template('educationInfo.html', form=form, list=education_list)
@@ -1539,7 +1539,7 @@ def employmentInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('employmentInfo'))
 
    
 
@@ -1577,7 +1577,7 @@ def societiesInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('societiesInfo'))
 
    
 
@@ -1616,7 +1616,7 @@ def awardsInfo():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('awardsInfo'))
 
  
     return render_template('awardsInfo.html', form=form, list=awards_list)
@@ -1653,7 +1653,7 @@ def team_members_info():
                 conn.commit()
                 cur.close()
                 conn.close()
-                return redirect(url_for('profile'))
+                return redirect(url_for('team_member_info'))
         return render_template('team_members_info.html', form=form)
 
    #team_members_list= TeamMembers.query.filter_by(team_id=team.team_id).all()
@@ -1789,7 +1789,8 @@ def manage():
         return redirect(url_for('manage'))
 
 def getProfileInfo():
-    profileInfo = 0
+    #for the demo the profileInfo will start at -9
+    profileInfo = -9
     education = current_user.education
     employment = current_user.education
     societies = current_user.societies
