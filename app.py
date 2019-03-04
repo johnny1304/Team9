@@ -604,7 +604,10 @@ class ExternalReviewForm(FlaskForm):
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
     submit = SubmitField('submit')
 
-
+class ReportForm(FlaskForm):
+    title = StringField('Title: ', validators=[Length(max=50), InputRequired()])
+    pdf = FileField('PDF: ', validators=[InputRequired()])
+    submit = SubmitField('Add')
 
 
 @login_manager.user_loader
@@ -733,6 +736,7 @@ def dashboard():
 @app.route('/scientific_reports')
 @login_required
 def scientific_reports():
+    form = ReportForm()
     reports = current_user.reports
     s_reports = []
     for each in reports:
