@@ -1279,7 +1279,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('societiesInfo'))
         # Remove societies
         elif update_societies.validate_on_submit and "remove_soc" in request.form:
             print("here")
@@ -1293,7 +1293,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('edit_info'))
         # Edit Education
         elif update_education.validate_on_submit and "submit_edu" in request.form:
             degree = update_education.degree.data
@@ -1312,7 +1312,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('educationInfo'))
         #Remove Edu
         elif update_education.validate_on_submit and "remove_edu" in request.form:
             print("here")
@@ -1326,7 +1326,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('edit_info'))
 
         #Edit Employment
         elif update_employment.validate_on_submit and "submit_emp" in request.form:
@@ -1343,7 +1343,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('employmentInfo'))
         #Remove Employment
         elif update_employment.validate_on_submit and "remove_emp" in request.form:
             print("here")
@@ -1357,7 +1357,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('edit_info'))
 
         #Edit Awards
         elif update_awards.validate_on_submit and "submit_awrd" in request.form:
@@ -1374,7 +1374,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('awardsInfo'))
         #Remove Awards
         elif update_awards.validate_on_submit and "remove_awrd" in request.form:
             print("here")
@@ -1388,7 +1388,7 @@ def edit_info():
             conn.commit()
             cur.close()
             conn.close()
-            return redirect(url_for('profile'))
+            return redirect(url_for('edit_info'))
 
    
             
