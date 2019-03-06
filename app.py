@@ -193,7 +193,7 @@ class Funding(db.Model):
         self.orcid = orcid
 
     def __repr__(self):
-        return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
+        return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.AmountFunding}')"
 
 # standard set up for the Flask app
 
@@ -454,6 +454,22 @@ class UpdateEducationForm(FlaskForm):
     submit_edu = SubmitField('Edit Education')
     remove_edu = SubmitField('Remove')
 
+class AddFundingForm(FlaskForm):
+    start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    amount_funding = IntegerField('Amount Funding', )
+    funding_body = StringField('Funding Body', validators=[ Length(max=50)] )
+    funding_programme = StringField('Funding Programme ', validators=[ Length(max=50)])
+    stats = StringField('Stats', validators=[ Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[ Length(max=50)])
+    submit = SubmitField('Add')
+
+class AddTeamForm(FlaskForm):
+    team_id = StringField('Team ID' ,  validators=[ Length(max=50)] )
+    team_leader = StringField('Team Leader' , validators=[ Length(max=50)] )
+    proposal_id = StringField('Proposal ID' , validators=[ Length(max=50)] )
+    submit = SubmitField('Add')
+
 class AddEducationForm(FlaskForm):
     degree = StringField('Degree:', validators=[ Length(max=50)])
     institution = StringField('Institution:', validators=[ Length(max=50)])
@@ -516,9 +532,51 @@ class AddSocietiesForm(FlaskForm):
     membership = StringField('Membership:',validators=[ Length(max=50)])
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
-    
 
+class AddPresentations(FlaskForm):
+    year = IntegerField('Year', )
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    conference = StringField('Conference', validators=[Length(max=50)])
+    inverted_seminar = StringField('Inverted Seminar', validators=[Length(max=50)])
+    keynote = StringField('Keynote', validators=[Length(max=50)])
+    organising_body = StringField('Organising Body', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
+    submit = SubmitField('Add Presentation')
 
+class AddCollaborations(FlaskForm):
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date =DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    institution = StringField('Institution', validators=[Length(max=50)])
+    department = StringField('Department', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    name_collaborator = StringField('Name Colloaborator', validators=[Length(max=50)])
+    primary_goal = StringField('Primary Goal',validators=[Length(max=50)] )
+    frequency_of_interaction = StringField('Frequency Of Interaction', validators=[Length(max=50)])
+    primary_attribution =  StringField('Primary Attribution:' , validators=[Length(max=50)])
+    academic = BooleanField('Academic')
+    submit = SubmitField('Add Collaborations')
+
+class AddOrganisedEvents(FlaskForm):
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    role = StringField('Role', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit = SubmitField('Add Organised Event')
+
+class AddEducationAndPublicEngagement(FlaskForm):
+    name = StringField('Name', validators=[Length(max=50)])
+    start_date = DateField('Start Date', validators=[Length(max=50)])
+    end_date = DateField('End Date', validators=[Length(max=50)])
+    activity = StringField('Activity', validators=[Length(max=50)])
+    topic = StringField('Topic', validators=[Length(max=50)])
+    target_area = StringField('Target Area', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit = SubmitField('Add Education and Public Engagement')
 
 class AddAwardsForm(FlaskForm):
 
@@ -526,8 +584,14 @@ class AddAwardsForm(FlaskForm):
 	award_body = StringField('Awarding Body:', validators=[ Length(max=50)])
 	details = StringField('Detail:', validators=[Length(max=50)])
 	team_member = StringField('Team Member ', validators=[Length(max=50)])
-	submit = SubmitField('Add')
+	submit = SubmitField('Add Awards')
 
+class AddInnovation(FlaskForm):
+    year = IntegerField('Year:' )
+    type = StringField('Type', validators=[Length(max=50)])
+    title = StringField('Title', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit = SubmitField('Add Innovation')
 
 class AddTeamMembersForm(FlaskForm):
 
@@ -546,6 +610,11 @@ class AddImpactsForm(FlaskForm):
     primary_beneficiary = StringField('Primary Beneficiary: ', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:', validators=[Length(max=50)])
     submit = SubmitField('Add Impacts')
+
+class ExternalReviewForm(FlaskForm):
+
+    pdfReview=FileField('PDF of Review',validators=[InputRequired()])
+    submit = SubmitField('submit')
 
 
 
@@ -584,6 +653,7 @@ def mail(receiver, content="", email="", password=""):
 @app.route('/')
 @app.route('/home')
 def index():
+    
     #if current_user.is_authenticated:
     #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
     #    updateType.type = "Admin"
@@ -1140,6 +1210,38 @@ def generalInfo():
     return render_template('generalInfo.html', form=form)
 
 
+@app.route('/funding_info', methods=['GET', 'POST'])
+@login_required
+def funding_info():
+    form = AddFundingForm(request.form)
+    funding = Funding.query.all()
+    print(funding)
+    if len(funding) == 0:
+        if request.method == 'POST':
+            if form.validate_on_submit():
+                start_date = form.start_date.data
+                end_date = form.end_date.data
+                amount_funding = form.amount_funding.data
+                funding_body = form.funding_body.data
+                funding_programme = form.funding_programme.data
+                stats = form.stats.data
+                primary_attribution = form.primary_attribution.data
+                conn = mysql.connect
+                cur = conn.cursor()
+                cur.execute(f""" INSERT into Funding (StartDate, EndDate, AmountFunding,FundingBody,FundingProgramme,
+                Stats, PrimaryAttribution, ORCID) VALUES ('{start_date}','{end_date}', {amount_funding}, 
+                '{funding_body}','{funding_programme}', '{stats}', '{primary_attribution}', {current_user.orcid})""")
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+        return render_template('funding_info.html', form=form)
+    else:
+
+        funding_list = current_user.funding
+        print(funding_list)
+        return render_template('funding_info.html', form=form, list = funding_list)
+
 @app.route('/publications_info', methods=['GET','POST'])
 @login_required
 def publications_info():
@@ -1156,6 +1258,7 @@ def publications_info():
                 status = form.status.data
                 doi = form.doi.data
                 primary_attribution = form.primary_attribution
+                conn = mysql.connect
                 cur= conn.cursor()
                         # execute a query
                 cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
