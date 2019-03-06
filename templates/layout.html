@@ -71,7 +71,7 @@
                 </li>
                 {% endif %}
 
-                {% if current_user.is_authenticated %}
+                {% if current_user.is_authenticated and current_user.type!="Researcher"%}
                 <li class="nav-item">
                   <a class="nav-link " href="reviewer_pending_list" >Pending External Reviews</a>
                 </li>

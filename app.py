@@ -481,7 +481,7 @@ class RegisterForm(FlaskForm):
 
 class ManageForm(FlaskForm):
     researcher = SelectField("User")
-    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
+    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer'),("Admin","Admin")])
     submit = SubmitField('Apply')
 
 
@@ -672,7 +672,7 @@ def signin():
         # else logs in the user
         login_user(user, remember=form.remember.data)
         if user.type == "Admin":
-            return redirect(url_for('manage')) #returns the admin page
+            return redirect(url_for('dashboard')) #returns the admin page
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('dashboard'))
     return render_template('sign_in.html', form=form)
@@ -958,6 +958,7 @@ def admin_send_review():
         i.status="review"
         db.session.add(i)
         db.session.commit()
+        return redirect(url_for("dashboard"))
 
 
 
@@ -1252,7 +1253,7 @@ def proposal_call():
             conn.close()
             #links to form creation
             print("here")
-            return redirect(url_for('create_submission_page'))
+            return redirect(url_for('dashboard'))
         return render_template('proposal_call.html', form=form)
     else:
         return render_template('proposal_call.html', form=form)
@@ -1798,7 +1799,7 @@ def manage():
         researchers = []
         all_users = User.query.all()
         for each in all_users:
-            if each.type != "Admin":
+            if each.orcid != current_user.orcid:
                 researchers.append(each)
         form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
         print(researchers)
