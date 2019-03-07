@@ -437,6 +437,7 @@ class Report(db.Model):
     pdf = db.Column(db.String(255))
     type = db.Column(db.String(255), nullable=False)
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+    #same as funding
 
 
 
