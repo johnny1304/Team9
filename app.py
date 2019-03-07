@@ -274,12 +274,6 @@ class TeamMembers(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
     #subid = db.Column(db.Integer, nullable="False")
 
-class Team(db.Model):
-    __tablename__ = "Team"
-    team_id = db.Column("TeamID", db.Integer, primary_key=True)
-    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    #change to sub id
-    #subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -713,27 +707,30 @@ def forgot():
     form = ForgotForm()
     if form.submit.data:
         email = form.email.data
-        send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+        send = "Follow this url to reset your password: http://127.0.0.1:5000/reset?l=%s"%(email)
         subject = "Reset Password"
         mail(receiver=form.email.data,content=send,subject=subject)
         return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
 #does not work
-@app.route("/reset/<l>", methods=["Get","Post"])
-def reset(l):
+@app.route("/reset", methods=["Get","Post"])
+def reset():
     form = ResetForm()
-    if request.method == "Post": 
+    if request.method == "POST":
         if form.submit.data:
+            print("here")
             hashed_password = generate_password_hash(form.new.data, method='sha256')
             email = request.args.get("l")
-            user = user.query.filter_by(email=email).first()
-            if user:
-                newPassword = User(password=hashed_password)
-            return render_template('sign_in.html', form=form)
+            user = User.query.filter_by(email=email).first()
+            if user!=None:
+                print("here2")
+                user.password=hashed_password
+                db.session.commit()
+            return redirect(url_for("signin"))
     else:
         email = request.args.get("l")
-        return redirect(url_for("/reset/"))
+        return render_template("reset.html",l=email,form=form)
 
 
 
@@ -1022,10 +1019,9 @@ def admin_send_review():
         db.session.add(i)
         db.session.commit()
         return redirect(url_for("dashboard"))
-
-		reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
-		email = reviewer.email
-		mail(email, "Review request made, check your profile")
+        reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
+        email = reviewer.email
+        mail(email, "Review request made, check your profile")
 		
 
         flash("sent for external review")
