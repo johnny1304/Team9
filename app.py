@@ -139,6 +139,9 @@ class Submissions(db.Model):
     draft = db.Column(db.Boolean, nullable=False, default=True)
     proposalPDF = db.Column(db.String(255),nullable=False)
     status = db.Column(db.String(255), default="pending")
+    reports = db.relationship('Report', backref="Submission")
+    team = db.relationship('Team', backref="Submission")
+    funding = db.relationship('Funding', backref="Submission")
 
     def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
         self.title=title
@@ -173,8 +176,7 @@ class Funding(db.Model):
     Stats = db.Column(db.String(255), nullable=False)
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
-    #subid = db.Column(db.Integer, nullable="False")
-
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
     def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
@@ -253,6 +255,13 @@ class Awards(db.Model):
     team_member = db.Column('TeamMember', db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
+class Team(db.Model):
+    __tablename__ = "Team"
+    team_id = db.Column("TeamID", db.Integer, primary_key=True)
+    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
+    #change to sub id
+    subid = db.Column("SubmissionID", db.Integer, db.ForeignKey('Submission.subid'))
+
 class TeamMembers(db.Model):
     __tablename__ = "TeamMembers"
     id = db.Column(db.Integer, primary_key=True)
@@ -270,7 +279,7 @@ class Team(db.Model):
     team_id = db.Column("TeamID", db.Integer, primary_key=True)
     team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
     #change to sub id
-    proposalid = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
+    #subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -298,7 +307,7 @@ class Publications(db.Model):
     title = db.Column("Title", db.String(255))
     name = db.Column("Name", db.String(255))
     status = db.Column("Status", db.String(255))
-    doi = db.Column("DOI", db.String(255), primary_key=True)
+    doi = db.Column("DOI", db.String(255))
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
@@ -362,7 +371,7 @@ class Report(db.Model):
     pdf = db.Column(db.String(255))
     type = db.Column(db.String(255), nullable=False)
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
-    #subid = db.Column(db.Integer, nullable="False")
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
@@ -1014,7 +1023,10 @@ def admin_send_review():
         db.session.commit()
         return redirect(url_for("dashboard"))
 
-
+		reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
+		email = reviewer.email
+		mail(email, "Review request made, check your profile")
+		
 
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
