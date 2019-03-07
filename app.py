@@ -966,7 +966,10 @@ def admin_send_review():
         db.session.commit()
         return redirect(url_for("dashboard"))
 
-
+		reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
+		email = reviewer.email
+		mail(email, "Review request made, check your profile")
+		
 
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
