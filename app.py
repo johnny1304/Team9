@@ -1827,6 +1827,15 @@ def manage():
         flash("You need to be an admin to manage others.", category="unauthorised")
         return redirect(url_for('manage'))
 
+@app.route("/grants")
+@login_required
+def grants():
+    #Show the calls that have been approved.For that user
+    #For that application they need to add Team members[a link]
+    #when grant is approved by admin we need to insert stuff into team table
+
+
+
 def getProfileInfo():
     #for the demo the profileInfo will start at -9
     profileInfo = -9
