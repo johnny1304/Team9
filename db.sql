@@ -134,6 +134,7 @@ CREATE TABLE InnovationAndCommercialisation(
 /*Publications */
 DROP TABLE IF EXISTS Publications;
 CREATE TABLE Publications(
+	ID int NOT NULL AUTO_INCREMENT,
 	Year int,
 	Type VARCHAR(255),
 	Title VARCHAR(255),

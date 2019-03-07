@@ -37,32 +37,58 @@ mysql = MySQL(app)
 mysql.init_app(app)
 
 
+class User(UserMixin, db.Model):
+    # this is the user login class that corresponds to the database
+    __tablename__ = 'Researcher'  # the table name in the database is called Researcher
+    # the following variables correspond to the columns in the Researcher table
+    orcid = db.Column('orcid', db.Integer, primary_key=True, unique=True)
+    first_name = db.Column('FirstName', db.String(20))
+    last_name = db.Column('LastName', db.String(20))
+    email = db.Column('email', db.String(50), unique=True)
+    password = db.Column('password', db.String(80))
+    job = db.Column('job', db.String(255))
+    prefix = db.Column('prefix', db.String(20))
+    suffix = db.Column('suffix', db.String(20))
+    phone = db.Column('phone', db.Integer)
+    phone_extension = db.Column('PhoneExtension', db.Integer)
+    type = db.Column('Type', db.String(20))
+    education = db.relationship('Education', backref='Researcher')
+    employment = db.relationship('Employment', backref='Researcher')
+    societies = db.relationship('Societies', backref='Researcher')
+    awards = db.relationship('Awards', backref='Researcher')
+    funding = db.relationship('Funding', backref='Researcher')
+    team_members = db.relationship('TeamMembers', backref='Researcher')
+    impacts = db.relationship('Impacts', backref='Researcher')
+    inno_and_comm = db.relationship('InnovationAndCommercialisation', backref='Researcher')
+    publications = db.relationship('Publications', backref='Researcher')
+    presentations = db.relationship('Presentations', backref='Researcher')
+    collab = db.relationship('Collaborations', backref='Researcher')
+    organised_events = db.relationship('OrganisedEvents', backref='Researcher')
+    edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
+    submission = db.relationship('Submissions', backref='Researcher')
+    ExternalReview = db.relationship('ExternalReview',backref='Researcher')
+    reports = db.relationship('Report', backref='Researcher')
 
-class proposalForm(FlaskForm):
-    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
-    deadline = DateField('Deadline', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
-    text_of_call = TextAreaField('Text of Call', validators=[InputRequired()], render_kw={"placeholder": "Text of call"})
-    target_audience = StringField('Target Audience', validators=[InputRequired()], render_kw={"placeholder": "Target Audience"})
-    eligibility_criteria = TextAreaField('Eligibility Criteria', validators=[InputRequired()], render_kw={"placeholder": "Eligibility Criteria"})
-    duration = IntegerField('Duration', validators=[InputRequired()], render_kw={"placeholder": "Duration in Months"})
-    reporting_guidelines = TextAreaField('Reporting Guidlines', validators=[InputRequired()], render_kw={"placeholder": "Reporting Guidelines"})
-    time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
-    picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
-    submit = SubmitField('Submit')
+    def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
+        # this initialises the class and maps the variables to the table (done by flask automatically)
+        self.orcid = orcid
+        self.first_name = first_name
+        self.last_name = last_name
+        self.email = email
+        self.password = password
+        self.job = job
+        self.prefix = prefix
+        self.suffix = suffix
+        self.phone = phone
+        self.phone_extension = phone_extension
+        self.type = type
 
-class sendExternalReview(FlaskForm):
-    ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
-    Decline=SubmitField('Decline application')
-    submit=SubmitField('Send for review')
-    complete=SubmitField('External Reviews Sent: Mark as under Review')
+    def get_orcid(self):
+        return self.orcid
 
-class ConfirmationForm(FlaskForm):
-    Sub=StringField("Submission id")
-    Approve=SubmitField("Approve Application")
-    Decline=SubmitField("Decline Application")
-
-    def setSub(self,sub):
-        self.Sub=sub
+    def get_id(self):
+        # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
+        return self.orcid
 
 class Proposal(db.Model):
     __tablename__ = "Proposal"
@@ -91,57 +117,6 @@ class Proposal(db.Model):
 
     def __repr__(self):
         return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
-
-#form for submission
-class Submission_Form(FlaskForm):
-    propid = StringField('propid')
-    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
-    duration = IntegerField('Duration', validators=[InputRequired()],render_kw={"placeholder": "Duration in months"})
-    NRP = SelectField(u'NRP', choices=[('areaA','Priority Area A - Future Networks & Communications'),
-                                       ('areaB', 'Priority Area B - Data Analytics, Management, Securitu & Privacy'),
-                                       ('areaC', 'Priority Area C - Digital Platforms, Content & Applications'),
-                                       ('areaD', 'Priority Area D - Connected Health and Independent Living'),
-                                       ('areaE', 'Priority Area E - Medical Devices'),
-                                       ('areaF', 'Priority Area F - Diagnostics'),
-                                       ('areaG', 'Priority Area G - Therapeutics : Synthesis, Formulation, Processing and Drug Delivery'),
-                                       ('areaH', 'Priority Area H - Food for Health'),
-                                       ('areaI', 'Priority Area I - Sustainable Food Production'),
-                                       ('areaJ', 'Priority Area J - Marine Renewable Energy'),
-                                       ('areaK', 'Priority Area K - Smart Grids & Smart Cities'),
-                                       ('areaL', 'Priority Area L - Manufacturing Competitiveness'),
-                                       ('areaM', 'Priority Area M - Processing Technologies and Novel Materials'),
-                                       ('areaN', 'Priority Area N - Innovation in Services and Buisness Processses'),
-                                       ('Software', 'Software'),
-                                       ('Others', 'Others')
-                                       ])
-    legal_remit = TextAreaField("Please describe how your proposal is aligned with SFI's legal remit (max 250 words)"
-                                ,validators=[InputRequired(), length(max=1250) ],render_kw={"placeholder": "Legal remit"}
-                                )
-    ethical_animal =  TextAreaField("A statement indicating whether the research involves the use of animals"
-                                ,validators=[InputRequired()],render_kw={"placeholder": "Animal ethics statement"}
-                                )
-    ethical_human = TextAreaField("A statement indicating whether the research involves human participants, human biological material, or identifiable data"
-                                   , validators=[InputRequired()], render_kw={"placeholder": "Human ethics statement"}
-                                   )
-    location = TextAreaField("A statement of the applicant’s location (country) at the time of submission"
-                             , validators=[InputRequired()], render_kw={"placeholder": "Location statement"})
-    co_applicants = TextAreaField("A list of co-applicants if applicable",render_kw={"placeholder": "List of co-applicants eg: '- name' "})
-    collaborators = TextAreaField("Alist of collaborators, if applicable. Information about collaborators should include:( -Name -Organization -Email )"
-                                  ,render_kw={"placeholder":"-name\n-organisation\n-Email;"})
-    scientific_abstract = TextAreaField("Scientific Abstract( max 200 words )",
-                                        validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
-    lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
-                                        validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
-    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
-    declaration = BooleanField('Agree?', validators=[DataRequired(), ])
-    submit = SubmitField('Submit')
-
-    validate = SubmitField('Validate form')
-
-    draft = SubmitField('Save Draft')
-
-    def setPropId(self, propid):
-        self.propid=propid
 
 class Submissions(db.Model):
     __tablename__='Submission'
@@ -197,6 +172,7 @@ class Funding(db.Model):
     Stats = db.Column(db.String(255), nullable=False)
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
+    subid = db.Column(db.Integer, nullable="False")
 
     def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
@@ -211,60 +187,6 @@ class Funding(db.Model):
     def __repr__(self):
         return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
 
-# standard set up for the Flask app
-
-class User(UserMixin, db.Model):
-    # this is the user login class that corresponds to the database
-    __tablename__ = 'Researcher'  # the table name in the database is called Researcher
-    # the following variables correspond to the columns in the Researcher table
-    orcid = db.Column('orcid', db.Integer, primary_key=True, unique=True)
-    first_name = db.Column('FirstName', db.String(20))
-    last_name = db.Column('LastName', db.String(20))
-    email = db.Column('email', db.String(50), unique=True)
-    password = db.Column('password', db.String(80))
-    job = db.Column('job', db.String(255))
-    prefix = db.Column('prefix', db.String(20))
-    suffix = db.Column('suffix', db.String(20))
-    phone = db.Column('phone', db.Integer)
-    phone_extension = db.Column('PhoneExtension', db.Integer)
-    type = db.Column('Type', db.String(20))
-    education = db.relationship('Education', backref='Researcher')
-    employment = db.relationship('Employment', backref='Researcher')
-    societies = db.relationship('Societies', backref='Researcher')
-    awards = db.relationship('Awards', backref='Researcher')
-    funding = db.relationship('Funding', backref='Researcher')
-    team_members = db.relationship('TeamMembers', backref='Researcher')
-    impacts = db.relationship('Impacts', backref='Researcher')
-    inno_and_comm = db.relationship('InnovationAndCommercialisation', backref='Researcher')
-    publications = db.relationship('Publications', backref='Researcher')
-    presentations = db.relationship('Presentations', backref='Researcher')
-    collab = db.relationship('Collaborations', backref='Researcher')
-    organised_events = db.relationship('OrganisedEvents', backref='Researcher')
-    edu_and_public_engagement = db.relationship('EducationAndPublicEngagement', backref='Researcher')
-    submission = db.relationship('Submissions', backref='Researcher')
-    ExternalReview = db.relationship('ExternalReview',backref='Researcher')
-    reports = db.relationship('Report', backref='Researcher')
-
-    def __init__(self, orcid, first_name, last_name, email, password, job, prefix, suffix, phone, phone_extension, type):
-        # this initialises the class and maps the variables to the table (done by flask automatically)
-        self.orcid = orcid
-        self.first_name = first_name
-        self.last_name = last_name
-        self.email = email
-        self.password = password
-        self.job = job
-        self.prefix = prefix
-        self.suffix = suffix
-        self.phone = phone
-        self.phone_extension = phone_extension
-        self.type = type
-
-    def get_orcid(self):
-        return self.orcid
-
-    def get_id(self):
-        # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
-        return self.orcid
 
 class ExternalReview(db.Model):
     __tablename__="ExternalReview"
@@ -340,12 +262,14 @@ class TeamMembers(db.Model):
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
+    subid = db.Column(db.Integer, nullable="False")
 
 class Team(db.Model):
     __tablename__ = "Team"
     team_id = db.Column("TeamID", db.Integer, primary_key=True)
     team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    propasal_id = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
+    #change to sub id
+    subid = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -437,7 +361,7 @@ class Report(db.Model):
     pdf = db.Column(db.String(255))
     type = db.Column(db.String(255), nullable=False)
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
-    #same as funding
+    subid = db.Column(db.Integer, nullable="False")
 
 
 
@@ -571,9 +495,6 @@ class AddSocietiesForm(FlaskForm):
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
     
-
-
-
 class AddAwardsForm(FlaskForm):
 
 	year = IntegerField('Year:')
@@ -609,6 +530,84 @@ class ReportForm(FlaskForm):
     title = StringField('Title: ', validators=[Length(max=50), InputRequired()])
     pdf = FileField('PDF: ', validators=[InputRequired()])
     submit = SubmitField('Add')
+
+#form for submission
+class Submission_Form(FlaskForm):
+    propid = StringField('propid')
+    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
+    duration = IntegerField('Duration', validators=[InputRequired()],render_kw={"placeholder": "Duration in months"})
+    NRP = SelectField(u'NRP', choices=[('areaA','Priority Area A - Future Networks & Communications'),
+                                       ('areaB', 'Priority Area B - Data Analytics, Management, Securitu & Privacy'),
+                                       ('areaC', 'Priority Area C - Digital Platforms, Content & Applications'),
+                                       ('areaD', 'Priority Area D - Connected Health and Independent Living'),
+                                       ('areaE', 'Priority Area E - Medical Devices'),
+                                       ('areaF', 'Priority Area F - Diagnostics'),
+                                       ('areaG', 'Priority Area G - Therapeutics : Synthesis, Formulation, Processing and Drug Delivery'),
+                                       ('areaH', 'Priority Area H - Food for Health'),
+                                       ('areaI', 'Priority Area I - Sustainable Food Production'),
+                                       ('areaJ', 'Priority Area J - Marine Renewable Energy'),
+                                       ('areaK', 'Priority Area K - Smart Grids & Smart Cities'),
+                                       ('areaL', 'Priority Area L - Manufacturing Competitiveness'),
+                                       ('areaM', 'Priority Area M - Processing Technologies and Novel Materials'),
+                                       ('areaN', 'Priority Area N - Innovation in Services and Buisness Processses'),
+                                       ('Software', 'Software'),
+                                       ('Others', 'Others')
+                                       ])
+    legal_remit = TextAreaField("Please describe how your proposal is aligned with SFI's legal remit (max 250 words)"
+                                ,validators=[InputRequired(), length(max=1250) ],render_kw={"placeholder": "Legal remit"}
+                                )
+    ethical_animal =  TextAreaField("A statement indicating whether the research involves the use of animals"
+                                ,validators=[InputRequired()],render_kw={"placeholder": "Animal ethics statement"}
+                                )
+    ethical_human = TextAreaField("A statement indicating whether the research involves human participants, human biological material, or identifiable data"
+                                   , validators=[InputRequired()], render_kw={"placeholder": "Human ethics statement"}
+                                   )
+    location = TextAreaField("A statement of the applicant’s location (country) at the time of submission"
+                             , validators=[InputRequired()], render_kw={"placeholder": "Location statement"})
+    co_applicants = TextAreaField("A list of co-applicants if applicable",render_kw={"placeholder": "List of co-applicants eg: '- name' "})
+    collaborators = TextAreaField("Alist of collaborators, if applicable. Information about collaborators should include:( -Name -Organization -Email )"
+                                  ,render_kw={"placeholder":"-name\n-organisation\n-Email;"})
+    scientific_abstract = TextAreaField("Scientific Abstract( max 200 words )",
+                                        validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
+    lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
+                                        validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
+    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
+    declaration = BooleanField('Agree?', validators=[DataRequired(), ])
+    submit = SubmitField('Submit')
+
+    validate = SubmitField('Validate form')
+
+    draft = SubmitField('Save Draft')
+
+    def setPropId(self, propid):
+        self.propid=propid
+
+
+class proposalForm(FlaskForm):
+    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
+    deadline = DateField('Deadline', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    text_of_call = TextAreaField('Text of Call', validators=[InputRequired()], render_kw={"placeholder": "Text of call"})
+    target_audience = StringField('Target Audience', validators=[InputRequired()], render_kw={"placeholder": "Target Audience"})
+    eligibility_criteria = TextAreaField('Eligibility Criteria', validators=[InputRequired()], render_kw={"placeholder": "Eligibility Criteria"})
+    duration = IntegerField('Duration', validators=[InputRequired()], render_kw={"placeholder": "Duration in Months"})
+    reporting_guidelines = TextAreaField('Reporting Guidlines', validators=[InputRequired()], render_kw={"placeholder": "Reporting Guidelines"})
+    time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
+    picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Submit')
+
+class sendExternalReview(FlaskForm):
+    ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
+    Decline=SubmitField('Decline application')
+    submit=SubmitField('Send for review')
+    complete=SubmitField('External Reviews Sent: Mark as under Review')
+
+class ConfirmationForm(FlaskForm):
+    Sub=StringField("Submission id")
+    Approve=SubmitField("Approve Application")
+    Decline=SubmitField("Decline Application")
+
+    def setSub(self,sub):
+        self.Sub=sub
 
 
 @login_manager.user_loader
@@ -892,6 +891,9 @@ def completed_review():
         return redirect(url_for("dashboard"))
     if form.Approve.data:
         form.Sub.status="Approved"
+        #create a new funding thingy
+        #create a new team data thingy
+        #
         db.session.commit()
         return redirect(url_for("dashboard"))
     return render_template("completed_reviews.html",form=form,sub=sub,rev=rev,prop=prop)
@@ -1833,6 +1835,14 @@ def grants():
     #Show the calls that have been approved.For that user
     #For that application they need to add Team members[a link]
     #when grant is approved by admin we need to insert stuff into team table
+    #the page will look like profile page
+    #with application info [new page]
+    #with the team info as well
+    #Reports
+    #fin and sci
+
+    return render_template("grants.html")
+
 
 
 
