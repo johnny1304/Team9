@@ -16,6 +16,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_mysqldb import MySQL
 from flask_dropzone import Dropzone
 import smtplib
+from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
@@ -172,7 +173,7 @@ class Funding(db.Model):
     Stats = db.Column(db.String(255), nullable=False)
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
-    subid = db.Column(db.Integer, nullable="False")
+    #subid = db.Column(db.Integer, nullable="False")
 
     def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
@@ -262,14 +263,14 @@ class TeamMembers(db.Model):
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
-    subid = db.Column(db.Integer, nullable="False")
+    #subid = db.Column(db.Integer, nullable="False")
 
 class Team(db.Model):
     __tablename__ = "Team"
     team_id = db.Column("TeamID", db.Integer, primary_key=True)
     team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
     #change to sub id
-    subid = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
+    proposalid = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -361,9 +362,10 @@ class Report(db.Model):
     pdf = db.Column(db.String(255))
     type = db.Column(db.String(255), nullable=False)
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
-    subid = db.Column(db.Integer, nullable="False")
+    #subid = db.Column(db.Integer, nullable="False")
 
-
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 
 
 # Below are the form classes that inherit the FlaskForm class.
@@ -373,7 +375,18 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('Remember me')
+    forgot = StringField("Forgot your password")
 
+class ForgotForm(FlaskForm):
+    email  = StringField("Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
+    reEmail = StringField("Re-type Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
+    submit = SubmitField('Reset Password')
+
+    
+class ResetForm(FlaskForm):
+    new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
+    repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
+    submit = SubmitField('Reset Password')
 
 class UpdateInfoForm(FlaskForm):
 
@@ -610,19 +623,24 @@ class ConfirmationForm(FlaskForm):
         self.Sub=sub
 
 
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+
+
 @login_manager.user_loader
 def load_user(user_id):
     # this is a function that callsback the user by the user_id
     return User.query.get(int(user_id))
 
 
-def mail(receiver, content="", email="", password=""):
+def mail(receiver, content="", email="", password="", subject=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
+    print(content)
     if not content:
         content = "Account made confirmation message"
     if not email:
@@ -632,12 +650,16 @@ def mail(receiver, content="", email="", password=""):
 
         password = "team9admin"
 	
+    msg = MIMEText(content)
+    msg['Subject'] = subject
+    msg['To'] = receiver
+    msg['From'] = email
     mail = smtplib.SMTP('smtp.gmail.com', 587)
     mail.ehlo()
     mail.starttls()
     mail.login(email, password)
     #for email in rv:
-    mail.sendmail(email, receiver,content)
+    mail.sendmail(email,receiver,msg.as_string())
     mail.close()
 
 @app.route('/')
@@ -676,6 +698,35 @@ def signin():
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('dashboard'))
     return render_template('sign_in.html', form=form)
+
+@app.route('/forgot', methods=["Get",'Post'])
+def forgot():
+    form = ForgotForm()
+    if form.submit.data:
+        email = form.email.data
+        send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+        subject = "Reset Password"
+        mail(receiver=form.email.data,content=send,subject=subject)
+        return render_template('forgot.html', form=form)
+    return render_template('forgot.html', form=form)
+
+#does not work
+@app.route("/reset/<l>", methods=["Get","Post"])
+def reset(l):
+    form = ResetForm()
+    if request.method == "Post": 
+        if form.submit.data:
+            hashed_password = generate_password_hash(form.new.data, method='sha256')
+            email = request.args.get("l")
+            user = user.query.filter_by(email=email).first()
+            if user:
+                newPassword = User(password=hashed_password)
+            return render_template('sign_in.html', form=form)
+    else:
+        email = request.args.get("l")
+        return redirect(url_for("/reset/"))
+
+
 
 
 @app.route('/sign_up', methods=['GET', 'POST'])
