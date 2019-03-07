@@ -570,8 +570,8 @@ class AddOrganisedEvents(FlaskForm):
 
 class AddEducationAndPublicEngagement(FlaskForm):
     name = StringField('Name', validators=[Length(max=50)])
-    start_date = DateField('Start Date', validators=[Length(max=50)])
-    end_date = DateField('End Date', validators=[Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
     activity = StringField('Activity', validators=[Length(max=50)])
     topic = StringField('Topic', validators=[Length(max=50)])
     target_area = StringField('Target Area', validators=[Length(max=50)])
@@ -1385,8 +1385,83 @@ def societiesInfo():
 
     return render_template('societiesInfo.html', form=form, list=societies_list)
 
+@app.route('/organised_events', methods=['GET', 'POST'])
+@login_required
+def organised_events():
+    #Creates proposal form
+    form = AddOrganisedEvents(request.form)
+    organised_events = OrganisedEvents.query.all()
+    if request.method == 'POST':
+
+        print(form.errors)
+            #if input validates pushes to db
+        if form.validate_on_submit():
+
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            title = form.title.data
+            type = form.type.data
+            role = form.role.data
+            location = form.location.data
+            primary_attribution = form.primary_attribution.data
+            
+            conn = mysql.connect
+            cur= conn.cursor()
+                # execute a query
+            cur.execute(f"""INSERT INTO OrganisedEvents (StartDate, EndDate, Title, Type, Role, Location, PrimaryAttribution, ORCID) VALUES ('{start_date}',
+            '{end_date}','{title}','{type}','{role}','{location}', '{primary_attribution}','{current_user.orcid}');  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('organised_events.html', form=form)
+
+    organised_events_list = current_user.organised_events
+    print(organised_events_list)
+    return render_template('organised_events.html', form=form, list=organised_events_list)
 
 
+@app.route('/education_and_public_engagement', methods=['GET', 'POST'])
+@login_required
+def education_and_public_engagement():
+    #Creates proposal form
+    form = AddEducationAndPublicEngagement(request.form)
+    education_and_public_engagement = EducationAndPublicEngagement.query.all()
+    if request.method == 'POST':
+
+        print(form.errors)
+            #if input validates pushes to db
+        if form.validate_on_submit():
+
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+            name = form.name.data
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            activity=  form.activity.data
+            topic = form.topic.data
+            target_area = form.target_area.data
+            primary_attribution = form.primary_attribution.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+                # execute a query
+            cur.execute(f"""INSERT INTO EducationAndPublicEngagement (Name, StartDate, EndDate, Activity, Topic, TargetArea, PrimaryAttribution, ORCID) VALUES ('{name}','{start_date}','{end_date}','{activity}','{topic}','{target_area}', '{primary_attribution}','{current_user.orcid}');  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('education_and_public_engagement.html', form=form)
+
+    education_and_public_engagement_list = current_user.edu_and_public_engagement
+    print(education_and_public_engagement_list)
+    return render_template('education_and_public_engagement.html', form=form, list=education_and_public_engagement_list)
 
 @app.route('/awardsInfo', methods=['GET', 'POST'])
 @login_required
@@ -1589,3 +1664,6 @@ def manage():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
