@@ -813,7 +813,7 @@ def scientific_reports():
             return redirect(url_for(scientific_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -862,7 +862,7 @@ def financial_reports():
             return redirect(url_for(finanical_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -1154,14 +1154,14 @@ def submissions():
             if form.proposalPDF.data != None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck = Path(f"uploads/{filenamesecret}")
+                    filecheck = Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile!=None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
 
@@ -1187,14 +1187,14 @@ def submissions():
             if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck=Path(f"uploads/{filenamesecret}")
+                    filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile != None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
@@ -1261,7 +1261,7 @@ def external_review():
     if form.pdfReview.data!=None:
         print("here")
         filenamesecret = uuid.uuid4().hex
-        form.pdfReview.data.save('uploads/' + filenamesecret)
+        form.pdfReview.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
         sub=Submissions.query.filter_by(proposalPDF=file).first()
         new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
         sub.status="Approval Pending"
