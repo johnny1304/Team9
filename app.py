@@ -538,7 +538,7 @@ class AddPresentations(FlaskForm):
     title = StringField('Title', validators=[Length(max=50)])
     type = StringField('Type', validators=[Length(max=50)])
     conference = StringField('Conference', validators=[Length(max=50)])
-    inverted_seminar = StringField('Inverted Seminar', validators=[Length(max=50)])
+    invited_seminar = StringField('Invited Seminar', validators=[Length(max=50)])
     keynote = StringField('Keynote', validators=[Length(max=50)])
     organising_body = StringField('Organising Body', validators=[Length(max=50)])
     location = StringField('Location', validators=[Length(max=50)])
@@ -1209,6 +1209,96 @@ def generalInfo():
 
     return render_template('generalInfo.html', form=form)
 
+@app.route('/innovation_info', methods=['GET', 'POST'])
+@login_required
+def innovation_info():
+    form = AddInnovation(request.form)
+    innovation = InnovationAndCommercialisation.query.all()
+    print(innovation)
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            year = form.year.data
+            type = form.type.data
+            title = form.title.data
+            primary_attribution = form.primary_attribution.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f"""INSERT Into InnovationAndCommercialisation (Year, Type, Title, PrimaryAttribution, ORCID) VALUES ('{year}','{type}','{title}',
+            '{primary_attribution}', {current_user.orcid}) """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('innovation_info'))
+        return render_template('innovation_info.html', form = form)
+    innovation_list = current_user.inno_and_comm
+    print(innovation_list)
+    return render_template('innovation_info.html', form=form, list = innovation_list)
+
+@app.route('/presentations_info', methods=['GET','POST'])
+@login_required
+def presentations_info():
+    form = AddPresentations(request.form)
+    presentations = Presentations.query.all()
+    print(presentations)
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            year = form.year.data
+            title = form.title.data
+            type = form.type.data
+            conference = form.conference.data
+            invited_seminar = form.invited_seminar.data
+            keynote = form.keynote.data
+            organising_body = form.organising_body.data
+            location = form.location.data
+            primary_attribution = form.primary_attribution.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f""" INSERT Into Presentations (Year, Title, Type, Conference, InvitedSeminar, Keynote, OrganisingBody, 
+            Location, PrimaryAttribution, ORCID) VALUES ({year}, '{title}','{type}', '{conference}', '{invited_seminar}' , '{keynote}', '{organising_body}',
+            '{location}', '{primary_attribution}', {current_user.orcid});""")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('presentations_info.html', form=form)
+    presentations_list = current_user.presentations
+    return render_template('presentations_info.html', form=form, list=presentations_list)
+
+@app.route('/collaborations_info', methods=['GET','POST'])
+@login_required
+def collaborations_info():
+    form = AddCollaborations(request.form)
+    collaborations = Collaborations.query.all()
+    print(collaborations)
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            institution = form.institution.data
+            department = form.department.data
+            location = form.location.data
+            name_collaborator = form.name_collaborator.data
+            primary_goal = form.primary_goal.data
+            frequency_of_interaction =  form.frequency_of_interaction.data
+            primary_attribution =  form.primary_attribution.data
+            academic = form.academic.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f""" INSERT Into Collaborations (StartDate, EndDate, Institution, Department, Location, NameCollaborator,
+            PrimaryGoal,FrequencyOfInteraction, PrimaryAttribution,Academic, ORCID) VALUES ('{start_date}','{end_date}','{institution}'
+            ,'{department}','{location}','{name_collaborator}','{primary_goal}','{frequency_of_interaction}',
+            '{primary_attribution}',{academic},{current_user.orcid});""")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('collaborations_info.html',form=form)
+    collaborations_list = current_user.collab
+    return render_template('collaborations_info.html', form=form, list= collaborations_list)
+    
 
 @app.route('/funding_info', methods=['GET', 'POST'])
 @login_required
@@ -1216,57 +1306,55 @@ def funding_info():
     form = AddFundingForm(request.form)
     funding = Funding.query.all()
     print(funding)
-    if len(funding) == 0:
-        if request.method == 'POST':
-            if form.validate_on_submit():
-                start_date = form.start_date.data
-                end_date = form.end_date.data
-                amount_funding = form.amount_funding.data
-                funding_body = form.funding_body.data
-                funding_programme = form.funding_programme.data
-                stats = form.stats.data
-                primary_attribution = form.primary_attribution.data
-                conn = mysql.connect
-                cur = conn.cursor()
-                cur.execute(f""" INSERT into Funding (StartDate, EndDate, AmountFunding,FundingBody,FundingProgramme,
-                Stats, PrimaryAttribution, ORCID) VALUES ('{start_date}','{end_date}', {amount_funding}, 
-                '{funding_body}','{funding_programme}', '{stats}', '{primary_attribution}', {current_user.orcid})""")
-                conn.commit()
-                cur.close()
-                conn.close()
-                return redirect(url_for('profile'))
+    
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            amount_funding = form.amount_funding.data
+            funding_body = form.funding_body.data
+            funding_programme = form.funding_programme.data
+            stats = form.stats.data
+            primary_attribution = form.primary_attribution.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f""" INSERT Into Funding (StartDate, EndDate, AmountFunding,FundingBody,FundingProgramme,
+            Stats, PrimaryAttribution, ORCID) VALUES ('{start_date}','{end_date}', {amount_funding}, 
+            '{funding_body}','{funding_programme}', '{stats}', '{primary_attribution}', {current_user.orcid});""")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
         return render_template('funding_info.html', form=form)
-    else:
-
-        funding_list = current_user.funding
-        print(funding_list)
-        return render_template('funding_info.html', form=form, list = funding_list)
+    
+    funding_list = current_user.funding
+    print(funding_list)
+    return render_template('funding_info.html', form=form, list = funding_list)
 
 @app.route('/publications_info', methods=['GET','POST'])
 @login_required
 def publications_info():
     form = AddPublications(request.form)
     publications = Publications.query.all()
-    if len(publications) ==0:
-        if request.method =='POST':
-            if form.validate_on_submit():
+    if request.method =='POST':
+        if form.validate_on_submit():
                 
-                year = form.year.data
-                type = form.type.data
-                title = form.title.data
-                name = form.name.data
-                status = form.status.data
-                doi = form.doi.data
-                primary_attribution = form.primary_attribution
-                conn = mysql.connect
-                cur= conn.cursor()
+            year = form.year.data
+            type = form.type.data
+            title = form.title.data
+            name = form.name.data
+            status = form.status.data
+            doi = form.doi.data
+            primary_attribution = form.primary_attribution
+            conn = mysql.connect
+            cur= conn.cursor()
                         # execute a query
-                cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
-                VALUES ({year},'{type}','{title}',{name},'{status}','{doi}','{primary_attribution}'',{current_user.orcid});  """)
-                conn.commit()
-                cur.close()
-                conn.close()
-                return redirect(url_for('profile'))
+            cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
+            VALUES ({year},'{type}','{title}','{name}','{status}','{doi}','{primary_attribution}',{current_user.orcid});  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
         return render_template('publications_info.html', form=form) # list=impacts_list
     else:
         publications_list = current_user.publications
@@ -1571,36 +1659,24 @@ def impacts_info():
     form = AddImpactsForm()
     impacts = Impacts.query.all()
     print(impacts)
-    if len(impacts) == 0:
+  
+    if request.method == 'POST':
+        print(form.errors)
+        if form.validate_on_submit():
 
+            title = form.title.data
+            category = form.category.data
+            primary_beneficiary = form.primary_beneficiary.data
+            primary_attribution = form.primary_attribution.data
+            impact = Impacts(title = title, category= category, primary_attribution=primary_attribution, 
+            primary_beneficiary=primary_beneficiary, ORCID= current_user.orcid)
+            db.session.add(impact)
+            db.session.commit()
         
-        if request.method == 'POST':
-            print(form.errors)
-            if form.validate_on_submit():
-
-                title = form.title.data
-                category = form.category.data
-                primary_beneficiary = form.primary_beneficiary.data
-                primary_attribution = form.primary_attribution.data
-
-                conn = mysql.connect
-                cur = conn.cursor()
-                cur.execute("""INSERT INTO Impacts (Title,Category,PrimaryBeneficiary,PrimaryAttribution, ORCID) VALUES('{title}','{category}',
-                '{primary_benificiary}','{primary_attribution}', {current_user.orcid} ); """)
-                conn.commit()
-                cur.close()
-                conn.close()
-                return redirect(url_for('profile'))
-
-        return render_template('impacts_info.html', form=form) # list=impacts_list
-    else:
-        impacts_list = current_user.impacts
-        return render_template('impacts_info.html', form=form ,list=impacts_list)
-
-
-
-
-
+            return redirect(url_for('profile'))
+        return render_template('impacts_info.html', form=form) 
+    impacts_list = current_user.impacts
+    return render_template('impacts_info.html', form=form ,list=impacts_list)
 
 
 
