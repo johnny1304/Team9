@@ -20,22 +20,27 @@ from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
+app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
 Bootstrap(app)
-db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
 
+SQLALCHEMY_DATABASE_URI = "mysql://Johnnyos1304:netsoc101@Johnnyos1304.mysql.pythonanywhere-services.com/Johnnyos1304$project"
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+
+
 #setup for proposal call form
-app.config["MYSQL_HOST"] = "mysql.netsoc.co"
-app.config["MYSQL_USER"] = "seintu"
-app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_project2"
+app.config["MYSQL_HOST"] = "Johnnyos1304.mysql.pythonanywhere-services.com"
+app.config["MYSQL_USER"] = "Johnnyos1304"
+app.config["MYSQL_PASSWORD"] = "netsoc101"
+app.config["MYSQL_DB"] = "Johnnyos1304$project"
 mysql = MySQL(app)
 mysql.init_app(app)
+
 
 
 class User(UserMixin, db.Model):
