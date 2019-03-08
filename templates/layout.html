@@ -77,6 +77,12 @@
                 </li>
                 {% endif %}
 
+                {% if current_user.is_authenticated and current_user.type!="Admin"%}
+                <li class="nav-item">
+                  <a class="nav-link " href="proposals" >Open calls</a>
+                </li>
+                {% endif %}
+
                 {% if current_user.is_authenticated and current_user.type == "Admin" %}
                 <li class="nav-item">
                     <a class="nav-link " href="/proposal_call" >Create Proposal</a>

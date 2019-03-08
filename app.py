@@ -182,7 +182,7 @@ class Funding(db.Model):
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
     subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-    def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
         self.AmountFunding = AmountFunding
@@ -191,6 +191,7 @@ class Funding(db.Model):
         self.Status = Status
         self.PrimaryAttribution = PrimaryAttribution
         self.orcid = orcid
+        self.subid=subid
 
     def __repr__(self):
         return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
@@ -390,7 +391,7 @@ class ForgotForm(FlaskForm):
     reEmail = StringField("Re-type Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
     submit = SubmitField('Reset Password')
 
-    
+
 class ResetForm(FlaskForm):
     new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
     repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
@@ -460,7 +461,7 @@ class AddEducationForm(FlaskForm):
     year = IntegerField('Year ' )
     field = StringField('Field:', validators=[ Length(max=50)])
     submit = SubmitField('Add Education')
-    
+
 class AddPublications(FlaskForm):
     year = IntegerField("Year")
     type = StringField("Type", validators=[Length(max=50)])
@@ -490,7 +491,7 @@ class UpdateEmploymentForm(FlaskForm):
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
-    id = StringField('ID:', validators=[ Length(max=50)])	
+    id = StringField('ID:', validators=[ Length(max=50)])
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -515,7 +516,7 @@ class AddSocietiesForm(FlaskForm):
     membership = StringField('Membership:',validators=[ Length(max=50)])
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
-    
+
 class AddAwardsForm(FlaskForm):
 
 	year = IntegerField('Year:')
@@ -657,7 +658,7 @@ def mail(receiver, content="", email="", password="", subject=""):
         password = "default password"
 
         password = "team9admin"
-	
+
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -1012,13 +1013,7 @@ def admin_send_review():
         db.session.commit()
         return redirect(url_for("admin_external_review"))
 
-    elif form.ORCID.data!=None:
-        print("here")
-        #database push external review link to user
-        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
-        db.session.add(new_external_review)
-        db.session.commit()
-    if form.complete.data:
+    elif form.complete.data:
         #change submission to external review when done button is pressed
         i.status="review"
         db.session.add(i)
@@ -1027,7 +1022,16 @@ def admin_send_review():
         reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
         email = reviewer.email
         mail(email, "Review request made, check your profile")
-		
+
+    elif form.ORCID.data!=None:
+        print("here")
+        #database push external review link to user
+        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
+        db.session.add(new_external_review)
+        db.session.commit()
+
+
+
 
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
@@ -1272,6 +1276,7 @@ def external_review():
         sub.status="Approval Pending"
         db.session.add(new_review)
         db.session.commit()
+        return redirect(url_for("dashboard"))
 
     if file==None and review==None:
         return redirect(url_for("index"))
@@ -1336,12 +1341,12 @@ def edit_info():
     update_awards = UpdateAwardsForm(request.form)
     user = current_user
     print(user.societies)
-    
+
     if request.method == 'POST':
 
         #print(update_general.errors)
         #if input validates pushes to db
-        # 
+        #
         if update_general.validate_on_submit() :
 
             first_name = update_general.first_name.data
@@ -1364,7 +1369,7 @@ def edit_info():
             return redirect(url_for('profile'))
 
 
-        
+
        # Edit societies
         elif update_societies.validate_on_submit and "submit_soc" in request.form:
             print("here")
@@ -1374,7 +1379,7 @@ def edit_info():
             membership = update_societies.membership.data
             status = update_societies.status.data
             id1 = update_societies.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1388,9 +1393,9 @@ def edit_info():
         # Remove societies
         elif update_societies.validate_on_submit and "remove_soc" in request.form:
             print("here")
-            
+
             id1 = update_societies.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1407,7 +1412,7 @@ def edit_info():
             year = update_education.year.data
             field = update_education.field.data
             id = update_education.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1421,9 +1426,9 @@ def edit_info():
         #Remove Edu
         elif update_education.validate_on_submit and "remove_edu" in request.form:
             print("here")
-            
+
             id1 = update_education.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1452,9 +1457,9 @@ def edit_info():
         #Remove Employment
         elif update_employment.validate_on_submit and "remove_emp" in request.form:
             print("here")
-            
+
             id1 = update_employment.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1483,9 +1488,9 @@ def edit_info():
         #Remove Awards
         elif update_awards.validate_on_submit and "remove_awrd" in request.form:
             print("here")
-            
+
             id1 = update_awards.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1495,10 +1500,10 @@ def edit_info():
             conn.close()
             return redirect(url_for('edit_info'))
 
-   
-            
-       
-        
+
+
+
+
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
     form5 = update_awards, user=user)
 
@@ -1510,7 +1515,7 @@ def edit_info():
 def generalInfo():
     #Creates proposal form
     form = UpdateInfoForm(request.form)
-    
+
     #checks if form is submitted by post
     if request.method == 'POST':
 
@@ -1554,7 +1559,7 @@ def publications_info():
     if len(publications) ==0:
         if request.method =='POST':
             if form.validate_on_submit():
-                
+
                 year = form.year.data
                 type = form.type.data
                 title = form.title.data
@@ -1564,7 +1569,7 @@ def publications_info():
                 primary_attribution = form.primary_attribution
                 cur= conn.cursor()
                         # execute a query
-                cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
+                cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID)
                 VALUES ({year},'{type}','{title}',{name},'{status}','{doi}','{primary_attribution}'',{current_user.orcid});  """)
                 conn.commit()
                 cur.close()
@@ -1591,7 +1596,7 @@ def educationInfo():
     if request.method == 'POST':
             #if input validates pushes to db
         if form.validate_on_submit():
-          
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1646,7 +1651,7 @@ def employmentInfo():
             conn.close()
             return redirect(url_for('employmentInfo'))
 
-   
+
 
     return render_template('employmentInfo.html', form=form, list=employment_list)
 
@@ -1684,7 +1689,7 @@ def societiesInfo():
             conn.close()
             return redirect(url_for('societiesInfo'))
 
-   
+
 
     return render_template('societiesInfo.html', form=form, list=societies_list)
 
@@ -1697,14 +1702,14 @@ def awardsInfo():
 
     form = AddAwardsForm(request.form)
     awards_list= current_user.awards
-    
+
     if request.method == 'POST':
 
         print(form.errors)
             #if input validates pushes to db
         if form.validate_on_submit():
 
-            
+
             year= form.year.data
             award_body= form.award_body.data
             details= form.details.data
@@ -1723,7 +1728,7 @@ def awardsInfo():
             conn.close()
             return redirect(url_for('awardsInfo'))
 
- 
+
     return render_template('awardsInfo.html', form=form, list=awards_list)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
@@ -1762,7 +1767,7 @@ def team_members_info():
         return render_template('team_members_info.html', form=form)
 
    #team_members_list= TeamMembers.query.filter_by(team_id=team.team_id).all()
-   
+
 
     if request.method == 'POST':
 
@@ -1801,7 +1806,7 @@ def impacts_info():
     print(impacts)
     if len(impacts) == 0:
 
-        
+
         if request.method == 'POST':
             print(form.errors)
             if form.validate_on_submit():
@@ -1842,7 +1847,7 @@ def unauthorized_callback():
 @login_required
 def profile():
 
-    
+
 
 
     return render_template('profile.html')
