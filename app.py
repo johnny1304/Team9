@@ -173,6 +173,7 @@ class Submissions(db.Model):
 
 class Funding(db.Model):
     __tablename__ = 'Funding'
+    
     StartDate = db.Column(db.Date, nullable=False)
     EndDate = db.Column(db.Date, nullable=False)
     AmountFunding = db.Column(db.Integer, nullable=False)
@@ -503,6 +504,29 @@ class UpdateEmploymentForm(FlaskForm):
     submit_emp = SubmitField('Edit Employment')
     remove_emp = SubmitField('Remove')
 
+class UpdateFundingForm(FlaskForm):
+    id = StringField('ID:', validators=[ Length(max=50)])
+    start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    amount_funding = IntegerField('Amount Funding', )
+    funding_body = StringField('Funding Body', validators=[ Length(max=50)] )
+    funding_programme = StringField('Funding Programme ', validators=[ Length(max=50)])
+    stats = StringField('Stats', validators=[ Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[ Length(max=50)])
+    submit_fund = SubmitField('Edit Funding')
+    remove_fund = SubmitField('Remove')
+
+class UpdateOrganisedEvents(FlaskForm):
+    id = StringField('ID:', validators=[ Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    role = StringField('Role', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit_org = SubmitField('Edit')
+    submit_org = SubmitField('Remove')
 
 
 class UpdateSocietiesForm(FlaskForm):
@@ -1000,6 +1024,7 @@ def edit_info():
     update_societies = UpdateSocietiesForm(request.form)
     update_employment = UpdateEmploymentForm(request.form)
     update_awards = UpdateAwardsForm(request.form)
+    update_funding = UpdateFundingForm(request.form)
     user = current_user
     print(user.societies)
     
@@ -1141,7 +1166,8 @@ def edit_info():
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',TeamMember = '{team_member}' WHERE ID ={id3};  """)
+            cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',
+            TeamMember = '{team_member}' WHERE ID ={id3};  """)
             conn.commit()
             cur.close()
             conn.close()
@@ -1161,12 +1187,12 @@ def edit_info():
             conn.close()
             return redirect(url_for('profile'))
 
-   
+       
             
        
         
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
-    form5 = update_awards, user=user)
+    form5 = update_awards, form6 = update_funding, user=user)
 
 
 

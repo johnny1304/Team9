@@ -33,13 +33,9 @@ CREATE TABLE Employment(
 	Company varchar(255),
 	Location varchar(255),
 	Years INT,
-<<<<<<< HEAD
-	ORCID int NOT NULL
-=======
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Societies */
 DROP TABLE IF EXISTS Societies;
@@ -50,13 +46,9 @@ CREATE TABLE Societies(
 	Society VARCHAR(255),
 	Membership VARCHAR(255),
 	Status VARCHAR(20),
-<<<<<<< HEAD
-	ORCID int NOT NULL
-=======
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Award */
 DROP TABLE IF EXISTS Awards;
@@ -66,13 +58,9 @@ CREATE TABLE Awards(
 	AwardingBody VARCHAR(255),
 	Details VARCHAR(255),
 	TeamMember VARCHAR(255),
-<<<<<<< HEAD
-	ORCID int NOT NULL
-=======
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Funding */
 DROP TABLE IF EXISTS Funding;
@@ -85,22 +73,13 @@ CREATE TABLE Funding(
 	FundingProgramme VARCHAR(255),
 	Stats VARCHAR(255),
 	PrimaryAttribution VARCHAR(255),
-<<<<<<< HEAD
-	ORCID int NOT NULL
-=======
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Team*/
 DROP TABLE IF EXIST Team;
 CREATE TABLE Team(
-<<<<<<< HEAD
-	TeamID int NOT NULL AUTO_INCREMENT,
-	TeamLeader int NOT NULL,
-	proposalID int NOT NULL
-=======
 	ID int NOT NULL AUTO_INCREMENT,
 	TeamID int NOT NULL AUTO_INCREMENT,
 	TeamLeader int NOT NULL,
@@ -108,7 +87,6 @@ CREATE TABLE Team(
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*TeamMembers */
 DROP TABLE IF EXISTS TeamMembers;
@@ -119,13 +97,9 @@ CREATE TABLE TeamMembers(
 	Name VARCHAR(255),
 	Position VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL,
-<<<<<<< HEAD
-	ORCID int NOT NULL
-=======
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Impacts */
 DROP TABLE IF EXISTS Impacts;
@@ -134,14 +108,10 @@ CREATE TABLE Impacts(
 	Title VARCHAR(255),
 	Category VARCHAR(255),
 	PrimaryBeneficiary VARCHAR(255) NOT NULL,
-<<<<<<< HEAD
-	PrimaryAttribution VARCHAR(255) NOT NULL
-=======
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*InnovationAndCommercialisation */
 DROP TABLE IF EXISTS InnovationAndCommercialisation;
@@ -150,14 +120,10 @@ CREATE TABLE InnovationAndCommercialisation(
 	Year int,
 	Type VARCHAR(255),
 	Title VARCHAR(255),
-<<<<<<< HEAD
-	PrimaryAttribution VARCHAR(255) NOT NULL
-=======
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Publications */
 DROP TABLE IF EXISTS Publications;
@@ -169,11 +135,8 @@ CREATE TABLE Publications(
 	Status VARCHAR(255),
 	DOI VARCHAR(255) NOT NULL, 
 	PrimaryAttribution VARCHAR(255) NOT NULL,
-<<<<<<< HEAD
-=======
 	ORCID int NOT NULL,
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 	PRIMARY KEY (DOI)
 );
 /*Presentations */
@@ -188,14 +151,10 @@ CREATE TABLE Presentations(
 	Keynote VARCHAR(255),
 	OrganisingBody VARCHAR(255),
 	Location VARCHAR(255),
-<<<<<<< HEAD
-	PrimaryAttribution VARCHAR(255) NOT NULL
-=======
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Collaborations */
 DROP TABLE IF EXISTS Collaborations;
@@ -210,14 +169,10 @@ CREATE TABLE Collaborations(
 	PrimaryGoal VARCHAR(255),
 	FrequencyOfInteraction VARCHAR(255),
 	PrimaryAttribution VARCHAR(255) NOT NULL, 
-<<<<<<< HEAD
-	Academic Boolean
-=======
 	Academic Boolean,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*OrganisedEvents */
 DROP TABLE IF EXISTS OrganisedEvents;
@@ -229,14 +184,10 @@ CREATE TABLE OrganisedEvents(
 	Type VARCHAR(255),
 	Role VARCHAR(255),
 	Location VARCHAR(255),
-<<<<<<< HEAD
-	PrimaryAttribution VARCHAR(255) NOT NULL
-=======
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*EducationAndPublicEngagement */
 DROP TABLE IF EXISTS EducationAndPublicEngagement;
@@ -248,14 +199,10 @@ CREATE TABLE EducationAndPublicEngagement(
 	Activity VARCHAR(255),
 	Topic VARCHAR(255),
 	TargetArea VARCHAR(255),
-<<<<<<< HEAD
-	PrimaryAttribution VARCHAR(255) NOT NULL
-=======
 	PrimaryAttribution VARCHAR(255) NOT NULL,
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
 /*Submission */
 DROP TABLE IF EXISTS Submission; 
@@ -275,13 +222,8 @@ CREATE TABLE Submission (
     lay TEXT NOT NULL,
     declaration BOOLEAN NOT NULL,
     user varchar(255) NOT NULL,
-<<<<<<< HEAD
-  	draft Boolean default True,
-  	proposalPDF varchar(255) NOT NULL
-=======
   	draft Boolean DEFAULT True,
   	proposalPDF varchar(255) NOT NULL
 	ORCID int NOT NULl,
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
->>>>>>> refine
 );
