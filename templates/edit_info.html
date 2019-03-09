@@ -231,6 +231,60 @@
                         {% endfor %}
                     </div>
 
+                    <div id="headingSix" style="padding-left:5em;">
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseSix" aria-expanded="true" aria-controls="collapseSix">
+                            Edit Funding
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseSix" class="collapse  aria-labelledby="headingSix" data-parent="#accordionExample">
+                        
+                        {% for i in user.funding %}
+
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+                                
+                                    {{form6.hidden_tag()}}
+                                            <div class="form-group col-lg-12 " style='display:none;'>
+                                                {{render_field(form6.id, value= i.ID,class="col-lg-12")}}
+                                         </div>
+                                         
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form6.start_date, value= i.StartDate,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form6.end_date, value=i.EndDate, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form6.amount_funding, value= i.AmountFunding,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form6.funding_body, value= i.FundingBody,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form6.funding_programme, value= i.FundingProgramme,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form6.stats, value= i.Stats,class="col-lg-12")}}
+                                        </div>
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form6.primary_attribution, value= i.PrimaryAttribution,class="col-lg-12")}}
+                                        </div>
+                                       
+                                
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form6.submit_fund}}
+                                        </div>
+                                        <div class="form-group col-lg-6 " id="edit soc">
+                                            {{ form6.remove_fund}}
+                                        </div>
+                                    
+                            </form>
+                        {% endfor %}
+                    </div>
+
 
 
         
