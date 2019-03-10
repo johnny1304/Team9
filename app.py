@@ -490,6 +490,18 @@ class AddEmploymentForm(FlaskForm):
 	years = IntegerField('Years:')
 	submit = SubmitField('Add')
 
+class UpdatePublications(FlaskForm):
+    id = StringField("ID:" ,validators=[ Length(max=50)])
+    year = IntegerField("Year")
+    type = StringField("Type", validators=[Length(max=50)])
+    title = StringField("Title", validators=[Length(max=50)])
+    name = StringField("Name", validators=[Length(max=50)])
+    status = StringField("Status", validators=[Length(max=50)])
+    doi = StringField("DOI",validators=[Length(max=50)])
+    primary_attribution = StringField("PrimaryAttribution", validators=[Length(max=50)])
+    submit_pub = SubmitField('Edit Publications')
+    remove_pub = SubmitField('Remove')
+
 class UpdateEmploymentForm(FlaskForm):
     id = StringField('ID:', validators=[ Length(max=50)])
     company = StringField('Company:', validators=[ Length(max=50)])
@@ -521,6 +533,15 @@ class UpdateOrganisedEvents(FlaskForm):
     primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
     submit_org = SubmitField('Edit')
     submit_org = SubmitField('Remove')
+
+class UpdateImpactsForm(FlaskForm):
+    id = StringField('ID:', validators=[Length(max=50)])
+    title = StringField('Title: ', validators=[Length(max=50)])
+    category = StringField('Category: ', validators=[Length(max=50)])
+    primary_beneficiary = StringField('Primary Beneficiary: ', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:', validators=[Length(max=50)])
+    submit_imp = SubmitField('Edit')
+    remove_imp = SubmitField('Remove')
 
 
 class UpdateSocietiesForm(FlaskForm):
@@ -628,6 +649,7 @@ class AddImpactsForm(FlaskForm):
     primary_beneficiary = StringField('Primary Beneficiary: ', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:', validators=[Length(max=50)])
     submit = SubmitField('Add Impacts')
+
 class ExternalReviewForm(FlaskForm):
 
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
@@ -1428,6 +1450,8 @@ def edit_info():
     update_awards = UpdateAwardsForm(request.form)
     update_funding = UpdateFundingForm(request.form)
     update_org = UpdateOrganisedEvents(request.form)
+    update_pub = UpdatePublications(request.form)
+    update_imp = UpdateImpactsForm(request.form)
     user = current_user
     print(user.societies)
     
@@ -1653,13 +1677,60 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-
-   
-            
+        elif update_pub.validate_on_submit and "submit_pub" in request.form:
+            id2 = update_pub.id.data
+            year = update_pub.year.data
+            type = update_pub.type.data
+            title = update_pub.title.data
+            name = update_pub.name.data
+            status = update_pub.status.data
+            doi = update_pub.doi.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Publications SET Year = {year}, Type = '{type}', Title= '{title}',
+             Name = '{name}', Status = '{status}', DOI = '{doi}' WHERE ID = {id2} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pub.validate_on_submit and "remove_pub" in request.form:
+            print("here")
+            id1 = update_pub.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Publications WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_imp.validate_on_submit and "submit_imp" in request.form:
+            id2 = update_imp.id.data
+            title = update_imp.title.data
+            category = update_imp.category.data
+            primary_beneficiary = update_imp.primary_beneficiary.data
+            primary_attribution = update_imp.primary_attribution.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Impacts SET Title = '{title}', Category = '{category}' , PrimaryBeneficiary = '{primary_beneficiary}',
+            PrimaryAttribution = '{primary_attribution}' WHERE ID = {id2} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_imp.validate_on_submit and "remove_imp" in request.form:
+            print("here")
+            id1 = update_imp.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Impact WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
        
         
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
-    form5 = update_awards,form6 = update_funding ,form7= update_org, user=user)
+    form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp , user=user)
 
 
 
