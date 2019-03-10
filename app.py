@@ -20,22 +20,27 @@ from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
+app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
 Bootstrap(app)
-db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
 
+SQLALCHEMY_DATABASE_URI = "mysql://Johnnyos1304:netsoc101@Johnnyos1304.mysql.pythonanywhere-services.com/Johnnyos1304$project"
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+
+
 #setup for proposal call form
-app.config["MYSQL_HOST"] = "mysql.netsoc.co"
-app.config["MYSQL_USER"] = "seintu"
-app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_project2"
+app.config["MYSQL_HOST"] = "Johnnyos1304.mysql.pythonanywhere-services.com"
+app.config["MYSQL_USER"] = "Johnnyos1304"
+app.config["MYSQL_PASSWORD"] = "netsoc101"
+app.config["MYSQL_DB"] = "Johnnyos1304$project"
 mysql = MySQL(app)
 mysql.init_app(app)
+
 
 
 class User(UserMixin, db.Model):
@@ -178,7 +183,7 @@ class Funding(db.Model):
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
     subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-    def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
         self.AmountFunding = AmountFunding
@@ -187,6 +192,7 @@ class Funding(db.Model):
         self.Status = Status
         self.PrimaryAttribution = PrimaryAttribution
         self.orcid = orcid
+        self.subid=subid
 
     def __repr__(self):
         return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.AmountFunding}')"
@@ -386,7 +392,7 @@ class ForgotForm(FlaskForm):
     reEmail = StringField("Re-type Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
     submit = SubmitField('Reset Password')
 
-    
+
 class ResetForm(FlaskForm):
     new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
     repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
@@ -472,7 +478,7 @@ class AddEducationForm(FlaskForm):
     year = IntegerField('Year ' )
     field = StringField('Field:', validators=[ Length(max=50)])
     submit = SubmitField('Add Education')
-    
+
 class AddPublications(FlaskForm):
     year = IntegerField("Year")
     type = StringField("Type", validators=[Length(max=50)])
@@ -546,7 +552,7 @@ class UpdateImpactsForm(FlaskForm):
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
-    id = StringField('ID:', validators=[ Length(max=50)])	
+    id = StringField('ID:', validators=[ Length(max=50)])
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -571,6 +577,7 @@ class AddSocietiesForm(FlaskForm):
     membership = StringField('Membership:',validators=[ Length(max=50)])
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
+
 
 class AddPresentations(FlaskForm):
     year = IntegerField('Year', )
@@ -616,6 +623,7 @@ class AddEducationAndPublicEngagement(FlaskForm):
     target_area = StringField('Target Area', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
     submit = SubmitField('Add Education and Public Engagement')
+
 
 class AddAwardsForm(FlaskForm):
 
@@ -770,7 +778,7 @@ def mail(receiver, content="", email="", password="", subject=""):
         password = "default password"
 
         password = "team9admin"
-	
+
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -932,7 +940,7 @@ def scientific_reports():
             return redirect(url_for(scientific_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -981,7 +989,7 @@ def financial_reports():
             return redirect(url_for(finanical_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -1126,13 +1134,7 @@ def admin_send_review():
         db.session.commit()
         return redirect(url_for("admin_external_review"))
 
-    elif form.ORCID.data!=None:
-        print("here")
-        #database push external review link to user
-        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
-        db.session.add(new_external_review)
-        db.session.commit()
-    if form.complete.data:
+    elif form.complete.data:
         #change submission to external review when done button is pressed
         i.status="review"
         db.session.add(i)
@@ -1141,7 +1143,16 @@ def admin_send_review():
         reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
         email = reviewer.email
         mail(email, "Review request made, check your profile")
-		
+
+    elif form.ORCID.data!=None:
+        print("here")
+        #database push external review link to user
+        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
+        db.session.add(new_external_review)
+        db.session.commit()
+
+
+
 
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
@@ -1273,14 +1284,14 @@ def submissions():
             if form.proposalPDF.data != None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck = Path(f"uploads/{filenamesecret}")
+                    filecheck = Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile!=None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
 
@@ -1306,14 +1317,14 @@ def submissions():
             if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck=Path(f"uploads/{filenamesecret}")
+                    filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile != None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
@@ -1380,12 +1391,13 @@ def external_review():
     if form.pdfReview.data!=None:
         print("here")
         filenamesecret = uuid.uuid4().hex
-        form.pdfReview.data.save('uploads/' + filenamesecret)
+        form.pdfReview.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
         sub=Submissions.query.filter_by(proposalPDF=file).first()
         new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
         sub.status="Approval Pending"
         db.session.add(new_review)
         db.session.commit()
+        return redirect(url_for("dashboard"))
 
     if file==None and review==None:
         return redirect(url_for("index"))
@@ -1454,12 +1466,12 @@ def edit_info():
     update_imp = UpdateImpactsForm(request.form)
     user = current_user
     print(user.societies)
-    
+
     if request.method == 'POST':
 
         #print(update_general.errors)
         #if input validates pushes to db
-        # 
+        #
         if update_general.validate_on_submit() :
 
             first_name = update_general.first_name.data
@@ -1482,7 +1494,7 @@ def edit_info():
             return redirect(url_for('profile'))
 
 
-        
+
        # Edit societies
         elif update_societies.validate_on_submit and "submit_soc" in request.form:
             print("here")
@@ -1492,7 +1504,7 @@ def edit_info():
             membership = update_societies.membership.data
             status = update_societies.status.data
             id1 = update_societies.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1506,9 +1518,9 @@ def edit_info():
         # Remove societies
         elif update_societies.validate_on_submit and "remove_soc" in request.form:
             print("here")
-            
+
             id1 = update_societies.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1525,7 +1537,7 @@ def edit_info():
             year = update_education.year.data
             field = update_education.field.data
             id = update_education.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1539,9 +1551,9 @@ def edit_info():
         #Remove Edu
         elif update_education.validate_on_submit and "remove_edu" in request.form:
             print("here")
-            
+
             id1 = update_education.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1570,9 +1582,9 @@ def edit_info():
         #Remove Employment
         elif update_employment.validate_on_submit and "remove_emp" in request.form:
             print("here")
-            
+
             id1 = update_employment.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1602,9 +1614,9 @@ def edit_info():
         #Remove Awards
         elif update_awards.validate_on_submit and "remove_awrd" in request.form:
             print("here")
-            
+
             id1 = update_awards.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1740,7 +1752,7 @@ def edit_info():
 def generalInfo():
     #Creates proposal form
     form = UpdateInfoForm(request.form)
-    
+
     #checks if form is submitted by post
     if request.method == 'POST':
 
@@ -1921,6 +1933,7 @@ def publications_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
+
         return render_template('publications_info.html', form=form) # list=impacts_list
     else:
         publications_list = current_user.publications
@@ -1942,7 +1955,7 @@ def educationInfo():
     if request.method == 'POST':
             #if input validates pushes to db
         if form.validate_on_submit():
-          
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1997,7 +2010,7 @@ def employmentInfo():
             conn.close()
             return redirect(url_for('employmentInfo'))
 
-   
+
 
     return render_template('employmentInfo.html', form=form, list=employment_list)
 
@@ -2035,7 +2048,7 @@ def societiesInfo():
             conn.close()
             return redirect(url_for('societiesInfo'))
 
-   
+
 
     return render_template('societiesInfo.html', form=form, list=societies_list)
 
@@ -2123,14 +2136,14 @@ def awardsInfo():
 
     form = AddAwardsForm(request.form)
     awards_list= current_user.awards
-    
+
     if request.method == 'POST':
 
         print(form.errors)
             #if input validates pushes to db
         if form.validate_on_submit():
 
-            
+
             year= form.year.data
             award_body= form.award_body.data
             details= form.details.data
@@ -2149,7 +2162,7 @@ def awardsInfo():
             conn.close()
             return redirect(url_for('awardsInfo'))
 
- 
+
     return render_template('awardsInfo.html', form=form, list=awards_list)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
@@ -2188,7 +2201,7 @@ def team_members_info():
         return render_template('team_members_info.html', form=form)
 
    #team_members_list= TeamMembers.query.filter_by(team_id=team.team_id).all()
-   
+
 
     if request.method == 'POST':
 
@@ -2229,7 +2242,6 @@ def impacts_info():
     if request.method == 'POST':
         print(form.errors)
         if form.validate_on_submit():
-
             title = form.title.data
             category = form.category.data
             primary_beneficiary = form.primary_beneficiary.data
@@ -2248,6 +2260,7 @@ def impacts_info():
 
 
 
+
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     return redirect('/sign_in?next=' + request.path)
@@ -2256,7 +2269,7 @@ def unauthorized_callback():
 @login_required
 def profile():
 
-    
+
 
 
     return render_template('profile.html')
