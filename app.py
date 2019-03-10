@@ -1427,6 +1427,7 @@ def edit_info():
     update_employment = UpdateEmploymentForm(request.form)
     update_awards = UpdateAwardsForm(request.form)
     update_funding = UpdateFundingForm(request.form)
+    update_org = UpdateOrganisedEvents(request.form)
     user = current_user
     print(user.societies)
     
@@ -1588,13 +1589,77 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('edit_info'))
+        elif update_org.validate_on_submit and "submit_org" in request.form:
+            id1 = update_org.id.data
+            start_date = update_org.start_date.data
+            end_date = update_org.end_date.data
+            title = update_org.title.data
+            type = update_org.type.data
+            role = update_org.type.data
+            location = update_org.location.data
+            primary_attribution = update_org.primary_attribution.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE OrganisedEvents SET StartDate = '{start_date}', EndDate = '{end_date}', Title='{title}', Type = '{type}',
+            Role = '{role}', Location = '{location}', PrimaryAttribution = {primary_attribution} WHERE ID = {id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('organised_events_info'))
+        elif update_org.validate_on_submit and "remove_org" in request.form:
+            print("here")
+            id1 = update_org.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM OrganisedEvents WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('edit_info'))
+        
+        elif update_funding.validate_on_submit and "submit_fund" in request.form:
+            start_date = update_funding.start_date.data
+            end_date = update_funding.end_date.data
+            amount_funding = update_funding.amount_funding.data
+            funding_body= update_funding.funding_body.data
+            funding_programme = update_funding.funding_programme.data
+            stats = update_funding.stats.data
+            primary_attribution = update_funding.primary_attribution.data
+            id1 = update_funding.id.data
+            conn = mysql.connect
+            funds = Funding.query.filter_by(ID = id1).first
+            funds.start_date = start_date
+            funds.end_date = end_date
+            funds.amount_funding = amount_funding
+            funds.funding_body = funding_body
+            funds.funding_programme = funding_body
+            funds.stats = stats
+            funds.primary_attribution = primary_attribution
+            db.session.commit()
+            return redirect(url_for('profile'))
+        #Remove Awards
+        elif update_funding.validate_on_submit and "remove_fund" in request.form:
+            print("here")
+            
+            id1 = update_funding.id.data
+        
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Funding WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
 
-       
+   
             
        
         
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
-    form5 = update_awards, form6 = update_funding, user=user)
+    form5 = update_awards,form6 = update_funding ,form7= update_org, user=user)
 
 
 
