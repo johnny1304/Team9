@@ -122,7 +122,7 @@ class Proposal(db.Model):
         self.picture = picture
 
     def __repr__(self):
-        return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
+        return f"User('{self.Deadline}', '{self.TargetAudience}', '{self.TimeFrame}')"
 
 class Submissions(db.Model):
     __tablename__='Submission'
@@ -173,7 +173,7 @@ class Submissions(db.Model):
 
 class Funding(db.Model):
     __tablename__ = 'Funding'
-    
+
     StartDate = db.Column(db.Date, nullable=False)
     EndDate = db.Column(db.Date, nullable=False)
     AmountFunding = db.Column(db.Integer, nullable=False)
@@ -781,7 +781,10 @@ class ExternalReviewForm(FlaskForm):
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
     submit = SubmitField('submit')
 
-
+def admin_setup(orcid):
+    user=User.query.filter_by(orcid=orcid).first()
+    user.type="Admin"
+    db.session.commit()
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -821,7 +824,7 @@ def mail(receiver, content="", email="", password="", subject=""):
 @app.route('/')
 @app.route('/home')
 def index():
-    
+
     #if current_user.is_authenticated:
     #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
     #    updateType.type = "Admin"
@@ -1683,7 +1686,7 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('edit_info'))
-        
+
         elif update_funding.validate_on_submit and "submit_fund" in request.form:
             start_date = update_funding.start_date.data
             end_date = update_funding.end_date.data
@@ -1707,9 +1710,9 @@ def edit_info():
         #Remove Awards
         elif update_funding.validate_on_submit and "remove_fund" in request.form:
             print("here")
-            
+
             id1 = update_funding.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1823,8 +1826,8 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-         
-        
+
+
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
     form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp ,form10 = update_edup,
      form11 = update_pres, user=user)
@@ -1918,7 +1921,7 @@ def presentations_info():
             primary_attribution = form.primary_attribution.data
             conn = mysql.connect
             cur = conn.cursor()
-            cur.execute(f""" INSERT Into Presentations (Year, Title, Type, Conference, InvitedSeminar, Keynote, OrganisingBody, 
+            cur.execute(f""" INSERT Into Presentations (Year, Title, Type, Conference, InvitedSeminar, Keynote, OrganisingBody,
             Location, PrimaryAttribution, ORCID) VALUES ({year}, '{title}','{type}', '{conference}', '{invited_seminar}' , '{keynote}', '{organising_body}',
             '{location}', '{primary_attribution}', {current_user.orcid});""")
             conn.commit()
@@ -1961,7 +1964,7 @@ def collaborations_info():
         return render_template('collaborations_info.html',form=form)
     collaborations_list = current_user.collab
     return render_template('collaborations_info.html', form=form, list= collaborations_list)
-    
+
 
 @app.route('/funding_info', methods=['GET', 'POST'])
 @login_required
@@ -1969,7 +1972,7 @@ def funding_info():
     form = AddFundingForm(request.form)
     funding = Funding.query.all()
     print(funding)
-    
+
     if request.method == 'POST':
         if form.validate_on_submit():
             start_date = form.start_date.data
@@ -1982,14 +1985,14 @@ def funding_info():
             conn = mysql.connect
             cur = conn.cursor()
             cur.execute(f""" INSERT Into Funding (StartDate, EndDate, AmountFunding,FundingBody,FundingProgramme,
-            Stats, PrimaryAttribution, ORCID) VALUES ('{start_date}','{end_date}', {amount_funding}, 
+            Stats, PrimaryAttribution, ORCID) VALUES ('{start_date}','{end_date}', {amount_funding},
             '{funding_body}','{funding_programme}', '{stats}', '{primary_attribution}', {current_user.orcid});""")
             conn.commit()
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
         return render_template('funding_info.html', form=form)
-    
+
     funding_list = current_user.funding
     print(funding_list)
     return render_template('funding_info.html', form=form, list = funding_list)
@@ -2001,7 +2004,7 @@ def publications_info():
     publications = Publications.query.all()
     if request.method =='POST':
         if form.validate_on_submit():
-                
+
             year = form.year.data
             type = form.type.data
             title = form.title.data
@@ -2012,7 +2015,7 @@ def publications_info():
             conn = mysql.connect
             cur= conn.cursor()
                         # execute a query
-            cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
+            cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID)
             VALUES ({year},'{type}','{title}','{name}','{status}','{doi}','{primary_attribution}',{current_user.orcid});  """)
             conn.commit()
             cur.close()
@@ -2160,7 +2163,7 @@ def organised_events():
             role = form.role.data
             location = form.location.data
             primary_attribution = form.primary_attribution.data
-            
+
             conn = mysql.connect
             cur= conn.cursor()
                 # execute a query
@@ -2323,7 +2326,7 @@ def impacts_info():
     form = AddImpactsForm()
     impacts = Impacts.query.all()
     print(impacts)
-  
+
     if request.method == 'POST':
         print(form.errors)
         if form.validate_on_submit():
@@ -2331,13 +2334,13 @@ def impacts_info():
             category = form.category.data
             primary_beneficiary = form.primary_beneficiary.data
             primary_attribution = form.primary_attribution.data
-            impact = Impacts(title = title, category= category, primary_attribution=primary_attribution, 
+            impact = Impacts(title = title, category= category, primary_attribution=primary_attribution,
             primary_beneficiary=primary_beneficiary, ORCID= current_user.orcid)
             db.session.add(impact)
             db.session.commit()
-        
+
             return redirect(url_for('profile'))
-        return render_template('impacts_info.html', form=form) 
+        return render_template('impacts_info.html', form=form)
     impacts_list = current_user.impacts
     return render_template('impacts_info.html', form=form ,list=impacts_list)
 
