@@ -16,202 +16,32 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_mysqldb import MySQL
 from flask_dropzone import Dropzone
 import smtplib
+from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
+app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
 Bootstrap(app)
-db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
 
+SQLALCHEMY_DATABASE_URI = "mysql://Johnnyos1304:netsoc101@Johnnyos1304.mysql.pythonanywhere-services.com/Johnnyos1304$project"
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+
+
 #setup for proposal call form
-app.config["MYSQL_HOST"] = "mysql.netsoc.co"
-app.config["MYSQL_USER"] = "seintu"
-app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_project2"
+app.config["MYSQL_HOST"] = "Johnnyos1304.mysql.pythonanywhere-services.com"
+app.config["MYSQL_USER"] = "Johnnyos1304"
+app.config["MYSQL_PASSWORD"] = "netsoc101"
+app.config["MYSQL_DB"] = "Johnnyos1304$project"
 mysql = MySQL(app)
 mysql.init_app(app)
 
 
-
-class proposalForm(FlaskForm):
-    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
-    deadline = DateField('Deadline', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
-    text_of_call = TextAreaField('Text of Call', validators=[InputRequired()], render_kw={"placeholder": "Text of call"})
-    target_audience = StringField('Target Audience', validators=[InputRequired()], render_kw={"placeholder": "Target Audience"})
-    eligibility_criteria = TextAreaField('Eligibility Criteria', validators=[InputRequired()], render_kw={"placeholder": "Eligibility Criteria"})
-    duration = IntegerField('Duration', validators=[InputRequired()], render_kw={"placeholder": "Duration in Months"})
-    reporting_guidelines = TextAreaField('Reporting Guidlines', validators=[InputRequired()], render_kw={"placeholder": "Reporting Guidelines"})
-    time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
-    picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
-    submit = SubmitField('Submit')
-
-class sendExternalReview(FlaskForm):
-    ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
-    Decline=SubmitField('Decline application')
-    submit=SubmitField('Send for review')
-    complete=SubmitField('External Reviews Sent: Mark as under Review')
-
-class ConfirmationForm(FlaskForm):
-    Sub=StringField("Submission id")
-    Approve=SubmitField("Approve Application")
-    Decline=SubmitField("Decline Application")
-
-    def setSub(self,sub):
-        self.Sub=sub
-
-class Proposal(db.Model):
-    __tablename__ = "Proposal"
-    Deadline = db.Column(db.Date, nullable=False)
-    title = db.Column(db.String(100),nullable=False)
-    TextOfCall = db.Column(db.String(1000), nullable=False)
-    TargetAudience = db.Column(db.String(500), nullable=False)
-    EligibilityCriteria = db.Column(db.String(1000), nullable=False)
-    Duration = db.Column(db.Integer, nullable=False)
-    ReportingGuidelines = db.Column(db.String(1000), nullable=False)
-    TimeFrame = db.Column(db.String(200), nullable=False)
-    picture = db.Column(db.String(200),nullable=True)
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-
-
-    def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
-        self.Deadline = Deadline
-        self.title = title
-        self.TextOfCall = TextOfCall
-        self.TargetAudience = TargetAudience
-        self.EligibilityCriteria = EligibilityCriteria
-        self.Duration = Duration
-        self.ReportingGuidelines = ReportingGuidelines
-        self.TimeFrame = TimeFrame
-        self.picture = picture
-
-    def __repr__(self):
-        return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
-
-#form for submission
-class Submission_Form(FlaskForm):
-    propid = StringField('propid')
-    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
-    duration = IntegerField('Duration', validators=[InputRequired()],render_kw={"placeholder": "Duration in months"})
-    NRP = SelectField(u'NRP', choices=[('areaA','Priority Area A - Future Networks & Communications'),
-                                       ('areaB', 'Priority Area B - Data Analytics, Management, Securitu & Privacy'),
-                                       ('areaC', 'Priority Area C - Digital Platforms, Content & Applications'),
-                                       ('areaD', 'Priority Area D - Connected Health and Independent Living'),
-                                       ('areaE', 'Priority Area E - Medical Devices'),
-                                       ('areaF', 'Priority Area F - Diagnostics'),
-                                       ('areaG', 'Priority Area G - Therapeutics : Synthesis, Formulation, Processing and Drug Delivery'),
-                                       ('areaH', 'Priority Area H - Food for Health'),
-                                       ('areaI', 'Priority Area I - Sustainable Food Production'),
-                                       ('areaJ', 'Priority Area J - Marine Renewable Energy'),
-                                       ('areaK', 'Priority Area K - Smart Grids & Smart Cities'),
-                                       ('areaL', 'Priority Area L - Manufacturing Competitiveness'),
-                                       ('areaM', 'Priority Area M - Processing Technologies and Novel Materials'),
-                                       ('areaN', 'Priority Area N - Innovation in Services and Buisness Processses'),
-                                       ('Software', 'Software'),
-                                       ('Others', 'Others')
-                                       ])
-    legal_remit = TextAreaField("Please describe how your proposal is aligned with SFI's legal remit (max 250 words)"
-                                ,validators=[InputRequired(), length(max=1250) ],render_kw={"placeholder": "Legal remit"}
-                                )
-    ethical_animal =  TextAreaField("A statement indicating whether the research involves the use of animals"
-                                ,validators=[InputRequired()],render_kw={"placeholder": "Animal ethics statement"}
-                                )
-    ethical_human = TextAreaField("A statement indicating whether the research involves human participants, human biological material, or identifiable data"
-                                   , validators=[InputRequired()], render_kw={"placeholder": "Human ethics statement"}
-                                   )
-    location = TextAreaField("A statement of the applicant’s location (country) at the time of submission"
-                             , validators=[InputRequired()], render_kw={"placeholder": "Location statement"})
-    co_applicants = TextAreaField("A list of co-applicants if applicable",render_kw={"placeholder": "List of co-applicants eg: '- name' "})
-    collaborators = TextAreaField("Alist of collaborators, if applicable. Information about collaborators should include:( -Name -Organization -Email )"
-                                  ,render_kw={"placeholder":"-name\n-organisation\n-Email;"})
-    scientific_abstract = TextAreaField("Scientific Abstract( max 200 words )",
-                                        validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
-    lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
-                                        validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
-    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
-    declaration = BooleanField('Agree?', validators=[DataRequired(), ])
-    submit = SubmitField('Submit')
-
-    validate = SubmitField('Validate form')
-
-    draft = SubmitField('Save Draft')
-
-    def setPropId(self, propid):
-        self.propid=propid
-
-class Submissions(db.Model):
-    __tablename__='Submission'
-    propid = db.Column(db.Integer,nullable=False)
-    subid = db.Column(db.Integer,nullable=False, primary_key=True)
-    title = db.Column(db.Text,nullable=False)
-    duration = db.Column(db.Integer,nullable=False)
-    NRP = db.Column(db.String(200),nullable=False)
-    legal = db.Column(db.Text,nullable=False)
-    ethicalAnimal = db.Column(db.Text,nullable=False)
-    ethicalHuman = db.Column(db.Text,nullable=False)
-    location = db.Column(db.Text,nullable=False)
-    coapplicants = db.Column(db.Text,nullable=True)
-    collaborators = db.Column(db.Text,nullable=True)
-    scientific = db.Column(db.Text,nullable=False)
-    lay = db.Column(db.Text,nullable=False)
-    declaration = db.Column(db.Boolean,nullable=False)
-    user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
-    draft = db.Column(db.Boolean, nullable=False, default=True)
-    proposalPDF = db.Column(db.String(255),nullable=False)
-    status = db.Column(db.String(255), default="pending")
-
-    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
-        self.title=title
-        self.propid=propid
-        self.duration=duration
-        self.NRP=NRP
-        self.legal=legal
-        self.ethicalAnimal=ethicalAnimal
-        self.ethicalHuman=ethicalHuman
-        self.location=location
-        self.coapplicants=coapplicants
-        self.collaborators=collaborators
-        self.scientific=scientific
-        self.lay=lay
-        self.declaration=declaration
-        self.user=user
-        self.proposalPDF=proposalPDF
-        self.draft=True
-
-
-    def setDraftFalse(self):
-        self.draft=False
-
-
-class Funding(db.Model):
-    __tablename__ = 'Funding'
-    StartDate = db.Column(db.Date, nullable=False)
-    EndDate = db.Column(db.Date, nullable=False)
-    AmountFunding = db.Column(db.Integer, nullable=False)
-    FundingBody = db.Column(db.String(255))
-    FundingProgramme = db.Column(db.String(255), nullable=False)
-    Stats = db.Column(db.String(255), nullable=False)
-    PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
-    orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
-
-    def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
-        self.StartDate = StartDate
-        self.EndDate = EndDate
-        self.AmountFunding = AmountFunding
-        self.FundingBody = FundingBody
-        self.FundingProgramme = FundingProgramme
-        self.Status = Status
-        self.PrimaryAttribution = PrimaryAttribution
-        self.orcid = orcid
-
-    def __repr__(self):
-        return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
-
-# standard set up for the Flask app
 
 class User(UserMixin, db.Model):
     # this is the user login class that corresponds to the database
@@ -265,6 +95,107 @@ class User(UserMixin, db.Model):
     def get_id(self):
         # this overrides the method get_id() so that it returns the orcid instead of the default id attribute in UserMixIn
         return self.orcid
+
+class Proposal(db.Model):
+    __tablename__ = "Proposal"
+    Deadline = db.Column(db.Date, nullable=False)
+    title = db.Column(db.String(100),nullable=False)
+    TextOfCall = db.Column(db.String(1000), nullable=False)
+    TargetAudience = db.Column(db.String(500), nullable=False)
+    EligibilityCriteria = db.Column(db.String(1000), nullable=False)
+    Duration = db.Column(db.Integer, nullable=False)
+    ReportingGuidelines = db.Column(db.String(1000), nullable=False)
+    TimeFrame = db.Column(db.String(200), nullable=False)
+    picture = db.Column(db.String(200),nullable=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+
+
+    def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
+        self.Deadline = Deadline
+        self.title = title
+        self.TextOfCall = TextOfCall
+        self.TargetAudience = TargetAudience
+        self.EligibilityCriteria = EligibilityCriteria
+        self.Duration = Duration
+        self.ReportingGuidelines = ReportingGuidelines
+        self.TimeFrame = TimeFrame
+        self.picture = picture
+
+    def __repr__(self):
+        return f"User('{self.Dealine}', '{self.TargetAudience}', '{self.TimeFrame}')"
+
+class Submissions(db.Model):
+    __tablename__='Submission'
+    propid = db.Column(db.Integer,nullable=False)
+    subid = db.Column(db.Integer,nullable=False, primary_key=True)
+    title = db.Column(db.Text,nullable=False)
+    duration = db.Column(db.Integer,nullable=False)
+    NRP = db.Column(db.String(200),nullable=False)
+    legal = db.Column(db.Text,nullable=False)
+    ethicalAnimal = db.Column(db.Text,nullable=False)
+    ethicalHuman = db.Column(db.Text,nullable=False)
+    location = db.Column(db.Text,nullable=False)
+    coapplicants = db.Column(db.Text,nullable=True)
+    collaborators = db.Column(db.Text,nullable=True)
+    scientific = db.Column(db.Text,nullable=False)
+    lay = db.Column(db.Text,nullable=False)
+    declaration = db.Column(db.Boolean,nullable=False)
+    user = db.Column(db.Integer, db.ForeignKey('Researcher.orcid') ,nullable=False)
+    draft = db.Column(db.Boolean, nullable=False, default=True)
+    proposalPDF = db.Column(db.String(255),nullable=False)
+    status = db.Column(db.String(255), default="pending")
+    reports = db.relationship('Report', backref="Submission")
+    team = db.relationship('Team', backref="Submission")
+    funding = db.relationship('Funding', backref="Submission")
+
+    def __init__(self,propid,title,duration,NRP,legal,ethicalAnimal,ethicalHuman,location,coapplicants,collaborators,scientific,lay,declaration,user,proposalPDF):
+        self.title=title
+        self.propid=propid
+        self.duration=duration
+        self.NRP=NRP
+        self.legal=legal
+        self.ethicalAnimal=ethicalAnimal
+        self.ethicalHuman=ethicalHuman
+        self.location=location
+        self.coapplicants=coapplicants
+        self.collaborators=collaborators
+        self.scientific=scientific
+        self.lay=lay
+        self.declaration=declaration
+        self.user=user
+        self.proposalPDF=proposalPDF
+        self.draft=True
+
+
+    def setDraftFalse(self):
+        self.draft=False
+
+
+class Funding(db.Model):
+    __tablename__ = 'Funding'
+    StartDate = db.Column(db.Date, nullable=False)
+    EndDate = db.Column(db.Date, nullable=False)
+    AmountFunding = db.Column(db.Integer, nullable=False)
+    FundingBody = db.Column(db.String(255))
+    FundingProgramme = db.Column(db.String(255), nullable=False)
+    Stats = db.Column(db.String(255), nullable=False)
+    PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
+    orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
+    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+        self.StartDate = StartDate
+        self.EndDate = EndDate
+        self.AmountFunding = AmountFunding
+        self.FundingBody = FundingBody
+        self.FundingProgramme = FundingProgramme
+        self.Status = Status
+        self.PrimaryAttribution = PrimaryAttribution
+        self.orcid = orcid
+        self.subid=subid
+
+    def __repr__(self):
+        return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
+
 
 class ExternalReview(db.Model):
     __tablename__="ExternalReview"
@@ -330,6 +261,13 @@ class Awards(db.Model):
     team_member = db.Column('TeamMember', db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
+class Team(db.Model):
+    __tablename__ = "Team"
+    team_id = db.Column("TeamID", db.Integer, primary_key=True)
+    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
+    #change to sub id
+    subid = db.Column("SubmissionID", db.Integer, db.ForeignKey('Submission.subid'))
+
 class TeamMembers(db.Model):
     __tablename__ = "TeamMembers"
     id = db.Column(db.Integer, primary_key=True)
@@ -340,12 +278,8 @@ class TeamMembers(db.Model):
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
+    #subid = db.Column(db.Integer, nullable="False")
 
-class Team(db.Model):
-    __tablename__ = "Team"
-    team_id = db.Column("TeamID", db.Integer, primary_key=True)
-    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    propasal_id = db.Column("ProposalID", db.Integer, db.ForeignKey('Proposal.id'))
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -373,7 +307,7 @@ class Publications(db.Model):
     title = db.Column("Title", db.String(255))
     name = db.Column("Name", db.String(255))
     status = db.Column("Status", db.String(255))
-    doi = db.Column("DOI", db.String(255), primary_key=True)
+    doi = db.Column("DOI", db.String(255))
     primary_attribution = db.Column("PrimaryAttribution", db.String(255))
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
 
@@ -437,8 +371,10 @@ class Report(db.Model):
     pdf = db.Column(db.String(255))
     type = db.Column(db.String(255), nullable=False)
     ORCID = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'))
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
 
-
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
 
 
 # Below are the form classes that inherit the FlaskForm class.
@@ -448,7 +384,18 @@ class LoginForm(FlaskForm):
     email = StringField('Email', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
     password = PasswordField('Password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('Remember me')
+    forgot = StringField("Forgot your password")
 
+class ForgotForm(FlaskForm):
+    email  = StringField("Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
+    reEmail = StringField("Re-type Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
+    submit = SubmitField('Reset Password')
+
+
+class ResetForm(FlaskForm):
+    new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
+    repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
+    submit = SubmitField('Reset Password')
 
 class UpdateInfoForm(FlaskForm):
 
@@ -481,7 +428,7 @@ class RegisterForm(FlaskForm):
 
 class ManageForm(FlaskForm):
     researcher = SelectField("User")
-    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer')])
+    role = SelectField('Role: ', choices=[('Researcher','Researcher'),('Reviewer','Reviewer'),("Admin","Admin")])
     submit = SubmitField('Apply')
 
 
@@ -514,7 +461,7 @@ class AddEducationForm(FlaskForm):
     year = IntegerField('Year ' )
     field = StringField('Field:', validators=[ Length(max=50)])
     submit = SubmitField('Add Education')
-    
+
 class AddPublications(FlaskForm):
     year = IntegerField("Year")
     type = StringField("Type", validators=[Length(max=50)])
@@ -544,7 +491,7 @@ class UpdateEmploymentForm(FlaskForm):
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
-    id = StringField('ID:', validators=[ Length(max=50)])	
+    id = StringField('ID:', validators=[ Length(max=50)])
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -569,9 +516,6 @@ class AddSocietiesForm(FlaskForm):
     membership = StringField('Membership:',validators=[ Length(max=50)])
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
-    
-
-
 
 class AddAwardsForm(FlaskForm):
 
@@ -609,6 +553,88 @@ class ReportForm(FlaskForm):
     pdf = FileField('PDF: ', validators=[InputRequired()])
     submit = SubmitField('Add')
 
+#form for submission
+class Submission_Form(FlaskForm):
+    propid = StringField('propid')
+    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
+    duration = IntegerField('Duration', validators=[InputRequired()],render_kw={"placeholder": "Duration in months"})
+    NRP = SelectField(u'NRP', choices=[('areaA','Priority Area A - Future Networks & Communications'),
+                                       ('areaB', 'Priority Area B - Data Analytics, Management, Securitu & Privacy'),
+                                       ('areaC', 'Priority Area C - Digital Platforms, Content & Applications'),
+                                       ('areaD', 'Priority Area D - Connected Health and Independent Living'),
+                                       ('areaE', 'Priority Area E - Medical Devices'),
+                                       ('areaF', 'Priority Area F - Diagnostics'),
+                                       ('areaG', 'Priority Area G - Therapeutics : Synthesis, Formulation, Processing and Drug Delivery'),
+                                       ('areaH', 'Priority Area H - Food for Health'),
+                                       ('areaI', 'Priority Area I - Sustainable Food Production'),
+                                       ('areaJ', 'Priority Area J - Marine Renewable Energy'),
+                                       ('areaK', 'Priority Area K - Smart Grids & Smart Cities'),
+                                       ('areaL', 'Priority Area L - Manufacturing Competitiveness'),
+                                       ('areaM', 'Priority Area M - Processing Technologies and Novel Materials'),
+                                       ('areaN', 'Priority Area N - Innovation in Services and Buisness Processses'),
+                                       ('Software', 'Software'),
+                                       ('Others', 'Others')
+                                       ])
+    legal_remit = TextAreaField("Please describe how your proposal is aligned with SFI's legal remit (max 250 words)"
+                                ,validators=[InputRequired(), length(max=1250) ],render_kw={"placeholder": "Legal remit"}
+                                )
+    ethical_animal =  TextAreaField("A statement indicating whether the research involves the use of animals"
+                                ,validators=[InputRequired()],render_kw={"placeholder": "Animal ethics statement"}
+                                )
+    ethical_human = TextAreaField("A statement indicating whether the research involves human participants, human biological material, or identifiable data"
+                                   , validators=[InputRequired()], render_kw={"placeholder": "Human ethics statement"}
+                                   )
+    location = TextAreaField("A statement of the applicant’s location (country) at the time of submission"
+                             , validators=[InputRequired()], render_kw={"placeholder": "Location statement"})
+    co_applicants = TextAreaField("A list of co-applicants if applicable",render_kw={"placeholder": "List of co-applicants eg: '- name' "})
+    collaborators = TextAreaField("Alist of collaborators, if applicable. Information about collaborators should include:( -Name -Organization -Email )"
+                                  ,render_kw={"placeholder":"-name\n-organisation\n-Email;"})
+    scientific_abstract = TextAreaField("Scientific Abstract( max 200 words )",
+                                        validators=[InputRequired(), length(max=1000)], render_kw={"placeholder":"Scientific Abstract"} )
+    lay_abstract = TextAreaField("Lay Abstract( max 100 words )",
+                                        validators=[InputRequired(), length(max=500)], render_kw={"placeholder":"Lay Abstract"})
+    proposalPDF = FileField("PDF of proposal" ,validators=[InputRequired()])
+    declaration = BooleanField('Agree?', validators=[DataRequired(), ])
+    submit = SubmitField('Submit')
+
+    validate = SubmitField('Validate form')
+
+    draft = SubmitField('Save Draft')
+
+    def setPropId(self, propid):
+        self.propid=propid
+
+
+class proposalForm(FlaskForm):
+    title = StringField('Title', validators=[InputRequired()],render_kw={"placeholder": "Title"})
+    deadline = DateField('Deadline', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    text_of_call = TextAreaField('Text of Call', validators=[InputRequired()], render_kw={"placeholder": "Text of call"})
+    target_audience = StringField('Target Audience', validators=[InputRequired()], render_kw={"placeholder": "Target Audience"})
+    eligibility_criteria = TextAreaField('Eligibility Criteria', validators=[InputRequired()], render_kw={"placeholder": "Eligibility Criteria"})
+    duration = IntegerField('Duration', validators=[InputRequired()], render_kw={"placeholder": "Duration in Months"})
+    reporting_guidelines = TextAreaField('Reporting Guidlines', validators=[InputRequired()], render_kw={"placeholder": "Reporting Guidelines"})
+    time_frame = StringField('Time frame', validators=[InputRequired()], render_kw={"placeholder": "Time Frame"})
+    picture = FileField('Upload Proposal Picture', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Submit')
+
+class sendExternalReview(FlaskForm):
+    ORCID=IntegerField('ORCID',validators=[InputRequired()],render_kw={"placeholder": "ORCID"})
+    Decline=SubmitField('Decline application')
+    submit=SubmitField('Send for review')
+    complete=SubmitField('External Reviews Sent: Mark as under Review')
+
+class ConfirmationForm(FlaskForm):
+    Sub=StringField("Submission id")
+    Approve=SubmitField("Approve Application")
+    Decline=SubmitField("Decline Application")
+
+    def setSub(self,sub):
+        self.Sub=sub
+
+
+# -------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -616,13 +642,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 
-def mail(receiver, content="", email="", password=""):
+def mail(receiver, content="", email="", password="", subject=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
 	#cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
+    print(content)
     if not content:
         content = "Account made confirmation message"
     if not email:
@@ -631,13 +658,17 @@ def mail(receiver, content="", email="", password=""):
         password = "default password"
 
         password = "team9admin"
-	
+
+    msg = MIMEText(content)
+    msg['Subject'] = subject
+    msg['To'] = receiver
+    msg['From'] = email
     mail = smtplib.SMTP('smtp.gmail.com', 587)
     mail.ehlo()
     mail.starttls()
     mail.login(email, password)
     #for email in rv:
-    mail.sendmail(email, receiver,content)
+    mail.sendmail(email,receiver,msg.as_string())
     mail.close()
 
 @app.route('/')
@@ -672,10 +703,42 @@ def signin():
         # else logs in the user
         login_user(user, remember=form.remember.data)
         if user.type == "Admin":
-            return redirect(url_for('manage')) #returns the admin page
+            return redirect(url_for('dashboard')) #returns the admin page
         # and redirect to the index page which will be the profile page once its done
         return redirect(url_for('dashboard'))
     return render_template('sign_in.html', form=form)
+
+@app.route('/forgot', methods=["Get",'Post'])
+def forgot():
+    form = ForgotForm()
+    if form.submit.data:
+        email = form.email.data
+        send = "Follow this url to reset your password: http://127.0.0.1:5000/reset?l=%s"%(email)
+        subject = "Reset Password"
+        mail(receiver=form.email.data,content=send,subject=subject)
+        return render_template('forgot.html', form=form)
+    return render_template('forgot.html', form=form)
+
+#does not work
+@app.route("/reset", methods=["Get","Post"])
+def reset():
+    form = ResetForm()
+    if request.method == "POST":
+        if form.submit.data:
+            print("here")
+            hashed_password = generate_password_hash(form.new.data, method='sha256')
+            email = request.args.get("l")
+            user = User.query.filter_by(email=email).first()
+            if user!=None:
+                print("here2")
+                user.password=hashed_password
+                db.session.commit()
+            return redirect(url_for("signin"))
+    else:
+        email = request.args.get("l")
+        return render_template("reset.html",l=email,form=form)
+
+
 
 
 @app.route('/sign_up', methods=['GET', 'POST'])
@@ -756,7 +819,7 @@ def scientific_reports():
             return redirect(url_for(scientific_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -805,7 +868,7 @@ def financial_reports():
             return redirect(url_for(finanical_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -891,6 +954,9 @@ def completed_review():
         return redirect(url_for("dashboard"))
     if form.Approve.data:
         form.Sub.status="Approved"
+        #create a new funding thingy
+        #create a new team data thingy
+        #
         db.session.commit()
         return redirect(url_for("dashboard"))
     return render_template("completed_reviews.html",form=form,sub=sub,rev=rev,prop=prop)
@@ -947,17 +1013,23 @@ def admin_send_review():
         db.session.commit()
         return redirect(url_for("admin_external_review"))
 
+    elif form.complete.data:
+        #change submission to external review when done button is pressed
+        i.status="review"
+        db.session.add(i)
+        db.session.commit()
+        return redirect(url_for("dashboard"))
+        reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
+        email = reviewer.email
+        mail(email, "Review request made, check your profile")
+
     elif form.ORCID.data!=None:
         print("here")
         #database push external review link to user
         new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
         db.session.add(new_external_review)
         db.session.commit()
-    if form.complete.data:
-        #change submission to external review when done button is pressed
-        i.status="review"
-        db.session.add(i)
-        db.session.commit()
+
 
 
 
@@ -1091,14 +1163,14 @@ def submissions():
             if form.proposalPDF.data != None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck = Path(f"uploads/{filenamesecret}")
+                    filecheck = Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile!=None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
 
@@ -1124,14 +1196,14 @@ def submissions():
             if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck=Path(f"uploads/{filenamesecret}")
+                    filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile != None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
@@ -1198,12 +1270,13 @@ def external_review():
     if form.pdfReview.data!=None:
         print("here")
         filenamesecret = uuid.uuid4().hex
-        form.pdfReview.data.save('uploads/' + filenamesecret)
+        form.pdfReview.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
         sub=Submissions.query.filter_by(proposalPDF=file).first()
         new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
         sub.status="Approval Pending"
         db.session.add(new_review)
         db.session.commit()
+        return redirect(url_for("dashboard"))
 
     if file==None and review==None:
         return redirect(url_for("index"))
@@ -1252,7 +1325,7 @@ def proposal_call():
             conn.close()
             #links to form creation
             print("here")
-            return redirect(url_for('create_submission_page'))
+            return redirect(url_for('dashboard'))
         return render_template('proposal_call.html', form=form)
     else:
         return render_template('proposal_call.html', form=form)
@@ -1268,12 +1341,12 @@ def edit_info():
     update_awards = UpdateAwardsForm(request.form)
     user = current_user
     print(user.societies)
-    
+
     if request.method == 'POST':
 
         #print(update_general.errors)
         #if input validates pushes to db
-        # 
+        #
         if update_general.validate_on_submit() :
 
             first_name = update_general.first_name.data
@@ -1296,7 +1369,7 @@ def edit_info():
             return redirect(url_for('profile'))
 
 
-        
+
        # Edit societies
         elif update_societies.validate_on_submit and "submit_soc" in request.form:
             print("here")
@@ -1306,7 +1379,7 @@ def edit_info():
             membership = update_societies.membership.data
             status = update_societies.status.data
             id1 = update_societies.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1320,9 +1393,9 @@ def edit_info():
         # Remove societies
         elif update_societies.validate_on_submit and "remove_soc" in request.form:
             print("here")
-            
+
             id1 = update_societies.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1339,7 +1412,7 @@ def edit_info():
             year = update_education.year.data
             field = update_education.field.data
             id = update_education.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1353,9 +1426,9 @@ def edit_info():
         #Remove Edu
         elif update_education.validate_on_submit and "remove_edu" in request.form:
             print("here")
-            
+
             id1 = update_education.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1384,9 +1457,9 @@ def edit_info():
         #Remove Employment
         elif update_employment.validate_on_submit and "remove_emp" in request.form:
             print("here")
-            
+
             id1 = update_employment.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1415,9 +1488,9 @@ def edit_info():
         #Remove Awards
         elif update_awards.validate_on_submit and "remove_awrd" in request.form:
             print("here")
-            
+
             id1 = update_awards.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1427,10 +1500,10 @@ def edit_info():
             conn.close()
             return redirect(url_for('edit_info'))
 
-   
-            
-       
-        
+
+
+
+
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
     form5 = update_awards, user=user)
 
@@ -1442,7 +1515,7 @@ def edit_info():
 def generalInfo():
     #Creates proposal form
     form = UpdateInfoForm(request.form)
-    
+
     #checks if form is submitted by post
     if request.method == 'POST':
 
@@ -1486,7 +1559,7 @@ def publications_info():
     if len(publications) ==0:
         if request.method =='POST':
             if form.validate_on_submit():
-                
+
                 year = form.year.data
                 type = form.type.data
                 title = form.title.data
@@ -1496,7 +1569,7 @@ def publications_info():
                 primary_attribution = form.primary_attribution
                 cur= conn.cursor()
                         # execute a query
-                cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
+                cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID)
                 VALUES ({year},'{type}','{title}',{name},'{status}','{doi}','{primary_attribution}'',{current_user.orcid});  """)
                 conn.commit()
                 cur.close()
@@ -1523,7 +1596,7 @@ def educationInfo():
     if request.method == 'POST':
             #if input validates pushes to db
         if form.validate_on_submit():
-          
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1578,7 +1651,7 @@ def employmentInfo():
             conn.close()
             return redirect(url_for('employmentInfo'))
 
-   
+
 
     return render_template('employmentInfo.html', form=form, list=employment_list)
 
@@ -1616,7 +1689,7 @@ def societiesInfo():
             conn.close()
             return redirect(url_for('societiesInfo'))
 
-   
+
 
     return render_template('societiesInfo.html', form=form, list=societies_list)
 
@@ -1629,14 +1702,14 @@ def awardsInfo():
 
     form = AddAwardsForm(request.form)
     awards_list= current_user.awards
-    
+
     if request.method == 'POST':
 
         print(form.errors)
             #if input validates pushes to db
         if form.validate_on_submit():
 
-            
+
             year= form.year.data
             award_body= form.award_body.data
             details= form.details.data
@@ -1655,7 +1728,7 @@ def awardsInfo():
             conn.close()
             return redirect(url_for('awardsInfo'))
 
- 
+
     return render_template('awardsInfo.html', form=form, list=awards_list)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
@@ -1694,7 +1767,7 @@ def team_members_info():
         return render_template('team_members_info.html', form=form)
 
    #team_members_list= TeamMembers.query.filter_by(team_id=team.team_id).all()
-   
+
 
     if request.method == 'POST':
 
@@ -1733,7 +1806,7 @@ def impacts_info():
     print(impacts)
     if len(impacts) == 0:
 
-        
+
         if request.method == 'POST':
             print(form.errors)
             if form.validate_on_submit():
@@ -1774,7 +1847,7 @@ def unauthorized_callback():
 @login_required
 def profile():
 
-    
+
 
 
     return render_template('profile.html')
@@ -1798,7 +1871,7 @@ def manage():
         researchers = []
         all_users = User.query.all()
         for each in all_users:
-            if each.type != "Admin":
+            if each.orcid != current_user.orcid:
                 researchers.append(each)
         form.researcher.choices = [(user.orcid, "%s - %s %s. Role = %s" % (user.orcid, user.first_name, user.last_name, user.type)) for user in researchers]
         print(researchers)
@@ -1824,6 +1897,23 @@ def manage():
     else:
         flash("You need to be an admin to manage others.", category="unauthorised")
         return redirect(url_for('manage'))
+
+@app.route("/grants")
+@login_required
+def grants():
+    #Show the calls that have been approved.For that user
+    #For that application they need to add Team members[a link]
+    #when grant is approved by admin we need to insert stuff into team table
+    #the page will look like profile page
+    #with application info [new page]
+    #with the team info as well
+    #Reports
+    #fin and sci
+
+    return render_template("grants.html")
+
+
+
 
 def getProfileInfo():
     #for the demo the profileInfo will start at -9
