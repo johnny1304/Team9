@@ -112,7 +112,6 @@ CREATE TABLE Employment(
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
-
 );
 /*Societies */
 DROP TABLE IF EXISTS Societies;
@@ -126,7 +125,6 @@ CREATE TABLE Societies(
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
-
 );
 /*Award */
 DROP TABLE IF EXISTS Awards;
@@ -223,7 +221,6 @@ CREATE TABLE Presentations(
 	ORCID int NOT NULL,
 	PRIMARY KEY (ID),
 	FOREIGN KEY (ORCID) REFERENCES Researcher (ORCID)
-
 );
 /*Collaborations */
 DROP TABLE IF EXISTS Collaborations;

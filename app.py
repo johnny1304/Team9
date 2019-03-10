@@ -173,6 +173,7 @@ class Submissions(db.Model):
 
 class Funding(db.Model):
     __tablename__ = 'Funding'
+    
     StartDate = db.Column(db.Date, nullable=False)
     EndDate = db.Column(db.Date, nullable=False)
     AmountFunding = db.Column(db.Integer, nullable=False)
@@ -194,7 +195,7 @@ class Funding(db.Model):
         self.subid=subid
 
     def __repr__(self):
-        return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.FundingAmount}')"
+        return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.AmountFunding}')"
 
 
 class ExternalReview(db.Model):
@@ -454,6 +455,22 @@ class UpdateEducationForm(FlaskForm):
     submit_edu = SubmitField('Edit Education')
     remove_edu = SubmitField('Remove')
 
+class AddFundingForm(FlaskForm):
+    start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    amount_funding = IntegerField('Amount Funding', )
+    funding_body = StringField('Funding Body', validators=[ Length(max=50)] )
+    funding_programme = StringField('Funding Programme ', validators=[ Length(max=50)])
+    stats = StringField('Stats', validators=[ Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[ Length(max=50)])
+    submit = SubmitField('Add')
+
+class AddTeamForm(FlaskForm):
+    team_id = StringField('Team ID' ,  validators=[ Length(max=50)] )
+    team_leader = StringField('Team Leader' , validators=[ Length(max=50)] )
+    proposal_id = StringField('Proposal ID' , validators=[ Length(max=50)] )
+    submit = SubmitField('Add')
+
 class AddEducationForm(FlaskForm):
     degree = StringField('Degree:', validators=[ Length(max=50)])
     institution = StringField('Institution:', validators=[ Length(max=50)])
@@ -487,6 +504,29 @@ class UpdateEmploymentForm(FlaskForm):
     submit_emp = SubmitField('Edit Employment')
     remove_emp = SubmitField('Remove')
 
+class UpdateFundingForm(FlaskForm):
+    id = StringField('ID:', validators=[ Length(max=50)])
+    start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
+    amount_funding = IntegerField('Amount Funding', )
+    funding_body = StringField('Funding Body', validators=[ Length(max=50)] )
+    funding_programme = StringField('Funding Programme ', validators=[ Length(max=50)])
+    stats = StringField('Stats', validators=[ Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[ Length(max=50)])
+    submit_fund = SubmitField('Edit Funding')
+    remove_fund = SubmitField('Remove')
+
+class UpdateOrganisedEvents(FlaskForm):
+    id = StringField('ID:', validators=[ Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    role = StringField('Role', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit_org = SubmitField('Edit')
+    submit_org = SubmitField('Remove')
 
 
 class UpdateSocietiesForm(FlaskForm):
@@ -517,14 +557,67 @@ class AddSocietiesForm(FlaskForm):
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
 
+
+class AddPresentations(FlaskForm):
+    year = IntegerField('Year', )
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    conference = StringField('Conference', validators=[Length(max=50)])
+    invited_seminar = StringField('Invited Seminar', validators=[Length(max=50)])
+    keynote = StringField('Keynote', validators=[Length(max=50)])
+    organising_body = StringField('Organising Body', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
+    submit = SubmitField('Add Presentation')
+
+class AddCollaborations(FlaskForm):
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date =DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    institution = StringField('Institution', validators=[Length(max=50)])
+    department = StringField('Department', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    name_collaborator = StringField('Name Colloaborator', validators=[Length(max=50)])
+    primary_goal = StringField('Primary Goal',validators=[Length(max=50)] )
+    frequency_of_interaction = StringField('Frequency Of Interaction', validators=[Length(max=50)])
+    primary_attribution =  StringField('Primary Attribution:' , validators=[Length(max=50)])
+    academic = BooleanField('Academic')
+    submit = SubmitField('Add Collaborations')
+
+class AddOrganisedEvents(FlaskForm):
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    role = StringField('Role', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit = SubmitField('Add Organised Event')
+
+class AddEducationAndPublicEngagement(FlaskForm):
+    name = StringField('Name', validators=[Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    activity = StringField('Activity', validators=[Length(max=50)])
+    topic = StringField('Topic', validators=[Length(max=50)])
+    target_area = StringField('Target Area', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit = SubmitField('Add Education and Public Engagement')
+
+
 class AddAwardsForm(FlaskForm):
 
 	year = IntegerField('Year:')
 	award_body = StringField('Awarding Body:', validators=[ Length(max=50)])
 	details = StringField('Detail:', validators=[Length(max=50)])
 	team_member = StringField('Team Member ', validators=[Length(max=50)])
-	submit = SubmitField('Add')
+	submit = SubmitField('Add Awards')
 
+class AddInnovation(FlaskForm):
+    year = IntegerField('Year:' )
+    type = StringField('Type', validators=[Length(max=50)])
+    title = StringField('Title', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit = SubmitField('Add Innovation')
 
 class AddTeamMembersForm(FlaskForm):
 
@@ -634,6 +727,11 @@ class ConfirmationForm(FlaskForm):
 
 # -------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------
+class ExternalReviewForm(FlaskForm):
+
+    pdfReview=FileField('PDF of Review',validators=[InputRequired()])
+    submit = SubmitField('submit')
+
 
 
 @login_manager.user_loader
@@ -674,6 +772,7 @@ def mail(receiver, content="", email="", password="", subject=""):
 @app.route('/')
 @app.route('/home')
 def index():
+    
     #if current_user.is_authenticated:
     #    updateType = User.query.filter_by(orcid=current_user.orcid).first()
     #    updateType.type = "Admin"
@@ -1339,6 +1438,8 @@ def edit_info():
     update_societies = UpdateSocietiesForm(request.form)
     update_employment = UpdateEmploymentForm(request.form)
     update_awards = UpdateAwardsForm(request.form)
+    update_funding = UpdateFundingForm(request.form)
+    update_org = UpdateOrganisedEvents(request.form)
     user = current_user
     print(user.societies)
 
@@ -1480,7 +1581,8 @@ def edit_info():
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',TeamMember = '{team_member}' WHERE ID ={id3};  """)
+            cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',
+            TeamMember = '{team_member}' WHERE ID ={id3};  """)
             conn.commit()
             cur.close()
             conn.close()
@@ -1499,13 +1601,77 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('edit_info'))
+        elif update_org.validate_on_submit and "submit_org" in request.form:
+            id1 = update_org.id.data
+            start_date = update_org.start_date.data
+            end_date = update_org.end_date.data
+            title = update_org.title.data
+            type = update_org.type.data
+            role = update_org.type.data
+            location = update_org.location.data
+            primary_attribution = update_org.primary_attribution.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE OrganisedEvents SET StartDate = '{start_date}', EndDate = '{end_date}', Title='{title}', Type = '{type}',
+            Role = '{role}', Location = '{location}', PrimaryAttribution = {primary_attribution} WHERE ID = {id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('organised_events_info'))
+        elif update_org.validate_on_submit and "remove_org" in request.form:
+            print("here")
+            id1 = update_org.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM OrganisedEvents WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('edit_info'))
+        
+        elif update_funding.validate_on_submit and "submit_fund" in request.form:
+            start_date = update_funding.start_date.data
+            end_date = update_funding.end_date.data
+            amount_funding = update_funding.amount_funding.data
+            funding_body= update_funding.funding_body.data
+            funding_programme = update_funding.funding_programme.data
+            stats = update_funding.stats.data
+            primary_attribution = update_funding.primary_attribution.data
+            id1 = update_funding.id.data
+            conn = mysql.connect
+            funds = Funding.query.filter_by(ID = id1).first
+            funds.start_date = start_date
+            funds.end_date = end_date
+            funds.amount_funding = amount_funding
+            funds.funding_body = funding_body
+            funds.funding_programme = funding_body
+            funds.stats = stats
+            funds.primary_attribution = primary_attribution
+            db.session.commit()
+            return redirect(url_for('profile'))
+        #Remove Awards
+        elif update_funding.validate_on_submit and "remove_fund" in request.form:
+            print("here")
+            
+            id1 = update_funding.id.data
+        
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Funding WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
 
 
 
 
 
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
-    form5 = update_awards, user=user)
+    form5 = update_awards,form6 = update_funding ,form7= update_org, user=user)
 
 
 
@@ -1550,31 +1716,153 @@ def generalInfo():
 
     return render_template('generalInfo.html', form=form)
 
+@app.route('/innovation_info', methods=['GET', 'POST'])
+@login_required
+def innovation_info():
+    form = AddInnovation(request.form)
+    innovation = InnovationAndCommercialisation.query.all()
+    print(innovation)
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            year = form.year.data
+            type = form.type.data
+            title = form.title.data
+            primary_attribution = form.primary_attribution.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f"""INSERT Into InnovationAndCommercialisation (Year, Type, Title, PrimaryAttribution, ORCID) VALUES ('{year}','{type}','{title}',
+            '{primary_attribution}', {current_user.orcid}) """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('innovation_info'))
+        return render_template('innovation_info.html', form = form)
+    innovation_list = current_user.inno_and_comm
+    print(innovation_list)
+    return render_template('innovation_info.html', form=form, list = innovation_list)
+
+@app.route('/presentations_info', methods=['GET','POST'])
+@login_required
+def presentations_info():
+    form = AddPresentations(request.form)
+    presentations = Presentations.query.all()
+    print(presentations)
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            year = form.year.data
+            title = form.title.data
+            type = form.type.data
+            conference = form.conference.data
+            invited_seminar = form.invited_seminar.data
+            keynote = form.keynote.data
+            organising_body = form.organising_body.data
+            location = form.location.data
+            primary_attribution = form.primary_attribution.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f""" INSERT Into Presentations (Year, Title, Type, Conference, InvitedSeminar, Keynote, OrganisingBody, 
+            Location, PrimaryAttribution, ORCID) VALUES ({year}, '{title}','{type}', '{conference}', '{invited_seminar}' , '{keynote}', '{organising_body}',
+            '{location}', '{primary_attribution}', {current_user.orcid});""")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('presentations_info.html', form=form)
+    presentations_list = current_user.presentations
+    return render_template('presentations_info.html', form=form, list=presentations_list)
+
+@app.route('/collaborations_info', methods=['GET','POST'])
+@login_required
+def collaborations_info():
+    form = AddCollaborations(request.form)
+    collaborations = Collaborations.query.all()
+    print(collaborations)
+
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            institution = form.institution.data
+            department = form.department.data
+            location = form.location.data
+            name_collaborator = form.name_collaborator.data
+            primary_goal = form.primary_goal.data
+            frequency_of_interaction =  form.frequency_of_interaction.data
+            primary_attribution =  form.primary_attribution.data
+            academic = form.academic.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f""" INSERT Into Collaborations (StartDate, EndDate, Institution, Department, Location, NameCollaborator,
+            PrimaryGoal,FrequencyOfInteraction, PrimaryAttribution,Academic, ORCID) VALUES ('{start_date}','{end_date}','{institution}'
+            ,'{department}','{location}','{name_collaborator}','{primary_goal}','{frequency_of_interaction}',
+            '{primary_attribution}',{academic},{current_user.orcid});""")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('collaborations_info.html',form=form)
+    collaborations_list = current_user.collab
+    return render_template('collaborations_info.html', form=form, list= collaborations_list)
+    
+
+@app.route('/funding_info', methods=['GET', 'POST'])
+@login_required
+def funding_info():
+    form = AddFundingForm(request.form)
+    funding = Funding.query.all()
+    print(funding)
+    
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            amount_funding = form.amount_funding.data
+            funding_body = form.funding_body.data
+            funding_programme = form.funding_programme.data
+            stats = form.stats.data
+            primary_attribution = form.primary_attribution.data
+            conn = mysql.connect
+            cur = conn.cursor()
+            cur.execute(f""" INSERT Into Funding (StartDate, EndDate, AmountFunding,FundingBody,FundingProgramme,
+            Stats, PrimaryAttribution, ORCID) VALUES ('{start_date}','{end_date}', {amount_funding}, 
+            '{funding_body}','{funding_programme}', '{stats}', '{primary_attribution}', {current_user.orcid});""")
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('funding_info.html', form=form)
+    
+    funding_list = current_user.funding
+    print(funding_list)
+    return render_template('funding_info.html', form=form, list = funding_list)
 
 @app.route('/publications_info', methods=['GET','POST'])
 @login_required
 def publications_info():
     form = AddPublications(request.form)
     publications = Publications.query.all()
-    if len(publications) ==0:
-        if request.method =='POST':
-            if form.validate_on_submit():
-
-                year = form.year.data
-                type = form.type.data
-                title = form.title.data
-                name = form.name.data
-                status = form.status.data
-                doi = form.doi.data
-                primary_attribution = form.primary_attribution
-                cur= conn.cursor()
+    if request.method =='POST':
+        if form.validate_on_submit():
+                
+            year = form.year.data
+            type = form.type.data
+            title = form.title.data
+            name = form.name.data
+            status = form.status.data
+            doi = form.doi.data
+            primary_attribution = form.primary_attribution
+            conn = mysql.connect
+            cur= conn.cursor()
                         # execute a query
-                cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID)
-                VALUES ({year},'{type}','{title}',{name},'{status}','{doi}','{primary_attribution}'',{current_user.orcid});  """)
-                conn.commit()
-                cur.close()
-                conn.close()
-                return redirect(url_for('profile'))
+            cur.execute(f"""INSERT INTO Publications (Year, Type, Title, Name, Status, DOI, PrimaryAttribution,ORCID) 
+            VALUES ({year},'{type}','{title}','{name}','{status}','{doi}','{primary_attribution}',{current_user.orcid});  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+
         return render_template('publications_info.html', form=form) # list=impacts_list
     else:
         publications_list = current_user.publications
@@ -1693,8 +1981,83 @@ def societiesInfo():
 
     return render_template('societiesInfo.html', form=form, list=societies_list)
 
+@app.route('/organised_events', methods=['GET', 'POST'])
+@login_required
+def organised_events():
+    #Creates proposal form
+    form = AddOrganisedEvents(request.form)
+    organised_events = OrganisedEvents.query.all()
+    if request.method == 'POST':
+
+        print(form.errors)
+            #if input validates pushes to db
+        if form.validate_on_submit():
+
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            title = form.title.data
+            type = form.type.data
+            role = form.role.data
+            location = form.location.data
+            primary_attribution = form.primary_attribution.data
+            
+            conn = mysql.connect
+            cur= conn.cursor()
+                # execute a query
+            cur.execute(f"""INSERT INTO OrganisedEvents (StartDate, EndDate, Title, Type, Role, Location, PrimaryAttribution, ORCID) VALUES ('{start_date}',
+            '{end_date}','{title}','{type}','{role}','{location}', '{primary_attribution}','{current_user.orcid}');  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('organised_events.html', form=form)
+
+    organised_events_list = current_user.organised_events
+    print(organised_events_list)
+    return render_template('organised_events.html', form=form, list=organised_events_list)
 
 
+@app.route('/education_and_public_engagement', methods=['GET', 'POST'])
+@login_required
+def education_and_public_engagement():
+    #Creates proposal form
+    form = AddEducationAndPublicEngagement(request.form)
+    education_and_public_engagement = EducationAndPublicEngagement.query.all()
+    if request.method == 'POST':
+
+        print(form.errors)
+            #if input validates pushes to db
+        if form.validate_on_submit():
+
+                #if form.picture.data:         #image processing
+                #   print("here ttt")
+                #  picture_file = save_picture(form.picture.data)
+                # Image.open(picture_file)
+            name = form.name.data
+            start_date = form.start_date.data
+            end_date = form.end_date.data
+            activity=  form.activity.data
+            topic = form.topic.data
+            target_area = form.target_area.data
+            primary_attribution = form.primary_attribution.data
+
+            conn = mysql.connect
+            cur= conn.cursor()
+                # execute a query
+            cur.execute(f"""INSERT INTO EducationAndPublicEngagement (Name, StartDate, EndDate, Activity, Topic, TargetArea, PrimaryAttribution, ORCID) VALUES ('{name}','{start_date}','{end_date}','{activity}','{topic}','{target_area}', '{primary_attribution}','{current_user.orcid}');  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        return render_template('education_and_public_engagement.html', form=form)
+
+    education_and_public_engagement_list = current_user.edu_and_public_engagement
+    print(education_and_public_engagement_list)
+    return render_template('education_and_public_engagement.html', form=form, list=education_and_public_engagement_list)
 
 @app.route('/awardsInfo', methods=['GET', 'POST'])
 @login_required
@@ -1804,35 +2167,23 @@ def impacts_info():
     form = AddImpactsForm()
     impacts = Impacts.query.all()
     print(impacts)
-    if len(impacts) == 0:
-
-
-        if request.method == 'POST':
-            print(form.errors)
-            if form.validate_on_submit():
-
-                title = form.title.data
-                category = form.category.data
-                primary_beneficiary = form.primary_beneficiary.data
-                primary_attribution = form.primary_attribution.data
-
-                conn = mysql.connect
-                cur = conn.cursor()
-                cur.execute("""INSERT INTO Impacts (Title,Category,PrimaryBeneficiary,PrimaryAttribution, ORCID) VALUES('{title}','{category}',
-                '{primary_benificiary}','{primary_attribution}', {current_user.orcid} ); """)
-                conn.commit()
-                cur.close()
-                conn.close()
-                return redirect(url_for('profile'))
-
-        return render_template('impacts_info.html', form=form) # list=impacts_list
-    else:
-        impacts_list = current_user.impacts
-        return render_template('impacts_info.html', form=form ,list=impacts_list)
-
-
-
-
+  
+    if request.method == 'POST':
+        print(form.errors)
+        if form.validate_on_submit():
+            title = form.title.data
+            category = form.category.data
+            primary_beneficiary = form.primary_beneficiary.data
+            primary_attribution = form.primary_attribution.data
+            impact = Impacts(title = title, category= category, primary_attribution=primary_attribution, 
+            primary_beneficiary=primary_beneficiary, ORCID= current_user.orcid)
+            db.session.add(impact)
+            db.session.commit()
+        
+            return redirect(url_for('profile'))
+        return render_template('impacts_info.html', form=form) 
+    impacts_list = current_user.impacts
+    return render_template('impacts_info.html', form=form ,list=impacts_list)
 
 
 
@@ -1961,3 +2312,6 @@ def getProfileInfo():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+
