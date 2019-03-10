@@ -20,22 +20,27 @@ from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Authorised Personnel Only.'
-app.config[
-    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
+app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
 Bootstrap(app)
-db = SQLAlchemy(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'signin'
 
+SQLALCHEMY_DATABASE_URI = "mysql://Johnnyos1304:netsoc101@Johnnyos1304.mysql.pythonanywhere-services.com/Johnnyos1304$project"
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db = SQLAlchemy(app)
+
+
 #setup for proposal call form
-app.config["MYSQL_HOST"] = "mysql.netsoc.co"
-app.config["MYSQL_USER"] = "seintu"
-app.config["MYSQL_PASSWORD"] = "0mYkNrVI0avq"
-app.config["MYSQL_DB"] = "seintu_project2"
+app.config["MYSQL_HOST"] = "Johnnyos1304.mysql.pythonanywhere-services.com"
+app.config["MYSQL_USER"] = "Johnnyos1304"
+app.config["MYSQL_PASSWORD"] = "netsoc101"
+app.config["MYSQL_DB"] = "Johnnyos1304$project"
 mysql = MySQL(app)
 mysql.init_app(app)
+
 
 
 class User(UserMixin, db.Model):
@@ -178,7 +183,7 @@ class Funding(db.Model):
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
     subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-    def __init__(self, StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
         self.AmountFunding = AmountFunding
@@ -187,6 +192,7 @@ class Funding(db.Model):
         self.Status = Status
         self.PrimaryAttribution = PrimaryAttribution
         self.orcid = orcid
+        self.subid=subid
 
     def __repr__(self):
         return f"User('{self.StartDate}', '{self.FundingProgramme}', '{self.AmountFunding}')"
@@ -386,7 +392,7 @@ class ForgotForm(FlaskForm):
     reEmail = StringField("Re-type Email", validators=[InputRequired(), Email(message="Invalid Email"),Length(max=50)])
     submit = SubmitField('Reset Password')
 
-    
+
 class ResetForm(FlaskForm):
     new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
     repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
@@ -472,7 +478,7 @@ class AddEducationForm(FlaskForm):
     year = IntegerField('Year ' )
     field = StringField('Field:', validators=[ Length(max=50)])
     submit = SubmitField('Add Education')
-    
+
 class AddPublications(FlaskForm):
     year = IntegerField("Year")
     type = StringField("Type", validators=[Length(max=50)])
@@ -490,6 +496,18 @@ class AddEmploymentForm(FlaskForm):
 	years = IntegerField('Years:')
 	submit = SubmitField('Add')
 
+class UpdatePublications(FlaskForm):
+    id = StringField("ID:" ,validators=[ Length(max=50)])
+    year = IntegerField("Year")
+    type = StringField("Type", validators=[Length(max=50)])
+    title = StringField("Title", validators=[Length(max=50)])
+    name = StringField("Name", validators=[Length(max=50)])
+    status = StringField("Status", validators=[Length(max=50)])
+    doi = StringField("DOI",validators=[Length(max=50)])
+    primary_attribution = StringField("PrimaryAttribution", validators=[Length(max=50)])
+    submit_pub = SubmitField('Edit Publications')
+    remove_pub = SubmitField('Remove')
+
 class UpdateEmploymentForm(FlaskForm):
     id = StringField('ID:', validators=[ Length(max=50)])
     company = StringField('Company:', validators=[ Length(max=50)])
@@ -497,6 +515,19 @@ class UpdateEmploymentForm(FlaskForm):
     years = IntegerField('Years:')
     submit_emp = SubmitField('Edit Employment')
     remove_emp = SubmitField('Remove')
+
+class UpdateEducationAndPublicEngagement(FlaskForm):
+    id = StringField('ID' ,validators=[ Length(max=50)])
+    name = StringField('Name', validators=[Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    activity = StringField('Activity', validators=[Length(max=50)])
+    topic = StringField('Topic', validators=[Length(max=50)])
+    target_area = StringField('Target Area', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit_edup= SubmitField('Edit')
+    remove_edup = SubmitField('Remove')
+
 
 class UpdateFundingForm(FlaskForm):
     id = StringField('ID:', validators=[ Length(max=50)])
@@ -522,10 +553,33 @@ class UpdateOrganisedEvents(FlaskForm):
     submit_org = SubmitField('Edit')
     submit_org = SubmitField('Remove')
 
+class UpdateImpactsForm(FlaskForm):
+    id = StringField('ID:', validators=[Length(max=50)])
+    title = StringField('Title: ', validators=[Length(max=50)])
+    category = StringField('Category: ', validators=[Length(max=50)])
+    primary_beneficiary = StringField('Primary Beneficiary: ', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:', validators=[Length(max=50)])
+    submit_imp = SubmitField('Edit')
+    remove_imp = SubmitField('Remove')
+
+class UpdatePresentations(FlaskForm):
+    id = StringField('ID:')
+    year = IntegerField('Year', )
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    conference = StringField('Conference', validators=[Length(max=50)])
+    invited_seminar = StringField('Invited Seminar', validators=[Length(max=50)])
+    keynote = StringField('Keynote', validators=[Length(max=50)])
+    organising_body = StringField('Organising Body', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
+    submit_pres = SubmitField('Edit')
+    remove_pre= SubmitField('Remove')
+
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
-    id = StringField('ID:', validators=[ Length(max=50)])	
+    id = StringField('ID:', validators=[ Length(max=50)])
     start_date = DateField('Start Date',render_kw={"placeholder": "YYYY-MM-DD"})
     end_date = DateField('End Date',render_kw={"placeholder": "YYYY-MM-DD"})
     society = StringField('Society:', validators=[ Length(max=50)])
@@ -550,6 +604,7 @@ class AddSocietiesForm(FlaskForm):
     membership = StringField('Membership:',validators=[ Length(max=50)])
     status = StringField('Status:',validators=[ Length(max=20)])
     submit = SubmitField('Add Society')
+
 
 class AddPresentations(FlaskForm):
     year = IntegerField('Year', )
@@ -596,6 +651,7 @@ class AddEducationAndPublicEngagement(FlaskForm):
     primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
     submit = SubmitField('Add Education and Public Engagement')
 
+
 class AddAwardsForm(FlaskForm):
 
 	year = IntegerField('Year:')
@@ -628,6 +684,7 @@ class AddImpactsForm(FlaskForm):
     primary_beneficiary = StringField('Primary Beneficiary: ', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:', validators=[Length(max=50)])
     submit = SubmitField('Add Impacts')
+
 class ExternalReviewForm(FlaskForm):
 
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
@@ -748,7 +805,7 @@ def mail(receiver, content="", email="", password="", subject=""):
         password = "default password"
 
         password = "team9admin"
-	
+
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -910,7 +967,7 @@ def scientific_reports():
             return redirect(url_for(scientific_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -959,7 +1016,7 @@ def financial_reports():
             return redirect(url_for(finanical_reports))
         if file:
             filename = secure_filename(file.filename)
-            file.save('uploads/'+filename)
+            file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -1104,13 +1161,7 @@ def admin_send_review():
         db.session.commit()
         return redirect(url_for("admin_external_review"))
 
-    elif form.ORCID.data!=None:
-        print("here")
-        #database push external review link to user
-        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
-        db.session.add(new_external_review)
-        db.session.commit()
-    if form.complete.data:
+    elif form.complete.data:
         #change submission to external review when done button is pressed
         i.status="review"
         db.session.add(i)
@@ -1119,7 +1170,16 @@ def admin_send_review():
         reviewer = User.query.filter_by(orcid = form.ORCID.data).first()
         email = reviewer.email
         mail(email, "Review request made, check your profile")
-		
+
+    elif form.ORCID.data!=None:
+        print("here")
+        #database push external review link to user
+        new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
+        db.session.add(new_external_review)
+        db.session.commit()
+
+
+
 
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
@@ -1251,14 +1311,14 @@ def submissions():
             if form.proposalPDF.data != None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck = Path(f"uploads/{filenamesecret}")
+                    filecheck = Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile!=None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
 
@@ -1284,14 +1344,14 @@ def submissions():
             if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
                 while True:
-                    filecheck=Path(f"uploads/{filenamesecret}")
+                    filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                     if filecheck.is_file():
                         filenamesecret = uuid.uuid4().hex
                     else:
                         break
-                form.proposalPDF.data.save('uploads/' + filenamesecret)
+                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 if previousFile != None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
 
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
@@ -1358,12 +1418,13 @@ def external_review():
     if form.pdfReview.data!=None:
         print("here")
         filenamesecret = uuid.uuid4().hex
-        form.pdfReview.data.save('uploads/' + filenamesecret)
+        form.pdfReview.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
         sub=Submissions.query.filter_by(proposalPDF=file).first()
         new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
         sub.status="Approval Pending"
         db.session.add(new_review)
         db.session.commit()
+        return redirect(url_for("dashboard"))
 
     if file==None and review==None:
         return redirect(url_for("index"))
@@ -1427,14 +1488,19 @@ def edit_info():
     update_employment = UpdateEmploymentForm(request.form)
     update_awards = UpdateAwardsForm(request.form)
     update_funding = UpdateFundingForm(request.form)
+    update_org = UpdateOrganisedEvents(request.form)
+    update_pub = UpdatePublications(request.form)
+    update_imp = UpdateImpactsForm(request.form)
+    update_edup = UpdateEducationAndPublicEngagement(request.form)
+    update_pres = UpdatePresentations(request.form)
     user = current_user
     print(user.societies)
-    
+
     if request.method == 'POST':
 
         #print(update_general.errors)
         #if input validates pushes to db
-        # 
+        #
         if update_general.validate_on_submit() :
 
             first_name = update_general.first_name.data
@@ -1457,7 +1523,7 @@ def edit_info():
             return redirect(url_for('profile'))
 
 
-        
+
        # Edit societies
         elif update_societies.validate_on_submit and "submit_soc" in request.form:
             print("here")
@@ -1467,7 +1533,7 @@ def edit_info():
             membership = update_societies.membership.data
             status = update_societies.status.data
             id1 = update_societies.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1481,9 +1547,9 @@ def edit_info():
         # Remove societies
         elif update_societies.validate_on_submit and "remove_soc" in request.form:
             print("here")
-            
+
             id1 = update_societies.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1500,7 +1566,7 @@ def edit_info():
             year = update_education.year.data
             field = update_education.field.data
             id = update_education.id.data
-            
+
 
             conn = mysql.connect
             cur= conn.cursor()
@@ -1514,9 +1580,9 @@ def edit_info():
         #Remove Edu
         elif update_education.validate_on_submit and "remove_edu" in request.form:
             print("here")
-            
+
             id1 = update_education.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1545,9 +1611,9 @@ def edit_info():
         #Remove Employment
         elif update_employment.validate_on_submit and "remove_emp" in request.form:
             print("here")
-            
+
             id1 = update_employment.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1577,9 +1643,9 @@ def edit_info():
         #Remove Awards
         elif update_awards.validate_on_submit and "remove_awrd" in request.form:
             print("here")
-            
+
             id1 = update_awards.id.data
-        
+
             conn = mysql.connect
             cur= conn.cursor()
             # execute a query
@@ -1588,13 +1654,180 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('edit_info'))
-
-       
+        elif update_org.validate_on_submit and "submit_org" in request.form:
+            id1 = update_org.id.data
+            start_date = update_org.start_date.data
+            end_date = update_org.end_date.data
+            title = update_org.title.data
+            type = update_org.type.data
+            role = update_org.type.data
+            location = update_org.location.data
+            primary_attribution = update_org.primary_attribution.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""UPDATE OrganisedEvents SET StartDate = '{start_date}', EndDate = '{end_date}', Title='{title}', Type = '{type}',
+            Role = '{role}', Location = '{location}', PrimaryAttribution = {primary_attribution} WHERE ID = {id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('organised_events_info'))
+        elif update_org.validate_on_submit and "remove_org" in request.form:
+            print("here")
+            id1 = update_org.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM OrganisedEvents WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('edit_info'))
+        
+        elif update_funding.validate_on_submit and "submit_fund" in request.form:
+            start_date = update_funding.start_date.data
+            end_date = update_funding.end_date.data
+            amount_funding = update_funding.amount_funding.data
+            funding_body= update_funding.funding_body.data
+            funding_programme = update_funding.funding_programme.data
+            stats = update_funding.stats.data
+            primary_attribution = update_funding.primary_attribution.data
+            id1 = update_funding.id.data
+            conn = mysql.connect
+            funds = Funding.query.filter_by(ID = id1).first
+            funds.start_date = start_date
+            funds.end_date = end_date
+            funds.amount_funding = amount_funding
+            funds.funding_body = funding_body
+            funds.funding_programme = funding_body
+            funds.stats = stats
+            funds.primary_attribution = primary_attribution
+            db.session.commit()
+            return redirect(url_for('profile'))
+        #Remove Awards
+        elif update_funding.validate_on_submit and "remove_fund" in request.form:
+            print("here")
             
-       
+            id1 = update_funding.id.data
+        
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Funding WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pub.validate_on_submit and "submit_pub" in request.form:
+            id2 = update_pub.id.data
+            year = update_pub.year.data
+            type = update_pub.type.data
+            title = update_pub.title.data
+            name = update_pub.name.data
+            status = update_pub.status.data
+            doi = update_pub.doi.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Publications SET Year = {year}, Type = '{type}', Title= '{title}',
+             Name = '{name}', Status = '{status}', DOI = '{doi}' WHERE ID = {id2} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pub.validate_on_submit and "remove_pub" in request.form:
+            print("here")
+            id1 = update_pub.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Publications WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_imp.validate_on_submit and "submit_imp" in request.form:
+            id2 = update_imp.id.data
+            title = update_imp.title.data
+            category = update_imp.category.data
+            primary_beneficiary = update_imp.primary_beneficiary.data
+            primary_attribution = update_imp.primary_attribution.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Impacts SET Title = '{title}', Category = '{category}' , PrimaryBeneficiary = '{primary_beneficiary}',
+            PrimaryAttribution = '{primary_attribution}' WHERE ID = {id2} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_imp.validate_on_submit and "remove_imp" in request.form:
+            print("here")
+            id1 = update_imp.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Impact WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_edup.validate_on_submit and "submit_edup" in request.form:
+            id1 = update_edup.id.data
+            name = update_edup.name.data
+            start_date = update_edup.start_date.data
+            end_date = update_edup.end_date.data
+            activity = update_edup,activity.data
+            topic = update_edup.topic.data
+            target_area = update_edup.target_area.data
+            primary_attribution = update_edup.primary_attribution.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE EducationAndPublicEngagement SET Name = '{name}', StartDate = '{start_date}', EndDate = '{end_date}',
+            Activity = '{activity}', Topic = '{topic}', TargetArea = '{target_area}', PrimaryAttribution='{primary_attribution}' WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_edup.validate_on_submit and "remove_edup" in request.form:
+            print("here")
+            id1 = update_edup.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM EducationAndPublicEngagemen WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pres.validate_on_submit and "submit_pres" in request.form:
+            id1 = update_pres.id.data
+            year = update_pres.year.data
+            title = update_pres.title.data
+            type = update_pres.type.data
+            conference = update_pres.conference.data
+            invited_seminar = update_pres.invited_seminar.data
+            keynote = update_pres.keynote.data
+            organising_body = update_pres.organising_body.data
+            location = update_pres.location.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Presentations SET Year = {year}, Title = '{title}', Type = '{type}', Conference='{conference}',
+             InvitedSeminar='{invited_seminar}', Keynote = '{keynote}', OrganisedBody = '{organising_body}', Location = '{location}' WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pres.validate_on_submit and "remove_pres" in request.form:
+            print("here")
+            id1 = update_pres.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Presentations WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+         
         
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
-    form5 = update_awards, form6 = update_funding, user=user)
+    form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp ,form10 = update_edup,
+     form11 = update_pres, user=user)
 
 
 
@@ -1604,7 +1837,7 @@ def edit_info():
 def generalInfo():
     #Creates proposal form
     form = UpdateInfoForm(request.form)
-    
+
     #checks if form is submitted by post
     if request.method == 'POST':
 
@@ -1785,6 +2018,7 @@ def publications_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
+
         return render_template('publications_info.html', form=form) # list=impacts_list
     else:
         publications_list = current_user.publications
@@ -1806,7 +2040,7 @@ def educationInfo():
     if request.method == 'POST':
             #if input validates pushes to db
         if form.validate_on_submit():
-          
+
                 #if form.picture.data:         #image processing
                 #   print("here ttt")
                 #  picture_file = save_picture(form.picture.data)
@@ -1861,7 +2095,7 @@ def employmentInfo():
             conn.close()
             return redirect(url_for('employmentInfo'))
 
-   
+
 
     return render_template('employmentInfo.html', form=form, list=employment_list)
 
@@ -1899,7 +2133,7 @@ def societiesInfo():
             conn.close()
             return redirect(url_for('societiesInfo'))
 
-   
+
 
     return render_template('societiesInfo.html', form=form, list=societies_list)
 
@@ -1987,14 +2221,14 @@ def awardsInfo():
 
     form = AddAwardsForm(request.form)
     awards_list= current_user.awards
-    
+
     if request.method == 'POST':
 
         print(form.errors)
             #if input validates pushes to db
         if form.validate_on_submit():
 
-            
+
             year= form.year.data
             award_body= form.award_body.data
             details= form.details.data
@@ -2013,7 +2247,7 @@ def awardsInfo():
             conn.close()
             return redirect(url_for('awardsInfo'))
 
- 
+
     return render_template('awardsInfo.html', form=form, list=awards_list)
 
 @app.route('/team_members_info', methods=['GET', 'POST'])
@@ -2052,7 +2286,7 @@ def team_members_info():
         return render_template('team_members_info.html', form=form)
 
    #team_members_list= TeamMembers.query.filter_by(team_id=team.team_id).all()
-   
+
 
     if request.method == 'POST':
 
@@ -2093,7 +2327,6 @@ def impacts_info():
     if request.method == 'POST':
         print(form.errors)
         if form.validate_on_submit():
-
             title = form.title.data
             category = form.category.data
             primary_beneficiary = form.primary_beneficiary.data
@@ -2112,6 +2345,7 @@ def impacts_info():
 
 
 
+
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     return redirect('/sign_in?next=' + request.path)
@@ -2120,7 +2354,7 @@ def unauthorized_callback():
 @login_required
 def profile():
 
-    
+
 
 
     return render_template('profile.html')
