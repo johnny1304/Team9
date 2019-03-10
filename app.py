@@ -516,6 +516,19 @@ class UpdateEmploymentForm(FlaskForm):
     submit_emp = SubmitField('Edit Employment')
     remove_emp = SubmitField('Remove')
 
+class UpdateEducationAndPublicEngagement(FlaskForm):
+    id = StringField('ID' ,validators=[ Length(max=50)])
+    name = StringField('Name', validators=[Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date = DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    activity = StringField('Activity', validators=[Length(max=50)])
+    topic = StringField('Topic', validators=[Length(max=50)])
+    target_area = StringField('Target Area', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit_edup= SubmitField('Edit')
+    remove_edup = SubmitField('Remove')
+
+
 class UpdateFundingForm(FlaskForm):
     id = StringField('ID:', validators=[ Length(max=50)])
     start_date = DateField('Start Date', validators=[InputRequired()], render_kw={"placeholder": "YYYY-MM-DD"})
@@ -548,6 +561,20 @@ class UpdateImpactsForm(FlaskForm):
     primary_attribution = StringField('Primary Attribution:', validators=[Length(max=50)])
     submit_imp = SubmitField('Edit')
     remove_imp = SubmitField('Remove')
+
+class UpdatePresentations(FlaskForm):
+    id = StringField('ID:')
+    year = IntegerField('Year', )
+    title = StringField('Title', validators=[Length(max=50)])
+    type = StringField('Type', validators=[Length(max=50)])
+    conference = StringField('Conference', validators=[Length(max=50)])
+    invited_seminar = StringField('Invited Seminar', validators=[Length(max=50)])
+    keynote = StringField('Keynote', validators=[Length(max=50)])
+    organising_body = StringField('Organising Body', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
+    submit_pres = SubmitField('Edit')
+    remove_pre= SubmitField('Remove')
 
 
 class UpdateSocietiesForm(FlaskForm):
@@ -1464,6 +1491,8 @@ def edit_info():
     update_org = UpdateOrganisedEvents(request.form)
     update_pub = UpdatePublications(request.form)
     update_imp = UpdateImpactsForm(request.form)
+    update_edup = UpdateEducationAndPublicEngagement(request.form)
+    update_pres = UpdatePresentations(request.form)
     user = current_user
     print(user.societies)
 
@@ -1739,10 +1768,66 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-       
+        elif update_edup.validate_on_submit and "submit_edup" in request.form:
+            id1 = update_edup.id.data
+            name = update_edup.name.data
+            start_date = update_edup.start_date.data
+            end_date = update_edup.end_date.data
+            activity = update_edup,activity.data
+            topic = update_edup.topic.data
+            target_area = update_edup.target_area.data
+            primary_attribution = update_edup.primary_attribution.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE EducationAndPublicEngagement SET Name = '{name}', StartDate = '{start_date}', EndDate = '{end_date}',
+            Activity = '{activity}', Topic = '{topic}', TargetArea = '{target_area}', PrimaryAttribution='{primary_attribution}' WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_edup.validate_on_submit and "remove_edup" in request.form:
+            print("here")
+            id1 = update_edup.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM EducationAndPublicEngagemen WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pres.validate_on_submit and "submit_pres" in request.form:
+            id1 = update_pres.id.data
+            year = update_pres.year.data
+            title = update_pres.title.data
+            type = update_pres.type.data
+            conference = update_pres.conference.data
+            invited_seminar = update_pres.invited_seminar.data
+            keynote = update_pres.keynote.data
+            organising_body = update_pres.organising_body.data
+            location = update_pres.location.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Presentations SET Year = {year}, Title = '{title}', Type = '{type}', Conference='{conference}',
+             InvitedSeminar='{invited_seminar}', Keynote = '{keynote}', OrganisedBody = '{organising_body}', Location = '{location}' WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pres.validate_on_submit and "remove_pres" in request.form:
+            print("here")
+            id1 = update_pres.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Presentations WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+         
         
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
-    form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp , user=user)
+    form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp ,form10 = update_edup,
+     form11 = update_pres, user=user)
 
 
 
