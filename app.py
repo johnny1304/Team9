@@ -20,7 +20,10 @@ from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
+#app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////mnt/c/Users/calvi/OneDrive/Documents/CS3305/Team9/test.db'
+#app.config[
+#    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
 Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -33,7 +36,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-#setup for proposal call form
+setup for proposal call form
 app.config["MYSQL_HOST"] = "Johnnyos1304.mysql.pythonanywhere-services.com"
 app.config["MYSQL_USER"] = "Johnnyos1304"
 app.config["MYSQL_PASSWORD"] = "netsoc101"
@@ -781,10 +784,20 @@ class ExternalReviewForm(FlaskForm):
     pdfReview=FileField('PDF of Review',validators=[InputRequired()])
     submit = SubmitField('submit')
 
+
 def admin_setup(orcid):
     user=User.query.filter_by(orcid=orcid).first()
     user.type="Admin"
     db.session.commit()
+
+
+class AddTeamMemberForm(FlaskForm):
+    start_date = DateField("Start Date : ", validators=[InputRequired()], render_kw={"placeholder" : "YYYY-MM-DD"})
+    departure_date = DateField("Departure Date : ", validators=[InputRequired()], render_kw={"placeholder" : "YYYY-MM-DD"})
+    position = StringField("Position : ", validators=[InputRequired(), length(max=255)], render_kw={"placeholder" : "Position of the team member"})
+    ORCID = IntegerField("ORCID : ", validators=[InputRequired()], render_kw={"placeholder" : "ORCID of the researcher to add to your team"})
+    submit = SubmitField("Add")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -947,9 +960,11 @@ def dashboard():
 
     return render_template('dashboard.html', user=current_user, applications=applications, s_reports=scientific_reports, f_reports=financial_reports, info=profile)
 
-@app.route('/scientific_reports')
+@app.route('/scientific_reports', methods=["GET", "POST"] )
 @login_required
 def scientific_reports():
+    id = request.args.get("id")
+    print(id)
     form = ReportForm()
     reports = current_user.reports
     s_reports = []
@@ -973,12 +988,11 @@ def scientific_reports():
             file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
-
-        newReport = Report(title=form.title.data, type="Scientific", pdf=filenamesecret, ORCID=current_user.orcid)
+        newReport = Report(title=form.title.data, type="Scientific", pdf=filenamesecret, ORCID=current_user.orcid, subid=id)
         db.session.add(newReport)
         db.session.commit()
         return redirect(url_for('scientific_reports'))
-    return render_template("scientific_reports.html", reports=s_reports, form=form)
+    return render_template("scientific_reports.html", reports=s_reports, form=form, id=id)
 # @app.route('/edit')
 # @login_required
 '''if 'file' not in request.files:
@@ -996,9 +1010,10 @@ def scientific_reports():
             return redirect(url_for('uploaded_file',
                                     filename=filename))'''
 
-@app.route('/financial_reports')
+@app.route('/financial_reports', methods=["GET", "POST"])
 @login_required
 def financial_reports():
+    id = request.args.get("id")
     form = ReportForm()
     reports = current_user.reports
     f_reports = []
@@ -1023,7 +1038,7 @@ def financial_reports():
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
-        newReport = Report(title=form.title.data, type="Financial", pdf=filenamesecret, ORCID=current_user.orcid)
+        newReport = Report(title=form.title.data, type="Financial", pdf=filenamesecret, ORCID=current_user.orcid, subid=id)
         db.session.add(newReport)
         db.session.commit()
         return redirect(url_for('financial_reports'))
@@ -1239,31 +1254,33 @@ def create_submission_page():
 @login_required
 def proposals():
     posts = []
-    conn = mysql.connect
-    cur = conn.cursor()
+    proposals = Proposal.query.all()
+    #conn = mysql.connect
+    #cur = conn.cursor()
     # execute a query
 
-    cur.execute("""
+    """cur.execute(""
                  SELECT *
                  FROM Proposal;
-                 """)
-    for i in cur.fetchall():
-        post = {}
-        print(i)
-        post["id"] = i[9]
-        post["deadline"] = i[0]
-        post["text"] = i[2]
-        post["audience"] = i[3]
-        post["eligibility"] = i[4]
-        post["duration"] = i[5]
-        post["guidelines"] = i[6]
-        post["timeframe"] = i[7]
-        post["title"] = i[1]
+                 "")"""
+    for post in proposals:
+    #for i in cur.fetchall():
+        #post = {}
+        #print(i)
+        #post["id"] = i[9]
+        #post["deadline"] = i[0]
+        #post["text"] = i[2]
+        #post["audience"] = i[3]
+        #post["eligibility"] = i[4]
+        #post["duration"] = i[5]
+        #post["guidelines"] = i[6]
+        #post["timeframe"] = i[7]
+        #post["title"] = i[1]
         posts.append(post)
-    conn.commit()
+    #conn.commit()
 
-    cur.close()
-    conn.close()
+    #cur.close()
+    #conn.close()
     return render_template('proposals.html', user=current_user, posts=posts)
 
 @app.route('/submissions',methods=['GET' , 'POST'])
@@ -1274,55 +1291,86 @@ def submissions():
     form=Submission_Form()
     post=request.args.get("id")
     form.setPropId(post)
-    conn = mysql.connect
-    cur = conn.cursor()
+    submissions = Submissions.query.filter_by(propid=post, user=current_user.orcid).first()
+    #conn = mysql.connect
+    #cur = conn.cursor()
     previousFile=None
-    cur.execute(f"""
+
+
+
+    """cur.execute(f""
                              SELECT *
                              FROM Submission
                              WHERE propid = {post} AND user='{current_user.orcid}';
-                             """)
-    for i in cur.fetchall():
-        if i[15]==0:
-            return render_template("submitted.html")
-        form.propid=i[0]
-        form.title.data=i[2]
-        form.duration.data=i[3]
-        form.NRP.data=i[4]
-        form.legal_remit.data=i[5]
-        form.ethical_animal.data=i[6]
-        form.ethical_human.data=i[7]
-        form.location.data=i[8]
-        form.co_applicants.data=i[9]
-        form.collaborators.data=i[10]
-        form.scientific_abstract.data=i[11]
-        form.lay_abstract.data=i[12]
-        form.declaration.data=i[13]
-        previousFile=i[16]
+                             ")"""
+    #for i in cur.fetchall():
+    #    if i[15]==0:
+    #        return render_template("submitted.html")
+    #    form.propid=i[0]
+    #    form.title.data=i[2]
+    #    form.duration.data=i[3]
+    #    form.NRP.data=i[4]
+    #    form.legal_remit.data=i[5]
+    #    form.ethical_animal.data=i[6]
+    #    form.ethical_human.data=i[7]
+    #    form.location.data=i[8]
+    #    form.co_applicants.data=i[9]
+    #    form.collaborators.data=i[10]
+    #    form.scientific_abstract.data=i[11]
+    #    form.lay_abstract.data=i[12]
+    #    form.declaration.data=i[13]
+    #    previousFile=i[16]
 
 
 
-    cur.close()
-    conn.close()
+    #cur.close()
+    #conn.close()
 
 
     if form.validate_on_submit():
         if form.validate.data:
             flash("Input Successfully Validated")
         elif form.draft.data:
-            filenamesecret=previousFile
-            if form.proposalPDF.data != None:
+            print(previousFile)
+            filenamesecret = previousFile
+            if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
-                while True:
-                    filecheck = Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
-                    if filecheck.is_file():
-                        filenamesecret = uuid.uuid4().hex
-                    else:
-                        break
-                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
-                if previousFile!=None:
-                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
+                if filenamesecret != previousFile:
+                    form.proposalPDF.data.save('uploads/' + filenamesecret)
+                else:
+                    while True:
+                        filecheck=Path(f"uploads/{filenamesecret}")
+                        if filecheck.is_file():
+                            filenamesecret = uuid.uuid4().hex
+                        else:
+                            break
+                    form.proposalPDF.data.save('uploads/' + filenamesecret)
+                    print(filenamesecret + "1")
 
+                if previousFile != None:
+                    os.remove(f"uploads/{previousFile}")
+
+            existing_submission = Submissions.query.filter_by(propid=form.propid, user=current_user.orcid).first()
+            print(existing_submission)
+            if existing_submission:
+                existing_submission.propid = form.propid
+                existing_submission.title = form.title.data
+                existing_submission.duration = form.duration.data
+                existing_submission.NRP = form.NRP.data
+                existing_submission.legal = form.legal_remit.data
+                existing_submission.ethicalAnimal = form.ethical_animal.data
+                existing_submission.ethicalHuman = form.ethical_human.data
+                existing_submission.location = form.location.data
+                existing_submission.coapplicants = form.co_applicants.data
+                existing_submission.collaborators = form.collaborators.data
+                existing_submission.scientific = form.scientific_abstract.data
+                existing_submission.lay = form.lay_abstract.data
+                existing_submission.declaration = form.declaration.data
+                existing_submission.proposalPDF = filenamesecret
+                existing_submission.draft = 0
+                print(existing_submission.legal, " ", form.legal_remit.data)
+                db.session.commit()
+                return redirect(url_for("submissions", id=form.propid, sub=sub,submissions=submissions))
 
 
             new_submission=Submissions(propid=form.propid,title=form.title.data, duration=form.duration.data,
@@ -1341,21 +1389,41 @@ def submissions():
             db.session.add(new_submission)
             db.session.commit()
             flash("successfully Saved Draft")
-            return redirect(url_for("submissions",id=form.propid,sub=sub))
+            return redirect(url_for("submissions",id=form.propid,sub=sub,submissions=submissions))
         elif form.submit.data:
             filenamesecret = previousFile
             if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
-                while True:
-                    filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
-                    if filecheck.is_file():
-                        filenamesecret = uuid.uuid4().hex
-                    else:
-                        break
-                form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
-                if previousFile != None:
-                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
+                if filenamesecret != previousFile:
+                    while True:
+                        filecheck=Path(f"uploads/{filenamesecret}")
+                        if filecheck.is_file():
+                            filenamesecret = uuid.uuid4().hex
+                        else:
+                            break
+                    form.proposalPDF.data.save('uploads/' + filenamesecret)
+                    if previousFile != None:
+                        os.remove(f"uploads/{previousFile}")
 
+            existing_submission = Submissions.query.filter_by(propid=form.propid, user=current_user.orcid).first()
+            if existing_submission:
+                existing_submission.propid = form.propid
+                existing_submission.title = form.title.data
+                existing_submission.duration = form.duration.data
+                existing_submission.NRP = form.NRP.data
+                existing_submission.legal = form.legal_remit.data
+                existing_submission.ethicalAnimal = form.ethical_animal.data
+                existing_submission.ethicalHuman = form.ethical_human.data
+                existing_submission.location = form.location.data
+                existing_submission.coapplicants = form.co_applicants.data
+                existing_submission.collaborators = form.collaborators.data
+                existing_submission.scientific = form.scientific_abstract.data
+                existing_submission.lay = form.lay_abstract.data
+                existing_submission.declaration = form.declaration.data
+                existing_submission.proposalPDF = filenamesecret
+                existing_submission.draft = 0
+                db.session.commit()
+                return redirect(url_for("submitted"))
 
             new_submission = Submissions(propid=form.propid, title=form.title.data, duration=form.duration.data,
                                          NRP=form.NRP.data, legal=form.legal_remit.data,
@@ -1374,7 +1442,7 @@ def submissions():
             db.session.add(new_submission)
             db.session.commit()
             flash("successfully submitted")
-            return redirect(url_for("submissions", id=form.propid, sub=sub))
+            return redirect(url_for("submissions", id=form.propid, sub=sub, submissions=submissions))
 
 
 
@@ -1389,7 +1457,7 @@ def submissions():
     sub["timeframe"] = i.TimeFrame
     sub["title"] = i.title
 
-    return render_template('submissions.html', user=current_user, sub=sub,form=form)
+    return render_template('submissions.html', user=current_user, sub=sub,form=form, submissions=submissions)
 
 #needs to be fixed cant save image
 def save_picture(form_picture):
@@ -2338,13 +2406,101 @@ def impacts_info():
             primary_beneficiary=primary_beneficiary, ORCID= current_user.orcid)
             db.session.add(impact)
             db.session.commit()
+        if request.method == 'POST':
+            print(form.errors)
+            if form.validate_on_submit():
 
-            return redirect(url_for('profile'))
-        return render_template('impacts_info.html', form=form)
-    impacts_list = current_user.impacts
-    return render_template('impacts_info.html', form=form ,list=impacts_list)
+                title = form.title.data
+                category = form.category.data
+                primary_beneficiary = form.primary_beneficiary.data
+                primary_attribution = form.primary_attribution.data
+
+                conn = mysql.connect
+                cur = conn.cursor()
+                cur.execute("""INSERT INTO Impacts (Title,Category,PrimaryBeneficiary,PrimaryAttribution, ORCID) VALUES('{title}','{category}',
+                '{primary_benificiary}','{primary_attribution}', {current_user.orcid} ); """)
+                conn.commit()
+                cur.close()
+                conn.close()
+                return redirect(url_for('profile'))
+
+        return render_template('impacts_info.html', form=form) # list=impacts_list
+    else:
+        impacts_list = current_user.impacts
+        return render_template('impacts_info.html', form=form ,list=impacts_list)
 
 
+@app.route('/projects')
+@login_required
+def projects():
+    approved_submissions = Submissions.query.filter_by(user=current_user.orcid, status="Approved").all()
+    all_fundings = Funding.query.filter_by(orcid=current_user.orcid).all()
+    scientific_reports = Report.query.filter_by(ORCID=current_user.orcid, type="Scientific").all()
+    financial_reports = Report.query.filter_by(ORCID=current_user.orcid, type="Financial").all()
+    teams = Team.query.filter_by(team_leader=current_user.orcid).all()
+    print(scientific_reports[0].subid)
+
+    return render_template("projects.html", projects=approved_submissions, fundings=all_fundings, scientific_reports=scientific_reports, financial_reports=financial_reports, teams=teams)
+
+class CreateTeamForm(FlaskForm):
+    create = SubmitField("Click here to create a team!")
+
+class DeleteTeamMemberForm(FlaskForm):
+    delete = SubmitField("Remove")
+
+class EditTeamMemberForm(FlaskForm):
+    start_date = DateField("Start Date : ")
+    departure_date = DateField("Departure Date : ")
+    position = StringField("Position : ")
+    primary_attribution = StringField("Primary Attribution : ")
+    submit = SubmitField("Edit")
+
+@app.route('/manage_team', methods=["GET", "POST"])
+@login_required
+def manage_team():
+    id = request.args.get("id")
+    team = Team.query.filter_by(team_leader=current_user.orcid, subid=id).first()
+    addform = AddTeamMemberForm(prefix="addform")
+    createform = CreateTeamForm(prefix="createform")
+    editform = EditTeamMemberForm(prefix="editform")
+    deleteform = DeleteTeamMemberForm(prefix="deleteform")
+    if team:
+        if addform.submit.data and addform.validate():
+            project = Submissions.query.filter_by(subid=id).first()
+            researcher = User.query.filter_by(orcid=addform.ORCID.data).first()
+            full_name = researcher.first_name + " " + researcher.last_name
+            new_team_member = TeamMembers(start_date=addform.start_date.data, departure_date=addform.departure_date.data, name=full_name, position=addform.position.data, primary_attribution=project.location, ORCID=researcher.orcid, team_id=team.team_id)
+            db.session.add(new_team_member)
+
+        if deleteform.delete.data and deleteform.validate():
+            orcid = request.args.get("ORCID")
+            team_member = TeamMembers.query.filter_by(ORCID=orcid).first()
+            db.session.delete(team_member)
+
+        if editform.submit.data and editform.validate():
+            orcid = request.args.get("ORCID")
+            team_member = TeamMembers.query.filter_by(ORCID=orcid).first()
+            if editform.start_date.data:
+                team_member.start_date = editform.start_date.data
+            if editform.departure_date.data:
+                team_member.departure_date = editform.departure_date.data
+            if editform.position.data:
+                team_member.position = editform.position.data
+            if editform.primary_attribution.data:
+                team_member.primary_attribution = editform.primary_attribution.data
+
+        db.session.commit()
+        team_members = TeamMembers.query.filter_by(team_id=team.team_id).all()
+        return render_template("manage_team.html", team=team, team_members=team_members, id=id, addform=addform, createform=createform, deleteform=deleteform, editform=editform)
+
+    if createform.create.data and createform.validate():
+        team = Team(team_leader=current_user.orcid, subid=id)
+        print("team created")
+        db.session.add(team)
+        db.session.commit()
+        return redirect(url_for("manage_team", team=team, id=id, addform=addform, createform=createform))
+
+    return render_template("manage_team.html", team=team, createform=createform, id=id, addform=addform)
 
 
 
