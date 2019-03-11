@@ -2210,7 +2210,7 @@ def publications_info():
             name = form.name.data
             status = form.status.data
             doi = form.doi.data
-            primary_attribution = form.primary_attribution
+            primary_attribution = form.primary_attribution.data
             conn = mysql.connect
             cur= conn.cursor()
                         # execute a query
