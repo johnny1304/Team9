@@ -183,6 +183,8 @@ class Funding(db.Model):
     PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
     subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
+    ID=db.Column(db.Integer, nullable=False)
+
     def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
