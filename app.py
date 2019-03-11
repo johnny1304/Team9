@@ -577,7 +577,7 @@ class UpdatePresentations(FlaskForm):
     location = StringField('Location', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
     submit_pres = SubmitField('Edit')
-    remove_pre= SubmitField('Remove')
+    remove_pres = SubmitField('Remove')
 
 class UpdateCollaborations(FlaskForm):
     id = StringField('ID:', validators=[Length(max=50)])
