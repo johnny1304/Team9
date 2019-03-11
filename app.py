@@ -180,20 +180,19 @@ class Funding(db.Model):
     EndDate = db.Column(db.Date, nullable=False)
     AmountFunding = db.Column(db.Integer, nullable=False)
     FundingBody = db.Column(db.String(255))
-    FundingProgramme = db.Column(db.String(255), nullable=False)
+    FundingProgramme = db.Column(db.String(255),default="SFI")
     Stats = db.Column(db.String(255), nullable=False)
     PrimaryAttribution = db.Column(db.String(255), nullable=False)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
     subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable=False)
     ID=db.Column(db.Integer, nullable=False, primary_key=True)
 
-    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, Stats, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
         self.AmountFunding = AmountFunding
         self.FundingBody = FundingBody
-        self.FundingProgramme = FundingProgramme
-        self.Status = Status
+        self.Stats = Stats
         self.PrimaryAttribution = PrimaryAttribution
         self.orcid = orcid
         self.subid=subid
@@ -1408,19 +1407,19 @@ def submissions():
             if form.proposalPDF.data!=None:
                 filenamesecret = uuid.uuid4().hex
                 if filenamesecret != previousFile:
-                    form.proposalPDF.data.save('uploads/' + filenamesecret)
+                    form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                 else:
                     while True:
-                        filecheck=Path(f"uploads/{filenamesecret}")
+                        filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                         if filecheck.is_file():
                             filenamesecret = uuid.uuid4().hex
                         else:
                             break
-                    form.proposalPDF.data.save('uploads/' + filenamesecret)
+                    form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                     print(filenamesecret + "1")
 
                 if previousFile != None:
-                    os.remove(f"uploads/{previousFile}")
+                    os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
             existing_submission = Submissions.query.filter_by(propid=form.propid, user=current_user.orcid).first()
             print(existing_submission)
@@ -1468,14 +1467,14 @@ def submissions():
                 filenamesecret = uuid.uuid4().hex
                 if filenamesecret != previousFile:
                     while True:
-                        filecheck=Path(f"uploads/{filenamesecret}")
+                        filecheck=Path(f"/home/Johnnyos1304/Team9/uploads/{filenamesecret}")
                         if filecheck.is_file():
                             filenamesecret = uuid.uuid4().hex
                         else:
                             break
-                    form.proposalPDF.data.save('uploads/' + filenamesecret)
+                    form.proposalPDF.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
                     if previousFile != None:
-                        os.remove(f"uploads/{previousFile}")
+                        os.remove(f"/home/Johnnyos1304/Team9/uploads/{previousFile}")
 
             existing_submission = Submissions.query.filter_by(propid=form.propid, user=current_user.orcid).first()
             if existing_submission:
@@ -1653,7 +1652,7 @@ def edit_info():
 
 
             update_user = User.query.filter_by(orcid=current_user.orcid).first()
-            
+
             update_user.first_name = update_general.first_name.data
             update_user.last_name = update_general.last_name.data
             update_user.email = update_general.email.data
@@ -1678,7 +1677,7 @@ def edit_info():
 
        # Edit societies
         elif update_societies.validate_on_submit() and "submit_soc" in request.form:
-            
+
             updates = Societies.query.filter_by(ORCID=current_user.orcid).all()
             id1 = update_societies.id.data
 
@@ -1689,7 +1688,7 @@ def edit_info():
                     each.society = update_societies.society.data
                     each.membership = update_societies.membership.data
                     each.status = update_societies.status.data
-            
+
             db.session.commit()
             #conn = mysql.connect
             #cur= conn.cursor()
