@@ -285,14 +285,6 @@ class TeamMembers(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
     #subid = db.Column(db.Integer, nullable="False")
 
-class Team(db.Model):
-    __tablename__ = "Team"
-    team_id = db.Column("TeamID", db.Integer, primary_key=True)
-    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    #change to sub id
-    #proposalId = db.Column(db.Integer, nullable="False")
-    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-
 class Impacts(db.Model):
     __tablename__ = "Impacts"
     id = db.Column(db.Integer, primary_key=True)
@@ -1273,36 +1265,37 @@ def reviewer_pending_list():
 def create_submission_page():
     # return the dashboard html file with the user passed to it
     posts=[]
-    conn = mysql.connect
-    cur = conn.cursor()
+    #conn = mysql.connect
+    #cur = conn.cursor()
     # execute a query
-
-    cur.execute("""
-                SELECT *
-                FROM Proposal;
-                """)
-    for i in cur.fetchall():
+    proposals = Proposal.query.all()
+    #cur.execute("""
+    #            SELECT *
+    #            FROM Proposal;
+    #            """)
+    #for i in cur.fetchall():
+    for each in proposals:
         post={}
-        post["id"] = i[0]
-        post["deadline"] = i[1]
-        post["text"] = i[2]
-        post["audience"] = i[3]
-        post["eligibility"] = i[4]
-        post["duration"] = i[5]
-        post["guidelines"] = i[6]
-        post["timeframe"] = i[7]
+        post["id"] = each.id
+        post["deadline"] = each.Deadline
+        post["text"] = each.TextOfCall
+        post["audience"] = each.TargetAudience
+        post["eligibility"] = each.EligibilityCriteria
+        post["duration"] = each.Duration
+        post["guidelines"] = each.ReportingGuidelines
+        post["timeframe"] = each.TimeFrame
         posts.append(post)
-    conn.commit()
+    #conn.commit()
 
-    cur.close()
-    conn.close()
+    #cur.close()
+    #conn.close()
     return render_template('create_submission_form.html', user=current_user, posts=posts)
 # @app.route('/resetpassword')
 
 @app.route('/proposals', methods=['GET' , 'POST'])
 @login_required
 def proposals():
-    posts = []
+    #posts = []
     proposals = Proposal.query.all()
     #conn = mysql.connect
     #cur = conn.cursor()
@@ -1312,7 +1305,7 @@ def proposals():
                  SELECT *
                  FROM Proposal;
                  "")"""
-    for post in proposals:
+    #for post in proposals:
     #for i in cur.fetchall():
         #post = {}
         #print(i)
@@ -1325,12 +1318,12 @@ def proposals():
         #post["guidelines"] = i[6]
         #post["timeframe"] = i[7]
         #post["title"] = i[1]
-        posts.append(post)
+        #posts.append(post)
     #conn.commit()
 
     #cur.close()
     #conn.close()
-    return render_template('proposals.html', user=current_user, posts=posts)
+    return render_template('proposals.html', user=current_user, posts=proposals)
 
 @app.route('/submissions',methods=['GET' , 'POST'])
 @login_required
@@ -1626,63 +1619,76 @@ def edit_info():
         #
         if update_general.validate_on_submit() :
 
-            first_name = update_general.first_name.data
-            last_name = update_general.last_name.data
-            email = update_general.email.data
-            job = update_general.job.data
-            prefix = update_general.prefix.data
-            suffix = update_general.suffix.data
-            phone = update_general.phone.data
-            phone_extension = update_general.phone_extension.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            update_user = User.query.filter_by(orcid=current_user.orcid).first()
+            
+            update_user.first_name = update_general.first_name.data
+            update_user.last_name = update_general.last_name.data
+            update_user.email = update_general.email.data
+            update_user.job = update_general.job.data
+            update_user.prefix = update_general.prefix.data
+            update_user.suffix = update_general.suffix.data
+            update_user.phone = update_general.phone.data
+            update_user.phone_extension = update_general.phone_extension.data
+
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
-                    Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE Researcher SET FirstName='{first_name}', LastName='{last_name}', Job='{job}', Prefix='{prefix}', Suffix='{suffix}',
+            #        Phone={phone}, PhoneExtension={phone_extension}, Email='{email}' WHERE ORCID ={current_user.orcid};  """)
+            ##conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
 
 
 
        # Edit societies
-        elif update_societies.validate_on_submit and "submit_soc" in request.form:
-            print("here")
-            start_date = update_societies.start_date.data
-            end_date = update_societies.end_date.data
-            society = update_societies.society.data
-            membership = update_societies.membership.data
-            status = update_societies.status.data
+        elif update_societies.validate_on_submit() and "submit_soc" in request.form:
+            
+            updates = Societies.query.filter_by(ORCID=current_user.orcid).all()
             id1 = update_societies.id.data
 
-
-            conn = mysql.connect
-            cur= conn.cursor()
+            for each in updates:
+                if each.id == id1:
+                    each.start_date = update_societies.start_date.data
+                    each.end_date = update_societies.end_date.data
+                    each.society = update_societies.society.data
+                    each.membership = update_societies.membership.data
+                    each.status = update_societies.status.data
+            
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Societies SET StartDate= '{start_date}', EndDate='{end_date}', Society = '{society}', Membership = '{membership}',
-            Status = '{status}' WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE Societies SET StartDate= '{start_date}', EndDate='{end_date}', Society = '{society}', Membership = '{membership}',
+            #Status = '{status}' WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('societiesInfo'))
         # Remove societies
-        elif update_societies.validate_on_submit and "remove_soc" in request.form:
+        elif update_societies.validate_on_submit() and "remove_soc" in request.form:
             print("here")
 
             id1 = update_societies.id.data
+            society = Societies.query.filter_by(id=id1).first()
 
-            conn = mysql.connect
-            cur= conn.cursor()
-            # execute a query
-            cur.execute(f"""DELETE FROM Societies WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            db.session.delete(society)
+            db.session.commit()
+
+
+            #conn = mysql.connect
+            #cur= conn.cursor()
+            ## execute a query
+            #cur.execute(f"""DELETE FROM Societies WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('edit_info'))
         # Edit Education
-        elif update_education.validate_on_submit and "submit_edu" in request.form:
+        elif update_education.validate_on_submit() and "submit_edu" in request.form:
             degree = update_education.degree.data
             institution = update_education.institution.data
             location = update_education.location.data
@@ -1701,7 +1707,7 @@ def edit_info():
             conn.close()
             return redirect(url_for('educationInfo'))
         #Remove Edu
-        elif update_education.validate_on_submit and "remove_edu" in request.form:
+        elif update_education.validate_on_submit() and "remove_edu" in request.form:
             print("here")
 
             id1 = update_education.id.data
@@ -1716,235 +1722,290 @@ def edit_info():
             return redirect(url_for('edit_info'))
 
         #Edit Employment
-        elif update_employment.validate_on_submit and "submit_emp" in request.form:
-            company = update_employment.company.data
-            location = update_employment.location.data
-            years = update_employment.years.data
+        elif update_employment.validate_on_submit() and "submit_emp" in request.form:
+
+            employment = Employment.query.filter_by(ORCID=current_user.orcid).all()
             id2 = update_employment.id.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            for each in employment:
+                if each.id == id2:
+                    each.company = update_employment.company.data
+                    each.location = update_employment.location.data
+                    each.years = update_employment.years.data
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Employment SET Company = '{company}',  Location= '{location}',
-             Years= {years}  WHERE ID ={id2};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE Employment SET Company = '{company}',  Location= '{location}',
+            # Years= {years}  WHERE ID ={id2};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('employmentInfo'))
         #Remove Employment
-        elif update_employment.validate_on_submit and "remove_emp" in request.form:
+        elif update_employment.validate_on_submit() and "remove_emp" in request.form:
             print("here")
 
             id1 = update_employment.id.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            employment = Employment.query.filter_by(id=id1).first()
+
+            db.session.delete(employment)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM Employment WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM Employment WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('edit_info'))
 
         #Edit Awards
-        elif update_awards.validate_on_submit and "submit_awrd" in request.form:
-            year = update_awards.year.data
-            award_body = update_awards.award_body.data
-            details = update_awards.details.data
-            team_member = update_awards.team_member.data
+        elif update_awards.validate_on_submit() and "submit_awrd" in request.form:
             id3 = update_awards.id.data
+            awards = Awards.query.filter_by(id=id3).first()
+            awards.year = update_awards.year.data
+            awards.award_body = update_awards.award_body.data
+            awards.details = update_awards.details.data
+            awards.team_member = update_awards.team_member.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',
-            TeamMember = '{team_member}' WHERE ID ={id3};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE Awards SET Year = {year}, AwardingBody = '{award_body}', Details = '{details}',
+            #TeamMember = '{team_member}' WHERE ID ={id3};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('awardsInfo'))
         #Remove Awards
-        elif update_awards.validate_on_submit and "remove_awrd" in request.form:
+        elif update_awards.validate_on_submit() and "remove_awrd" in request.form:
             print("here")
 
             id1 = update_awards.id.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            award = Awards.query.filter_by(id=id1).first()
+            db.session.delete(award)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM Awards WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM Awards WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('edit_info'))
-        elif update_org.validate_on_submit and "submit_org" in request.form:
+        elif update_org.validate_on_submit() and "submit_org" in request.form:
             id1 = update_org.id.data
-            start_date = update_org.start_date.data
-            end_date = update_org.end_date.data
-            title = update_org.title.data
-            type = update_org.type.data
-            role = update_org.type.data
-            location = update_org.location.data
-            primary_attribution = update_org.primary_attribution.data
-            conn = mysql.connect
-            cur= conn.cursor()
+            org = OrganisedEvents.query.filter_by(id=id1).first()
+            org.start_date = update_org.start_date.data
+            org.end_date = update_org.end_date.data
+            org.title = update_org.title.data
+            org.type = update_org.type.data
+            org.role = update_org.type.data
+            org.location = update_org.location.data
+            org.primary_attribution = update_org.primary_attribution.data
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""UPDATE OrganisedEvents SET StartDate = '{start_date}', EndDate = '{end_date}', Title='{title}', Type = '{type}',
-            Role = '{role}', Location = '{location}', PrimaryAttribution = {primary_attribution} WHERE ID = {id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""UPDATE OrganisedEvents SET StartDate = '{start_date}', EndDate = '{end_date}', Title='{title}', Type = '{type}',
+            #Role = '{role}', Location = '{location}', PrimaryAttribution = {primary_attribution} WHERE ID = {id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('organised_events_info'))
-        elif update_org.validate_on_submit and "remove_org" in request.form:
+        elif update_org.validate_on_submit() and "remove_org" in request.form:
             print("here")
             id1 = update_org.id.data
-            conn = mysql.connect
-            cur= conn.cursor()
+            org = OrganisedEvents.query.filter_by(id=id1).first()
+
+            db.session.delete(org)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM OrganisedEvents WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM OrganisedEvents WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('edit_info'))
 
-        elif update_funding.validate_on_submit and "submit_fund" in request.form:
-            start_date = update_funding.start_date.data
-            end_date = update_funding.end_date.data
-            amount_funding = update_funding.amount_funding.data
-            funding_body= update_funding.funding_body.data
-            funding_programme = update_funding.funding_programme.data
-            stats = update_funding.stats.data
-            primary_attribution = update_funding.primary_attribution.data
+        elif update_funding.validate_on_submit() and "submit_fund" in request.form:
             id1 = update_funding.id.data
-            conn = mysql.connect
-            funds = Funding.query.filter_by(ID = id1).first
-            funds.start_date = start_date
-            funds.end_date = end_date
-            funds.amount_funding = amount_funding
-            funds.funding_body = funding_body
-            funds.funding_programme = funding_body
-            funds.stats = stats
-            funds.primary_attribution = primary_attribution
+            funding = Funding.query.filter_by(id=id1).first()
+            funding.start_date = update_funding.start_date.data
+            funding.end_date = update_funding.end_date.data
+            funding.amount_funding = update_funding.amount_funding.data
+            funding.funding_body= update_funding.funding_body.data
+            funding.funding_programme = update_funding.funding_programme.data
+            funding.stats = update_funding.stats.data
+            funding.primary_attribution = update_funding.primary_attribution.data
+            #conn = mysql.connect
+            #funds = Funding.query.filter_by(ID = id1).first
+            #funds.start_date = start_date
+            #funds.end_date = end_date
+            #funds.amount_funding = amount_funding
+            #funds.funding_body = funding_body
+            #funds.funding_programme = funding_body
+            #funds.stats = stats
+            #funds.primary_attribution = primary_attribution
             db.session.commit()
             return redirect(url_for('profile'))
         #Remove Awards
-        elif update_funding.validate_on_submit and "remove_fund" in request.form:
+        elif update_funding.validate_on_submit() and "remove_fund" in request.form:
             print("here")
 
             id1 = update_funding.id.data
 
-            conn = mysql.connect
-            cur= conn.cursor()
+            funding = Funding.query.filter_by(id=id1).first()
+
+            db.session.delete(funding)
+            db.session.commit()
+
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM Funding WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM Funding WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_pub.validate_on_submit and "submit_pub" in request.form:
+        elif update_pub.validate_on_submit() and "submit_pub" in request.form:
             id2 = update_pub.id.data
-            year = update_pub.year.data
-            type = update_pub.type.data
-            title = update_pub.title.data
-            name = update_pub.name.data
-            status = update_pub.status.data
-            doi = update_pub.doi.data
-            conn = mysql.connect()
-            cur = conn.cursor()
-            cur.execute(f"""UPDATE Publications SET Year = {year}, Type = '{type}', Title= '{title}',
-             Name = '{name}', Status = '{status}', DOI = '{doi}' WHERE ID = {id2} """)
-            cur.close()
-            conn.close()
+            pub = Publications.query.filter_by(id=id2).first()
+            pub.year = update_pub.year.data
+            pub.type = update_pub.type.data
+            pub.title = update_pub.title.data
+            pub.name = update_pub.name.data
+            pub.status = update_pub.status.data
+            pub.doi = update_pub.doi.data
+            pub.primary_attribution = update_pub.primary_attribution.data
+
+            db.session.commit()
+            #conn = mysql.connect()
+            #cur = conn.cursor()
+            #cur.execute(f"""UPDATE Publications SET Year = {year}, Type = '{type}', Title= '{title}',
+            # Name = '{name}', Status = '{status}', DOI = '{doi}' WHERE ID = {id2} """)
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_pub.validate_on_submit and "remove_pub" in request.form:
+        elif update_pub.validate_on_submit() and "remove_pub" in request.form:
             print("here")
             id1 = update_pub.id.data
-            conn = mysql.connect
-            cur= conn.cursor()
+            pub = Publications.query.filter_by(id=id1).first()
+
+            db.session.delete(pub)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM Publications WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM Publications WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_imp.validate_on_submit and "submit_imp" in request.form:
+        elif update_imp.validate_on_submit() and "submit_imp" in request.form:
             id2 = update_imp.id.data
-            title = update_imp.title.data
-            category = update_imp.category.data
-            primary_beneficiary = update_imp.primary_beneficiary.data
-            primary_attribution = update_imp.primary_attribution.data
-            conn = mysql.connect()
-            cur = conn.cursor()
-            cur.execute(f"""UPDATE Impacts SET Title = '{title}', Category = '{category}' , PrimaryBeneficiary = '{primary_beneficiary}',
-            PrimaryAttribution = '{primary_attribution}' WHERE ID = {id2} """)
-            cur.close()
-            conn.close()
+            imp = Impacts.query.filter_by(id=id2).first()
+            imp.title = update_imp.title.data
+            imp.category = update_imp.category.data
+            imp.primary_beneficiary = update_imp.primary_beneficiary.data
+            imp.primary_attribution = update_imp.primary_attribution.data
+
+            db.session.commit()
+            #conn = mysql.connect()
+            #cur = conn.cursor()
+            #cur.execute(f"""UPDATE Impacts SET Title = '{title}', Category = '{category}' , PrimaryBeneficiary = '{primary_beneficiary}',
+            #PrimaryAttribution = '{primary_attribution}' WHERE ID = {id2} """)
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_imp.validate_on_submit and "remove_imp" in request.form:
+        elif update_imp.validate_on_submit() and "remove_imp" in request.form:
             print("here")
             id1 = update_imp.id.data
-            conn = mysql.connect
-            cur= conn.cursor()
+            imp = Impacts.query.filter_by(id=id1).first()
+
+            db.session.delete(imp)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM Impact WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM Impact WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_edup.validate_on_submit and "submit_edup" in request.form:
+        elif update_edup.validate_on_submit() and "submit_edup" in request.form:
             id1 = update_edup.id.data
-            name = update_edup.name.data
-            start_date = update_edup.start_date.data
-            end_date = update_edup.end_date.data
-            activity = update_edup,activity.data
-            topic = update_edup.topic.data
-            target_area = update_edup.target_area.data
-            primary_attribution = update_edup.primary_attribution.data
-            conn = mysql.connect()
-            cur = conn.cursor()
-            cur.execute(f"""UPDATE EducationAndPublicEngagement SET Name = '{name}', StartDate = '{start_date}', EndDate = '{end_date}',
-            Activity = '{activity}', Topic = '{topic}', TargetArea = '{target_area}', PrimaryAttribution='{primary_attribution}' WHERE ID = {id1} """)
-            cur.close()
-            conn.close()
+            edup = EducationAndPublicEngagement.query.filter_by(id=id1).first()
+            edup.name = update_edup.name.data
+            edupstart_date = update_edup.start_date.data
+            edup.end_date = update_edup.end_date.data
+            edup.activity = update_edup,activity.data
+            edup.topic = update_edup.topic.data
+            edup.target_area = update_edup.target_area.data
+            edup.primary_attribution = update_edup.primary_attribution.data
+
+            db.session.commit()
+            #conn = mysql.connect()
+            #cur = conn.cursor()
+            #cur.execute(f"""UPDATE EducationAndPublicEngagement SET Name = '{name}', StartDate = '{start_date}', EndDate = '{end_date}',
+            #Activity = '{activity}', Topic = '{topic}', TargetArea = '{target_area}', PrimaryAttribution='{primary_attribution}' WHERE ID = {id1} """)
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_edup.validate_on_submit and "remove_edup" in request.form:
+        elif update_edup.validate_on_submit() and "remove_edup" in request.form:
             print("here")
             id1 = update_edup.id.data
-            conn = mysql.connect
-            cur= conn.cursor()
+            edup = EducationAndPublicEngagement.query.filter_by(id=id1).first()
+
+            db.session.delete(edup)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM EducationAndPublicEngagemen WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM EducationAndPublicEngagemen WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_pres.validate_on_submit and "submit_pres" in request.form:
+        elif update_pres.validate_on_submit() and "submit_pres" in request.form:
             id1 = update_pres.id.data
-            year = update_pres.year.data
-            title = update_pres.title.data
-            type = update_pres.type.data
-            conference = update_pres.conference.data
-            invited_seminar = update_pres.invited_seminar.data
-            keynote = update_pres.keynote.data
-            organising_body = update_pres.organising_body.data
-            location = update_pres.location.data
-            conn = mysql.connect()
-            cur = conn.cursor()
-            cur.execute(f"""UPDATE Presentations SET Year = {year}, Title = '{title}', Type = '{type}', Conference='{conference}',
-             InvitedSeminar='{invited_seminar}', Keynote = '{keynote}', OrganisedBody = '{organising_body}', Location = '{location}' WHERE ID = {id1} """)
-            cur.close()
-            conn.close()
+            pres = Presentations.query.filter_by(id=id1).first()
+            pres.year = update_pres.year.data
+            pres.title = update_pres.title.data
+            pres.type = update_pres.type.data
+            pres.conference = update_pres.conference.data
+            pres.invited_seminar = update_pres.invited_seminar.data
+            pres.keynote = update_pres.keynote.data
+            pres.organising_body = update_pres.organising_body.data
+            pres.location = update_pres.location.data
+
+            db.session.commit()
+            #conn = mysql.connect()
+            #cur = conn.cursor()
+            #cur.execute(f"""UPDATE Presentations SET Year = {year}, Title = '{title}', Type = '{type}', Conference='{conference}',
+            # InvitedSeminar='{invited_seminar}', Keynote = '{keynote}', OrganisedBody = '{organising_body}', Location = '{location}' WHERE ID = {id1} """)
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
-        elif update_pres.validate_on_submit and "remove_pres" in request.form:
+        elif update_pres.validate_on_submit() and "remove_pres" in request.form:
             print("here")
             id1 = update_pres.id.data
-            conn = mysql.connect
-            cur= conn.cursor()
+            pres = Presentations.query.filter_by(id=id1).first()
+
+            db.session.delete(pres)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur= conn.cursor()
             # execute a query
-            cur.execute(f"""DELETE FROM Presentations WHERE ID ={id1};  """)
-            conn.commit()
-            cur.close()
-            conn.close()
+            #cur.execute(f"""DELETE FROM Presentations WHERE ID ={id1};  """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('profile'))
 
 
