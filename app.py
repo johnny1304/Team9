@@ -113,7 +113,7 @@ class Proposal(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
 
 
-    def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame, picture):
+    def __init__(self, Deadline, title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame):
         self.Deadline = Deadline
         self.title = title
         self.TextOfCall = TextOfCall
@@ -122,7 +122,6 @@ class Proposal(db.Model):
         self.Duration = Duration
         self.ReportingGuidelines = ReportingGuidelines
         self.TimeFrame = TimeFrame
-        self.picture = picture
 
     def __repr__(self):
         return f"User('{self.Deadline}', '{self.TargetAudience}', '{self.TimeFrame}')"
@@ -183,10 +182,10 @@ class Funding(db.Model):
     FundingBody = db.Column(db.String(255))
     FundingProgramme = db.Column(db.String(255), nullable=False)
     Stats = db.Column(db.String(255), nullable=False)
-    PrimaryAttribution = db.Column(db.String(255), nullable=False, primary_key=True)
+    PrimaryAttribution = db.Column(db.String(255), nullable=False)
     orcid = db.Column(db.Integer, db.ForeignKey('Researcher.orcid'), nullable=False)
-    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-    ID=db.Column(db.Integer, nullable=False)
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable=False)
+    ID=db.Column(db.Integer, nullable=False, primary_key=True)
 
     def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
         self.StartDate = StartDate
@@ -286,6 +285,13 @@ class TeamMembers(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
     #subid = db.Column(db.Integer, nullable="False")
 
+class Team(db.Model):
+    __tablename__ = "Team"
+    team_id = db.Column("TeamID", db.Integer, primary_key=True)
+    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
+    #change to sub id
+    #proposalId = db.Column(db.Integer, nullable="False")
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -406,7 +412,7 @@ class ResetForm(FlaskForm):
 class UpdateInfoForm(FlaskForm):
 
 
-	#this is the class for the register form in the sign_up.html
+    #this is the class for the register form in the sign_up.html
     first_name = StringField('First Name:'  , validators=[InputRequired(), Length(max=20)])
     last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
     email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
@@ -496,10 +502,10 @@ class AddPublications(FlaskForm):
 
 
 class AddEmploymentForm(FlaskForm):
-	company = StringField('Company:', validators=[ Length(max=50)])
-	location = StringField('Location:', validators=[ Length(max=50)])
-	years = IntegerField('Years:')
-	submit = SubmitField('Add')
+    company = StringField('Company:', validators=[ Length(max=50)])
+    location = StringField('Location:', validators=[ Length(max=50)])
+    years = IntegerField('Years:')
+    submit = SubmitField('Add')
 
 class UpdatePublications(FlaskForm):
     id = StringField("ID:" ,validators=[ Length(max=50)])
@@ -664,7 +670,6 @@ class AddAwardsForm(FlaskForm):
 	details = StringField('Detail:', validators=[Length(max=50)])
 	team_member = StringField('Team Member ', validators=[Length(max=50)])
 	submit = SubmitField('Add Awards')
-
 class AddInnovation(FlaskForm):
     year = IntegerField('Year:' )
     type = StringField('Type', validators=[Length(max=50)])
@@ -800,6 +805,19 @@ class AddTeamMemberForm(FlaskForm):
     ORCID = IntegerField("ORCID : ", validators=[InputRequired()], render_kw={"placeholder" : "ORCID of the researcher to add to your team"})
     submit = SubmitField("Add")
 
+class CreateTeamForm(FlaskForm):
+    create = SubmitField("Click here to create a team!")
+
+class DeleteTeamMemberForm(FlaskForm):
+    delete = SubmitField("Remove")
+
+class EditTeamMemberForm(FlaskForm):
+    start_date = DateField("Start Date : ")
+    departure_date = DateField("Departure Date : ")
+    position = StringField("Position : ")
+    primary_attribution = StringField("Primary Attribution : ")
+    submit = SubmitField("Edit")
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -811,7 +829,7 @@ def mail(receiver, content="", email="", password="", subject=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-	#cur = mysql.get_db().cursor()
+    #cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
     print(content)
@@ -823,7 +841,6 @@ def mail(receiver, content="", email="", password="", subject=""):
         password = "default password"
 
         password = "team9admin"
-
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -879,10 +896,15 @@ def forgot():
     form = ForgotForm()
     if form.submit.data:
         email = form.email.data
-        send = "Follow this url to reset your password: http://127.0.0.1:5000/reset?l=%s"%(email)
-        subject = "Reset Password"
-        mail(receiver=form.email.data,content=send,subject=subject)
-        return render_template('forgot.html', form=form)
+        user = User.query.filter_by(email=email).first()
+        if user:
+            send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+            subject = "Reset Password"
+            mail(receiver=form.email.data,content=send,subject=subject)
+            return render_template('forgot.html', form=form)
+        else:
+            message="Please enter valid form data"
+            return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
 #does not work
@@ -932,7 +954,7 @@ def signup():
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
-			# send confirmation email
+            # send confirmation email
             mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
@@ -988,6 +1010,7 @@ def scientific_reports():
         if file:
             filename = secure_filename(file.filename)
             file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
+            #file.save('uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
         newReport = Report(title=form.title.data, type="Scientific", pdf=filenamesecret, ORCID=current_user.orcid, subid=id)
@@ -1037,6 +1060,7 @@ def financial_reports():
         if file:
             filename = secure_filename(file.filename)
             file.save('/home/Johnnyos1304/Team9/uploads/'+filename)
+            #file.save('uploads/'+filename)
             filenamesecret = uuid.uuid4().hex
             print("file saved")
 
@@ -1126,9 +1150,34 @@ def completed_review():
         #create a new team data thingy
         #
         db.session.commit()
-        return redirect(url_for("dashboard"))
+        return redirect(url_for("funding", id=id))
     return render_template("completed_reviews.html",form=form,sub=sub,rev=rev,prop=prop)
 
+class FundingForm(FlaskForm):
+    start_date = DateField("Start Date : ")
+    end_date = DateField("End Date : ")
+    amount_funding = IntegerField("Amount Funding : ")
+    funding_body = TextAreaField("Funding Body : ")
+    stats = StringField("Stats : ")
+    primary_attribution = StringField("Primary Attribution : ")
+    submit = SubmitField("Submit")
+
+@app.route('/funding', methods=["GET", "POST"])
+@login_required
+def funding():
+    id = request.args.get("id")
+    submission = Submissions.query.filter_by(subid=id).first()
+    orcid = submission.user
+    fundingform = FundingForm()
+    if fundingform.submit.data and fundingform.validate():
+        new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data, 
+            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data, 
+            Stats=fundingform.stats.data, PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid, 
+            subid=id)
+        db.session.add(new_funding)
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    return render_template("funding.html", id=id, fundingform=fundingform)
 
 @app.route('/admin_external_review')
 @login_required
@@ -1197,10 +1246,6 @@ def admin_send_review():
         new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
         db.session.add(new_external_review)
         db.session.commit()
-
-
-
-
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
 
@@ -1534,16 +1579,19 @@ def proposal_call():
             timeframe = form.time_frame.data
             title = form.title.data
 
-
-            conn = mysql.connect
-            cur = conn.cursor()
+            new_proposal = Proposal(Deadline=deadline, title=title, TextOfCall=textofcall,TargetAudience=targetaudience,
+                EligibilityCriteria=eligibilitycriteria, Duration=duration, ReportingGuidelines=reportingguidelines, TimeFrame=timeframe)
+            #conn = mysql.connect
+            #cur = conn.cursor()
             # execute a query
-            cur.execute("""INSERT INTO Proposal(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
-                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(deadline,title, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
+            #cur.execute(""INSERT INTO Proposal(Deadline,Title, TextOfCall, TargetAudience, EligibilityCriteria, Duration, ReportingGuidelines, TimeFrame)
+            ##            VALUES (%s,%s,%s,%s,%s,%s,%s,%s);""",(deadline,title, textofcall, targetaudience, eligibilitycriteria, duration, reportingguidelines, timeframe))
             # rv contains the result of the execute
-            conn.commit()
-            cur.close()
-            conn.close()
+            #conn.commit()
+            #cur.close()
+            #conn.close()
+            db.session.add(new_proposal)
+            db.session.commit()
             #links to form creation
             print("here")
             return redirect(url_for('dashboard'))
@@ -2440,22 +2488,8 @@ def projects():
     scientific_reports = Report.query.filter_by(ORCID=current_user.orcid, type="Scientific").all()
     financial_reports = Report.query.filter_by(ORCID=current_user.orcid, type="Financial").all()
     teams = Team.query.filter_by(team_leader=current_user.orcid).all()
-    print(scientific_reports[0].subid)
 
     return render_template("projects.html", projects=approved_submissions, fundings=all_fundings, scientific_reports=scientific_reports, financial_reports=financial_reports, teams=teams)
-
-class CreateTeamForm(FlaskForm):
-    create = SubmitField("Click here to create a team!")
-
-class DeleteTeamMemberForm(FlaskForm):
-    delete = SubmitField("Remove")
-
-class EditTeamMemberForm(FlaskForm):
-    start_date = DateField("Start Date : ")
-    departure_date = DateField("Departure Date : ")
-    position = StringField("Position : ")
-    primary_attribution = StringField("Primary Attribution : ")
-    submit = SubmitField("Edit")
 
 @app.route('/manage_team', methods=["GET", "POST"])
 @login_required
