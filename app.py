@@ -187,13 +187,13 @@ class Funding(db.Model):
     subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable=False)
     ID=db.Column(db.Integer, nullable=False, primary_key=True)
 
-    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Status, PrimaryAttribution, orcid):
+    def __init__(self,subid,StartDate, EndDate, AmountFunding, FundingBody, FundingProgramme, Stats, PrimaryAttribution, orcid):
         self.StartDate = StartDate
         self.EndDate = EndDate
         self.AmountFunding = AmountFunding
         self.FundingBody = FundingBody
         self.FundingProgramme = FundingProgramme
-        self.Status = Status
+        self.Stats = Stats
         self.PrimaryAttribution = PrimaryAttribution
         self.orcid = orcid
         self.subid=subid
@@ -539,7 +539,7 @@ class UpdateFundingForm(FlaskForm):
     amount_funding = IntegerField('Amount Funding', )
     funding_body = StringField('Funding Body', validators=[ Length(max=50)] )
     funding_programme = StringField('Funding Programme ', validators=[ Length(max=50)])
-    stats = StringField('Stats', validators=[ Length(max=50)])
+    stats = StringField('Status', validators=[ Length(max=50)])
     primary_attribution = StringField('Primary Attribution', validators=[ Length(max=50)])
     submit_fund = SubmitField('Edit Funding')
     remove_fund = SubmitField('Remove')
@@ -1180,6 +1180,7 @@ class FundingForm(FlaskForm):
     end_date = DateField("End Date : ")
     amount_funding = IntegerField("Amount Funding : ")
     funding_body = TextAreaField("Funding Body : ")
+    funding_programme = TextAreaField("Funding Programme : ")
     stats = StringField("Stats : ")
     primary_attribution = StringField("Primary Attribution : ")
     submit = SubmitField("Submit")
@@ -1195,9 +1196,9 @@ def funding():
     funding = Funding.query.filter_by(subid=id).first()
     if fundingform.submit.data and fundingform.validate():
         new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data,
-            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data,
-            Stats=fundingform.stats.data, PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid,
-            subid=id)
+            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data, 
+            FundingProgramme=fundingform.funding_programme.data,Stats=fundingform.stats.data, 
+            PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid, subid=id)
         db.session.add(new_funding)
         db.session.commit()
         return redirect(url_for('dashboard'))
@@ -1562,6 +1563,7 @@ def external_review():
         print("here")
         filenamesecret = uuid.uuid4().hex
         form.pdfReview.data.save('/home/Johnnyos1304/Team9/uploads/' + filenamesecret)
+        #form.pdfReview.data.save('uploads/' + filenamesecret)
         sub=Submissions.query.filter_by(proposalPDF=file).first()
         new_review = ExternalReview(sub.subid,current_user.orcid,True,filenamesecret)
         sub.status="Approval Pending"
@@ -2156,13 +2158,17 @@ def innovation_info():
             type = form.type.data
             title = form.title.data
             primary_attribution = form.primary_attribution.data
-            conn = mysql.connect
-            cur = conn.cursor()
-            cur.execute(f"""INSERT Into InnovationAndCommercialisation (Year, Type, Title, PrimaryAttribution, ORCID) VALUES ('{year}','{type}','{title}',
-            '{primary_attribution}', {current_user.orcid}) """)
-            conn.commit()
-            cur.close()
-            conn.close()
+
+            inno = InnovationAndCommercialisation(year=year, type=type, title=title,primary_attribution=primary_attribution,ORCID=current_user.orcid)
+            db.session.add(inno)
+            db.session.commit()
+            #conn = mysql.connect
+            #cur = conn.cursor()
+            #cur.execute(f"""INSERT Into InnovationAndCommercialisation (Year, Type, Title, PrimaryAttribution, ORCID) VALUES ('{year}','{type}','{title}',
+            #'{primary_attribution}', {current_user.orcid}) """)
+            #conn.commit()
+            #cur.close()
+            #conn.close()
             return redirect(url_for('innovation_info'))
         return render_template('innovation_info.html', form = form)
     innovation_list = current_user.inno_and_comm
