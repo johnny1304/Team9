@@ -925,6 +925,7 @@ def forgot():
             return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
+@app.route('/link', methods=["Get","Post"])
 def link():
     message="Please check your email and follow the instructions."
     return render_template("link.html",messages=message)
