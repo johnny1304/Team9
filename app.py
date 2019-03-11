@@ -554,7 +554,7 @@ class UpdateOrganisedEvents(FlaskForm):
     location = StringField('Location', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
     submit_org = SubmitField('Edit')
-    submit_org = SubmitField('Remove')
+    remove_org = SubmitField('Remove')
 
 class UpdateImpactsForm(FlaskForm):
     id = StringField('ID:', validators=[Length(max=50)])
@@ -566,7 +566,7 @@ class UpdateImpactsForm(FlaskForm):
     remove_imp = SubmitField('Remove')
 
 class UpdatePresentations(FlaskForm):
-    id = StringField('ID:')
+    id = StringField('ID:', validators=[Length(max=50)])
     year = IntegerField('Year', )
     title = StringField('Title', validators=[Length(max=50)])
     type = StringField('Type', validators=[Length(max=50)])
@@ -579,6 +579,20 @@ class UpdatePresentations(FlaskForm):
     submit_pres = SubmitField('Edit')
     remove_pre= SubmitField('Remove')
 
+class UpdateCollaborations(FlaskForm):
+    id = StringField('ID:', validators=[Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date =DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    institution = StringField('Institution', validators=[Length(max=50)])
+    department = StringField('Department', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    name_collaborator = StringField('Name Colloaborator', validators=[Length(max=50)])
+    primary_goal = StringField('Primary Goal',validators=[Length(max=50)] )
+    frequency_of_interaction = StringField('Frequency Of Interaction', validators=[Length(max=50)])
+    primary_attribution =  StringField('Primary Attribution:' , validators=[Length(max=50)])
+    academic = BooleanField('Academic')
+    submit_collab = SubmitField('Edit')
+    remove_collab = SubmitField('Edit')
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
@@ -590,6 +604,17 @@ class UpdateSocietiesForm(FlaskForm):
     status = StringField('Status:',validators=[ Length(max=20)])
     submit_soc = SubmitField('Edit Societies')
     remove_soc = SubmitField('Remove')
+
+class UpdateInnovation(FlaskForm):
+    id = StringField('ID',  validators=[ Length(max=50)])
+    year = IntegerField('Year:' )
+    type = StringField('Type', validators=[Length(max=50)])
+    title = StringField('Title', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit_inn = SubmitField('Edit')
+    remove_inn = SubmitField('Remove')
+
+
 
 class UpdateAwardsForm(FlaskForm):
     id = StringField('ID:', validators=[ Length(max=50)])
@@ -1612,6 +1637,8 @@ def edit_info():
     update_imp = UpdateImpactsForm(request.form)
     update_edup = UpdateEducationAndPublicEngagement(request.form)
     update_pres = UpdatePresentations(request.form)
+    update_collab = UpdateCollaborations(request.form)
+    update_inn = UpdateInnovation(request.form)
     user = current_user
     print(user.societies)
 
@@ -1942,11 +1969,66 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-
-
+        elif update_collab.validate_on_submit and "submit_collab" in request.form:
+            id1 = update_collab.id.data
+            start_date = update_collab.start_date.data
+            end_date = update_collab.end_date.data
+            department = update_collab.end_date.data
+            location =  update_collab.end_date.data
+            name_collaborator = update_collab.name_collaborator.data
+            primary_goal = update_collab.primary_goal.data
+            frequency_of_interaction = update_collab.frequency_of_interaction.data
+            primary_attribution = update_collab.primary_attribution.data
+            academic = update_collab.academic.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Collaboratiions Set StartDate = '{start_date}', EndDate = '{end_date}', Department = '{department}', Location='{location}',
+            NameCollaborator = '{name_collaborator}', PrimaryGoal = '{primary_goal}', FrquencyOfInteraction = '{frequency_of_interaction}',
+             PrimaryAttribution='{primary_attribution}', Academic = {academic} WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pres.validate_on_submit and "remove_collab" in request.form:
+            print("here")
+            id1 = update_collab.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Collaborations WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_inn.validate_on_submit and "submit_inn" in request.form:
+            id1 = update_inn.id.form
+            year = update_inn.year.form
+            type = update_inn.type.form
+            title = update_inn.title.form
+            primary_attribution = update_inn.primary_attribution._form
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Innovations Set Year = {year}, Type = '{type}', Title = '{title}', PrimaryAttribution = '{primary_attribution}'
+             WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_inn.validate_on_submit and "remove_inn" in request.form:
+            print("here")
+            id1 = update_inn.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Innovations WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+            
+         
+        
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
     form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp ,form10 = update_edup,
-     form11 = update_pres, user=user)
+     form11 = update_pres,  form12 = update_collab , form13 = update_inn ,user=user)
 
 
 

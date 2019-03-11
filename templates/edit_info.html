@@ -330,10 +330,10 @@
                        
                 
                         <div class="form-group col-lg-6 " id="edit soc">
-                            {{ form7.submit_awrd}}
+                            {{ form7.submit_org}}
                         </div>
                         <div class="form-group col-lg-6 " id="edit soc">
-                            {{ form7.remove_awrd}}
+                            {{ form7.remove_org}}
                         </div>
                     
             </form>
@@ -434,10 +434,10 @@
                
         
                 <div class="form-group col-lg-6 " id="edit soc">
-                    {{ form9.submit_pub}}
+                    {{ form9.submit_imp}}
                 </div>
                 <div class="form-group col-lg-6 " id="edit soc">
-                    {{ form9.remove_pub}}
+                    {{ form9.remove_imp}}
                 </div>
             
     </form>
@@ -505,7 +505,7 @@
 <div id="heading11" style="padding:1em;">
                         
         <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse11" aria-expanded="true" aria-controls="collapse11">
-    Edit Education and Public Engagement Info
+    Edit Presentations
          </button>
 
          </div>
@@ -533,7 +533,7 @@
                     {{render_field(form11.invited_seminar, value= j.invited_seminar,class="col-lg-12")}}
                 </div>
                
-                    </div>
+                    
                     <div class="form-group col-lg-12">
                         {{render_field(form11.keynote, value= j.keynote,class="col-lg-12")}}
                     </div>
@@ -542,7 +542,7 @@
                             {{render_field(form11.organising_body, value= j.organising_body,class="col-lg-12")}}
                         </div>
                        
-                            </div>
+                            
                             <div class="form-group col-lg-12">
                                 {{render_field(form11.location, value= j.location,class="col-lg-12")}}
                             </div>
@@ -558,6 +558,124 @@
     </form>
 {% endfor %}
 </div>
+
+<div id="heading12" style="padding:1em;">
+                        
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse12" aria-expanded="true" aria-controls="collapse12">
+    Edit Collaborations
+         </button>
+
+         </div>
+
+<div id="collapse12" class="collapse  aria-labelledby="heading12" data-parent="#accordionExample">
+{% for j in user.collaboration %}
+    <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+        
+            {{form12.hidden_tag()}}
+                    <div class="form-group col-lg-12 " style='display:none;'>
+                        {{render_field(form12.id, value= j.id,class="col-lg-12")}}
+                 </div>
+                 
+                <div class="form-group col-lg-12 ">
+                    {{render_field(form12.start_date, value= j.start_date,class="col-lg-12")}}
+                </div>
+                <div class="form-group col-lg-12">
+                    {{render_field(form12.end_date,value=j.end_date, class="col-lg-12")}}
+                </div>
+    
+                <div class="form-group col-lg-12">
+                    {{render_field(form12.department ,value= j.department ,class="col-lg-12")}}
+                </div>
+                <div class="form-group col-lg-12">
+                    {{render_field(form12.location, value= j.location,class="col-lg-12")}}
+                </div>
+               
+                    
+                    <div class="form-group col-lg-12">
+                        {{render_field(form12.name_collaborator, value= j.name_collaborator,class="col-lg-12")}}
+                    </div>
+                   
+                    <div class="form-group col-lg-12">
+                            {{render_field(form12.primary_goal, value= j.primary_goal,class="col-lg-12")}}
+                        </div>
+                       
+                            
+                            <div class="form-group col-lg-12">
+                                {{render_field(form12.frequency_of_interaction, value= j.frequency_of_interaction,class="col-lg-12")}}
+                            </div>
+                            <div class="form-group col-lg-12">
+                                    {{render_field(form12.primary_attribution, value= j.primary_attribution,class="col-lg-12")}}
+                                </div>
+                               
+                                    
+                                    <div class="form-group col-lg-12">
+                                        {{render_field(form12.academic, value= j.academic,class="col-lg-12")}}
+                                    </div>
+
+
+
+        
+                <div class="form-group col-lg-6 " id="edit soc">
+                    {{ form12.submit_collab}}
+                </div>
+                <div class="form-group col-lg-6 " id="edit soc">
+                    {{ form12.remove_collab}}
+                </div>
+            
+    </form>
+{% endfor %}
+</div>
+
+
+<div id="heading13" style="padding:1em;">
+                        
+        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse13" aria-expanded="true" aria-controls="collapse13">
+    Edit Innovations
+         </button>
+
+         </div>
+
+<div id="collapse13" class="collapse  aria-labelledby="heading13" data-parent="#accordionExample">
+{% for j in user.innovations %}
+    <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+        
+            {{form13.hidden_tag()}}
+                    <div class="form-group col-lg-12 " style='display:none;'>
+                        {{render_field(form13.id, value= j.id,class="col-lg-12")}}
+                 </div>
+                 
+                <div class="form-group col-lg-12 ">
+                    {{render_field(form13.year, value= j.year,class="col-lg-12")}}
+                </div>
+                <div class="form-group col-lg-12">
+                    {{render_field(form13.type,value=j.type, class="col-lg-12")}}
+                </div>
+    
+                
+                            <div class="form-group col-lg-12">
+                                    {{render_field(form13.title, value= j.title,class="col-lg-12")}}
+                                </div>
+                               
+                                    
+                                    <div class="form-group col-lg-12">
+                                        {{render_field(form13.primary_attribution, value= j.primary_attribution,class="col-lg-12")}}
+                                    </div>
+
+
+
+        
+                <div class="form-group col-lg-6 " id="edit soc">
+                    {{ form12.submit_inn}}
+                </div>
+                <div class="form-group col-lg-6 " id="edit soc">
+                    {{ form12.remove_inn}}
+                </div>
+            
+    </form>
+{% endfor %}
+</div>
+
+
 
 
      
