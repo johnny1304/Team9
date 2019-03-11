@@ -397,7 +397,7 @@ class ForgotForm(FlaskForm):
 
 
 class ResetForm(FlaskForm):
-    new = PasswordField("New Password", validators=[InputRequired(), Length(min=8,max=80),, EqualTo('repeat', message='Passwords must match')])
+    new = PasswordField("New Password", validators=[InputRequired(), Length(min=8,max=80), EqualTo('repeat', message='Passwords must match')])
     repeat = PasswordField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
     submit = SubmitField('Reset Password')
 
@@ -577,7 +577,7 @@ class UpdatePresentations(FlaskForm):
     location = StringField('Location', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
     submit_pres = SubmitField('Edit')
-    remove_pre= SubmitField('Remove')
+    remove_pres = SubmitField('Remove')
 
 class UpdateCollaborations(FlaskForm):
     id = StringField('ID:', validators=[Length(max=50)])
