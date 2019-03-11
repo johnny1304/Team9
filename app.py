@@ -916,7 +916,7 @@ def forgot():
         email = form.email.data
         user = User.query.filter_by(email=email).first()
         if user:
-            send = "Follow this url to reset your password: https://johnnyos1304.pythonanywhere.com/reset/l=%s"%(email)
+            send = "Follow this url to reset your password: https://johnnyos1304.pythonanywhere.com/reset?l=%s"%(email)
             subject = "Reset Password"
             mail(receiver=form.email.data,content=send,subject=subject)
             return redirect(url_for('link'))
@@ -925,6 +925,7 @@ def forgot():
             return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
+@app.route('/link',methods=["Get","Post"])
 def link():
     message="Please check your email and follow the instructions."
     return render_template("link.html",messages=message)
@@ -1193,9 +1194,9 @@ def funding():
     fundingform = FundingForm()
     funding = Funding.query.filter_by(subid=id).first()
     if fundingform.submit.data and fundingform.validate():
-        new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data, 
-            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data, 
-            Stats=fundingform.stats.data, PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid, 
+        new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data,
+            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data,
+            Stats=fundingform.stats.data, PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid,
             subid=id)
         db.session.add(new_funding)
         db.session.commit()
@@ -2023,9 +2024,9 @@ def edit_info():
             cur.close()
             conn.close()
             return redirect(url_for('profile'))
-            
-         
-        
+
+
+
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
     form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp ,form10 = update_edup,
      form11 = update_pres,  form12 = update_collab , form13 = update_inn ,user=user)
