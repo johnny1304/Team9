@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% from "_formhelpers.html" import render_field %}
+{% block content %}
+    <div class="col-lg-12" style="margin-top:5em">
+
+            <h1>{{ submission.title }}</h1>
+
+            <div class="col-lg-12">
+                <p><b>Location: </b>{{ submission.location }}</p>
+            </div>
+    </div>
+    {% if current_user.type == "Admin" %}
+    <div class="form-row justify-content-center ">
+    <form action = "" enctype="multipart/form-data" method = "post" class="justify-content-center col-lg-6" style="background-color:white ; border:5px ; padding: 10px; margin-top:10em; border-radius: 10px;" >
+    
+        {{ fundingform.hidden_tag() }}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<ul>
+                    {% for message in messages %}
+ 	<li>{{ message[1] }}</li>
+{% endfor %}</ul>
+{% endif %}
+{% endwith %}
+
+
+
+
+      <div class="form-group col-lg-12">
+
+          {{ render_field(fundingform.start_date,class="col-lg-6") }}
+
+      </div>
+
+      <div class="form-group col-lg-12">
+
+          {{ render_field(fundingform.end_date,class="col-lg-6") }}
+
+      </div>
+
+      <div class="form-group col-lg-12">
+
+          {{ render_field(fundingform.amount_funding,class="col-lg-6") }}
+
+      </div>
+
+      <div class="form-group col-lg-12">
+
+          {{ render_field(fundingform.funding_body,class="col-lg-6") }}
+
+      </div>
+
+      <div class="form-group col-lg-12">
+
+          {{ render_field(fundingform.stats,class="col-lg-6") }}
+
+      </div>
+
+      <div class="form-group col-lg-12">
+
+          {{ render_field(fundingform.primary_attribution,class="col-lg-6") }}
+
+      </div>
+
+
+      </div >
+
+          <div class="form-group col-lg-4">
+              {{ fundingform.submit }}
+          </div>
+
+     
+  </form>
+</div>
+{% else %}
+   {% if funding %}
+            <div class="col-5  ">
+                <div class="card " style="width: 18rem; margin-top:5px;">
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><b>Title : </b> {{submission.title}}</li>
+                            <li class="list-group-item"><b>Start Date :</b> {{funding.StartDate}}</li>
+                            <li class="list-group-item" ><b>End Date :</b> {{funding.EndDate}}</li>
+                            <li class="list-group-item"><b>Primary Attribution :</b> {{funding.PrimaryAttribution}}</li>
+                            <li class="list-group-item"> <b>Amount Funding :</b> {{funding.AmountFunding}}</li>
+                            <li class="list-group-item"> <b>Funding Body :</b> {{funding.FundingBody}}</li>
+                            <li class="list-group-item"> <b>Funding Programme :</b> {{funding.FundingProgramme}}</li>
+                            <li class="list-group-item"> <b>Stats :</b> {{funding.Stats}}</li>
+                        
+                        </ul>
+
+                </div>
+            </div>
+            
+        {% endif %}
+{% endif %}
+
+{% endblock %}
