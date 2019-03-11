@@ -577,7 +577,7 @@ class UpdatePresentations(FlaskForm):
     location = StringField('Location', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
     submit_pres = SubmitField('Edit')
-    remove_pre= SubmitField('Remove')
+    remove_pres = SubmitField('Remove')
 
 class UpdateCollaborations(FlaskForm):
     id = StringField('ID:', validators=[Length(max=50)])
@@ -925,7 +925,11 @@ def forgot():
             return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
+<<<<<<< HEAD
 @app.route('/link',methods=["Get","Post"])
+=======
+@app.route('/link', methods=["Get","Post"])
+>>>>>>> 0a7edd15c0e84323e8f881358384e7ca8841380a
 def link():
     message="Please check your email and follow the instructions."
     return render_template("link.html",messages=message)
