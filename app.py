@@ -397,8 +397,8 @@ class ForgotForm(FlaskForm):
 
 
 class ResetForm(FlaskForm):
-    new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
-    repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
+    new = PasswordField("New Password", validators=[InputRequired(), Length(min=8,max=80), EqualTo('repeat', message='Passwords must match')])
+    repeat = PasswordField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
     submit = SubmitField('Reset Password')
 
 class UpdateInfoForm(FlaskForm):
@@ -554,7 +554,7 @@ class UpdateOrganisedEvents(FlaskForm):
     location = StringField('Location', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
     submit_org = SubmitField('Edit')
-    submit_org = SubmitField('Remove')
+    remove_org = SubmitField('Remove')
 
 class UpdateImpactsForm(FlaskForm):
     id = StringField('ID:', validators=[Length(max=50)])
@@ -566,7 +566,7 @@ class UpdateImpactsForm(FlaskForm):
     remove_imp = SubmitField('Remove')
 
 class UpdatePresentations(FlaskForm):
-    id = StringField('ID:')
+    id = StringField('ID:', validators=[Length(max=50)])
     year = IntegerField('Year', )
     title = StringField('Title', validators=[Length(max=50)])
     type = StringField('Type', validators=[Length(max=50)])
@@ -577,8 +577,22 @@ class UpdatePresentations(FlaskForm):
     location = StringField('Location', validators=[Length(max=50)])
     primary_attribution = StringField('Primary Attribution:' , validators=[Length(max=50)])
     submit_pres = SubmitField('Edit')
-    remove_pre= SubmitField('Remove')
+    remove_pres = SubmitField('Remove')
 
+class UpdateCollaborations(FlaskForm):
+    id = StringField('ID:', validators=[Length(max=50)])
+    start_date = DateField('Start Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    end_date =DateField('End Date', render_kw={"placeholder": "YYYY-MM-DD"})
+    institution = StringField('Institution', validators=[Length(max=50)])
+    department = StringField('Department', validators=[Length(max=50)])
+    location = StringField('Location', validators=[Length(max=50)])
+    name_collaborator = StringField('Name Colloaborator', validators=[Length(max=50)])
+    primary_goal = StringField('Primary Goal',validators=[Length(max=50)] )
+    frequency_of_interaction = StringField('Frequency Of Interaction', validators=[Length(max=50)])
+    primary_attribution =  StringField('Primary Attribution:' , validators=[Length(max=50)])
+    academic = BooleanField('Academic')
+    submit_collab = SubmitField('Edit')
+    remove_collab = SubmitField('Edit')
 
 class UpdateSocietiesForm(FlaskForm):
     idd = "socc"
@@ -590,6 +604,17 @@ class UpdateSocietiesForm(FlaskForm):
     status = StringField('Status:',validators=[ Length(max=20)])
     submit_soc = SubmitField('Edit Societies')
     remove_soc = SubmitField('Remove')
+
+class UpdateInnovation(FlaskForm):
+    id = StringField('ID',  validators=[ Length(max=50)])
+    year = IntegerField('Year:' )
+    type = StringField('Type', validators=[Length(max=50)])
+    title = StringField('Title', validators=[Length(max=50)])
+    primary_attribution = StringField('Primary Attribution', validators=[Length(max=50)])
+    submit_inn = SubmitField('Edit')
+    remove_inn = SubmitField('Remove')
+
+
 
 class UpdateAwardsForm(FlaskForm):
     id = StringField('ID:', validators=[ Length(max=50)])
@@ -831,8 +856,9 @@ def mail(receiver, content="", email="", password="", subject=""):
         email = "team9sendermail@gmail.com"
     if not password:
         password = "default password"
-
         password = "team9admin"
+    if not subject:
+        subject="Account confirmation email"
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -890,16 +916,20 @@ def forgot():
         email = form.email.data
         user = User.query.filter_by(email=email).first()
         if user:
-            send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+            send = "Follow this url to reset your password: https://johnnyos1304.pythonanywhere.com/reset?l=%s"%(email)
             subject = "Reset Password"
             mail(receiver=form.email.data,content=send,subject=subject)
-            return render_template('forgot.html', form=form)
+            return redirect(url_for('link'))
         else:
             message="Please enter valid form data"
             return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
-#does not work
+@app.route('/link', methods=["Get","Post"])
+def link():
+    message="Please check your email and follow the instructions."
+    return render_template("link.html",messages=message)
+
 @app.route("/reset", methods=["Get","Post"])
 def reset():
     form = ResetForm()
@@ -1164,9 +1194,9 @@ def funding():
     fundingform = FundingForm()
     funding = Funding.query.filter_by(subid=id).first()
     if fundingform.submit.data and fundingform.validate():
-        new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data, 
-            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data, 
-            Stats=fundingform.stats.data, PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid, 
+        new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data,
+            AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data,
+            Stats=fundingform.stats.data, PrimaryAttribution=fundingform.primary_attribution.data, orcid=orcid,
             subid=id)
         db.session.add(new_funding)
         db.session.commit()
@@ -1609,6 +1639,8 @@ def edit_info():
     update_imp = UpdateImpactsForm(request.form)
     update_edup = UpdateEducationAndPublicEngagement(request.form)
     update_pres = UpdatePresentations(request.form)
+    update_collab = UpdateCollaborations(request.form)
+    update_inn = UpdateInnovation(request.form)
     user = current_user
     print(user.societies)
 
@@ -2007,11 +2039,66 @@ def edit_info():
             #cur.close()
             #conn.close()
             return redirect(url_for('profile'))
+        elif update_collab.validate_on_submit and "submit_collab" in request.form:
+            id1 = update_collab.id.data
+            start_date = update_collab.start_date.data
+            end_date = update_collab.end_date.data
+            department = update_collab.end_date.data
+            location =  update_collab.end_date.data
+            name_collaborator = update_collab.name_collaborator.data
+            primary_goal = update_collab.primary_goal.data
+            frequency_of_interaction = update_collab.frequency_of_interaction.data
+            primary_attribution = update_collab.primary_attribution.data
+            academic = update_collab.academic.data
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Collaboratiions Set StartDate = '{start_date}', EndDate = '{end_date}', Department = '{department}', Location='{location}',
+            NameCollaborator = '{name_collaborator}', PrimaryGoal = '{primary_goal}', FrquencyOfInteraction = '{frequency_of_interaction}',
+             PrimaryAttribution='{primary_attribution}', Academic = {academic} WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_pres.validate_on_submit and "remove_collab" in request.form:
+            print("here")
+            id1 = update_collab.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Collaborations WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_inn.validate_on_submit and "submit_inn" in request.form:
+            id1 = update_inn.id.form
+            year = update_inn.year.form
+            type = update_inn.type.form
+            title = update_inn.title.form
+            primary_attribution = update_inn.primary_attribution._form
+            conn = mysql.connect()
+            cur = conn.cursor()
+            cur.execute(f"""UPDATE Innovations Set Year = {year}, Type = '{type}', Title = '{title}', PrimaryAttribution = '{primary_attribution}'
+             WHERE ID = {id1} """)
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+        elif update_inn.validate_on_submit and "remove_inn" in request.form:
+            print("here")
+            id1 = update_inn.id.data
+            conn = mysql.connect
+            cur= conn.cursor()
+            # execute a query
+            cur.execute(f"""DELETE FROM Innovations WHERE ID ={id1};  """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            return redirect(url_for('profile'))
+
 
 
     return render_template('edit_info.html', form1=update_general, form2=update_education , form3=update_societies, form4 = update_employment,
     form5 = update_awards,form6 = update_funding ,form7= update_org, form8=update_pub, form9=update_imp ,form10 = update_edup,
-     form11 = update_pres, user=user)
+     form11 = update_pres,  form12 = update_collab , form13 = update_inn ,user=user)
 
 
 
@@ -2192,7 +2279,7 @@ def publications_info():
             name = form.name.data
             status = form.status.data
             doi = form.doi.data
-            primary_attribution = form.primary_attribution
+            primary_attribution = form.primary_attribution.data
             conn = mysql.connect
             cur= conn.cursor()
                         # execute a query
@@ -2681,14 +2768,12 @@ def grants():
 
 
 def getProfileInfo():
-    #for the demo the profileInfo will start at -9
-    profileInfo = -9
+    profileInfo = 0
     education = current_user.education
     employment = current_user.education
     societies = current_user.societies
     awards = current_user.awards
     funding = current_user.funding
-    team_members = current_user.team_members
     impacts = current_user.impacts
     inno_and_comm = current_user.inno_and_comm
     publications = current_user.publications
@@ -2707,8 +2792,6 @@ def getProfileInfo():
     if len(funding) < 1:
         profileInfo += 1
     if len(impacts) < 1:
-        profileInfo += 1
-    if len(team_members) < 1:
         profileInfo += 1
     if len(inno_and_comm) < 1:
         profileInfo += 1
