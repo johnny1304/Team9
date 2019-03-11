@@ -285,6 +285,13 @@ class TeamMembers(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
     #subid = db.Column(db.Integer, nullable="False")
 
+class Team(db.Model):
+    __tablename__ = "Team"
+    team_id = db.Column("TeamID", db.Integer, primary_key=True)
+    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
+    #change to sub id
+    #proposalId = db.Column(db.Integer, nullable="False")
+    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
 
 class Impacts(db.Model):
     __tablename__ = "Impacts"
@@ -405,7 +412,7 @@ class ResetForm(FlaskForm):
 class UpdateInfoForm(FlaskForm):
 
 
-	#this is the class for the register form in the sign_up.html
+    #this is the class for the register form in the sign_up.html
     first_name = StringField('First Name:'  , validators=[InputRequired(), Length(max=20)])
     last_name = StringField('Last Name:', validators=[InputRequired(), Length(max=20)])
     email = StringField('Email:', validators=[InputRequired(), Email(message="Invalid Email"), Length(max=50)])
@@ -495,10 +502,10 @@ class AddPublications(FlaskForm):
 
 
 class AddEmploymentForm(FlaskForm):
-	company = StringField('Company:', validators=[ Length(max=50)])
-	location = StringField('Location:', validators=[ Length(max=50)])
-	years = IntegerField('Years:')
-	submit = SubmitField('Add')
+    company = StringField('Company:', validators=[ Length(max=50)])
+    location = StringField('Location:', validators=[ Length(max=50)])
+    years = IntegerField('Years:')
+    submit = SubmitField('Add')
 
 class UpdatePublications(FlaskForm):
     id = StringField("ID:" ,validators=[ Length(max=50)])
@@ -663,7 +670,6 @@ class AddAwardsForm(FlaskForm):
 	details = StringField('Detail:', validators=[Length(max=50)])
 	team_member = StringField('Team Member ', validators=[Length(max=50)])
 	submit = SubmitField('Add Awards')
-
 class AddInnovation(FlaskForm):
     year = IntegerField('Year:' )
     type = StringField('Type', validators=[Length(max=50)])
@@ -823,7 +829,7 @@ def mail(receiver, content="", email="", password="", subject=""):
     #function provides default content message, sender's email, and password but accepts
     #them as parameters if given
     #for now it sends an email to all researchers(i hope) not sure how im supposed to narrow it down yet
-	#cur = mysql.get_db().cursor()
+    #cur = mysql.get_db().cursor()
     #cur.execute("SELECT email FROM researchers")
     #rv = cur.fetchall()
     print(content)
@@ -835,7 +841,6 @@ def mail(receiver, content="", email="", password="", subject=""):
         password = "default password"
 
         password = "team9admin"
-
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -891,10 +896,15 @@ def forgot():
     form = ForgotForm()
     if form.submit.data:
         email = form.email.data
-        send = "Follow this url to reset your password: http://127.0.0.1:5000/reset?l=%s"%(email)
-        subject = "Reset Password"
-        mail(receiver=form.email.data,content=send,subject=subject)
-        return render_template('forgot.html', form=form)
+        user = User.query.filter_by(email=email).first()
+        if user:
+            send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+            subject = "Reset Password"
+            mail(receiver=form.email.data,content=send,subject=subject)
+            return render_template('forgot.html', form=form)
+        else:
+            message="Please enter valid form data"
+            return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
 #does not work
@@ -944,7 +954,7 @@ def signup():
             db.session.add(new_user)
             # commit the changes to the database
             db.session.commit()
-			# send confirmation email
+            # send confirmation email
             mail(form.email.data)
             return redirect(url_for('signin'))  # a page that acknowledges the user has been created
 
@@ -1236,10 +1246,6 @@ def admin_send_review():
         new_external_review=ExternalPendingReviews(post,form.ORCID.data,False)
         db.session.add(new_external_review)
         db.session.commit()
-
-
-
-
         flash("sent for external review")
     return render_template("admin_send_review.html",sub=sub,prop=prop,form=form)
 
