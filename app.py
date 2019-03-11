@@ -285,14 +285,6 @@ class TeamMembers(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
     #subid = db.Column(db.Integer, nullable="False")
 
-class Team(db.Model):
-    __tablename__ = "Team"
-    team_id = db.Column("TeamID", db.Integer, primary_key=True)
-    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    #change to sub id
-    #proposalId = db.Column(db.Integer, nullable="False")
-    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-
 class Impacts(db.Model):
     __tablename__ = "Impacts"
     id = db.Column(db.Integer, primary_key=True)
@@ -405,8 +397,8 @@ class ForgotForm(FlaskForm):
 
 
 class ResetForm(FlaskForm):
-    new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
-    repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
+    new = PasswordField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
+    repeat = PasswordField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
     submit = SubmitField('Reset Password')
 
 class UpdateInfoForm(FlaskForm):
@@ -864,8 +856,9 @@ def mail(receiver, content="", email="", password="", subject=""):
         email = "team9sendermail@gmail.com"
     if not password:
         password = "default password"
-
         password = "team9admin"
+    if not subject:
+        subject="Account confirmation email"
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -923,16 +916,20 @@ def forgot():
         email = form.email.data
         user = User.query.filter_by(email=email).first()
         if user:
-            send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+            send = "Follow this url to reset your password: https://johnnyos1304.pythonanywhere.com/reset/l=%s"%(email)
             subject = "Reset Password"
             mail(receiver=form.email.data,content=send,subject=subject)
-            return render_template('forgot.html', form=form)
+            return redirect(url_for('link'))
         else:
             message="Please enter valid form data"
             return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
-#does not work
+@app.route('/link', methods=["Get","Post"])
+def link():
+    message="Please check your email and follow the instructions."
+    return render_template("link.html",messages=message)
+
 @app.route("/reset", methods=["Get","Post"])
 def reset():
     form = ResetForm()
@@ -2702,14 +2699,12 @@ def grants():
 
 
 def getProfileInfo():
-    #for the demo the profileInfo will start at -9
-    profileInfo = -9
+    profileInfo = 0
     education = current_user.education
     employment = current_user.education
     societies = current_user.societies
     awards = current_user.awards
     funding = current_user.funding
-    team_members = current_user.team_members
     impacts = current_user.impacts
     inno_and_comm = current_user.inno_and_comm
     publications = current_user.publications
@@ -2728,8 +2723,6 @@ def getProfileInfo():
     if len(funding) < 1:
         profileInfo += 1
     if len(impacts) < 1:
-        profileInfo += 1
-    if len(team_members) < 1:
         profileInfo += 1
     if len(inno_and_comm) < 1:
         profileInfo += 1
