@@ -285,14 +285,6 @@ class TeamMembers(db.Model):
     team_id = db.Column(db.Integer, db.ForeignKey('Team.TeamID'))
     #subid = db.Column(db.Integer, nullable="False")
 
-class Team(db.Model):
-    __tablename__ = "Team"
-    team_id = db.Column("TeamID", db.Integer, primary_key=True)
-    team_leader = db.Column("TeamLeader", db.Integer, db.ForeignKey('Researcher.orcid'))
-    #change to sub id
-    #proposalId = db.Column(db.Integer, nullable="False")
-    subid = db.Column(db.Integer, db.ForeignKey('Submission.subid'), nullable="False")
-
 class Impacts(db.Model):
     __tablename__ = "Impacts"
     id = db.Column(db.Integer, primary_key=True)
@@ -405,8 +397,8 @@ class ForgotForm(FlaskForm):
 
 
 class ResetForm(FlaskForm):
-    new = StringField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
-    repeat = StringField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
+    new = PasswordField("New Password", validators=[InputRequired(), Length(min=8,max=80)])
+    repeat = PasswordField("Re-type Password", validators=[InputRequired(), Length(min=8,max=80)])
     submit = SubmitField('Reset Password')
 
 class UpdateInfoForm(FlaskForm):
@@ -898,16 +890,19 @@ def forgot():
         email = form.email.data
         user = User.query.filter_by(email=email).first()
         if user:
-            send = "Follow this url to reset your password: http://127.0.0.1:5000/reset/l=%s"%(email)
+            send = "Follow this url to reset your password: https://johnnyos1304.pythonanywhere.com/reset/l=%s"%(email)
             subject = "Reset Password"
             mail(receiver=form.email.data,content=send,subject=subject)
-            return render_template('forgot.html', form=form)
+            return redirect(url_for('link'))
         else:
             message="Please enter valid form data"
             return render_template('forgot.html', form=form)
     return render_template('forgot.html', form=form)
 
-#does not work
+def link():
+    message="Please check your email and follow the instructions."
+    return render_template("link.html",messages=message)
+
 @app.route("/reset", methods=["Get","Post"])
 def reset():
     form = ResetForm()
