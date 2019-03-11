@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-#app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
+app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////mnt/c/Users/calvi/OneDrive/Documents/CS3305/Team9/test.db'
 #app.config[
 #    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
@@ -36,7 +36,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-setup for proposal call form
+#setup for proposal call form
 app.config["MYSQL_HOST"] = "Johnnyos1304.mysql.pythonanywhere-services.com"
 app.config["MYSQL_USER"] = "Johnnyos1304"
 app.config["MYSQL_PASSWORD"] = "netsoc101"
