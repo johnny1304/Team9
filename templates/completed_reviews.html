@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block content %}
+    <div class="row justify-content-center col-lg-12">
+
+         <div class="col-lg-12" style="margin-top:5em">
+
+            <h1>{{ prop.title }}</h1>
+
+            <div class="col-lg-12">
+                <p><b>Deadline: </b>{{ prop.deadline }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Text of Call: </b>{{ prop.text }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Target Audience: </b>{{ prop.audience }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Eligibility Criteria: </b>{{ prop.eligibility }}</p>
+            </div>
+
+            <div class=" col-lg-12">
+                <p><b>Duration: </b>{{ prop.duration }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Reporting Guidelines: </b>{{ prop.guidelines }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <p><b>Time Frame: </b>{{ prop.timeframe }}</p>
+            </div>
+    </div>
+
+        <div class="form-row justify-content-center ">
+
+            <h1>Review</h1>
+
+            <div class="col-lg-12">
+                <p><b>Reviewer: </b>{{ rev.reviewer }}</p>
+            </div>
+
+            <div class="col-lg-12">
+                <h3>Paper for Review</h3>
+                <a href="download?file={{ rev.file }}">Download</a>
+            </div>
+
+    </div>
+
+
+    </div>
+        {{form.hidden_tag()}}
+        <form action="" method="post">
+            {{ form.Approve }}
+            {{ form.Decline }}
+        </form>
+    </div>
+
+{% endblock content %}

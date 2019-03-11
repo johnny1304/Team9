@@ -1,0 +1,80 @@
+{% extends "profile.html" %}
+{% block form %}
+
+     
+          {% from "_formhelpers.html" import render_field %}
+     
+<div class="container">
+     
+     
+         <div class="row justify-content-center ">
+         {% if list %}
+             {% for i in list %}
+             <div class="col-5  ">
+                 <div class="card " style="width: 18rem; margin-top:5px;">
+                         <ul class="list-group list-group-flush">
+                             <li class="list-group-item">Year: {{ i.year }}</li>
+                             <li class="list-group-item" >Type: {{ i.type}}</li>
+                             <li class="list-group-item">Title: {{ i.title}}</li>
+                             <li class="list-group-item">Primary_: {{i.primary_attribution}}</li>
+                   
+                         </ul>
+                         
+                 </div>
+             </div>
+                 
+             {% endfor%}
+             
+         {% endif %}
+         </div>
+        <div class="row  justify-content-center">
+        <div class=" col-6 justify-content-center accordion" id="accordionExample">
+                    <div id="headingOne" >
+                        
+                        <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            Add Innovations & Commercialisations
+                        </button>
+                        
+                    </div>
+                
+                    <div id="collapseOne" class="collapse  aria-labelledby="headingOne" data-parent="#accordionExample">
+                            <form class="Justify-content-center col-lg-12 " method="POST" style="background-color:white ; border:5px ; padding-top:5px;border-radius: 10px;">
+        
+                                    {{form.hidden_tag()}}
+                            
+                                        <div class="form-group col-lg-12 ">
+                                            {{render_field(form.year,class="col-lg-12")}}
+                                        </div>
+                            
+                                        
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form.type, class="col-lg-12")}}
+                                        </div>
+                            
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form.title,class="col-lg-12")}}
+                                        </div>
+                                       
+                                        <div class="form-group col-lg-12">
+                                            {{render_field(form.primary_attribution,class="col-lg-12")}}
+                                        </div>
+                                        
+                                        
+                                        <div class="form-group col-lg-12 " id="edit">
+                                                {{ form.submit }}
+                                        </div>
+                                    
+                            </form>
+                    </div>
+        
+                    
+            </div>
+        </div>
+    </div>
+  
+     
+     
+     
+     {% endblock form %}
+
