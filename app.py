@@ -20,7 +20,7 @@ from email.mime.text import MIMEText
 
 
 app = Flask(__name__)
-#app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
+app.config['SECRET_KEY'] = 'Authorised Personnel Only.'  # set the database directory
 #app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////mnt/c/Users/calvi/OneDrive/Documents/CS3305/Team9/test.db'
 #app.config[
 #    'SQLALCHEMY_DATABASE_URI'] = 'mysql://seintu:0mYkNrVI0avq@mysql.netsoc.co/seintu_project2'  # set the database directory
@@ -1158,7 +1158,9 @@ def funding():
     id = request.args.get("id")
     submission = Submissions.query.filter_by(subid=id).first()
     orcid = submission.user
+    print(submission)
     fundingform = FundingForm()
+    funding = Funding.query.filter_by(subid=id).first()
     if fundingform.submit.data and fundingform.validate():
         new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data, 
             AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data, 
@@ -1167,7 +1169,7 @@ def funding():
         db.session.add(new_funding)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template("funding.html", id=id, fundingform=fundingform)
+    return render_template("funding.html", id=id, fundingform=fundingform, submission=submission, funding=funding)
 
 @app.route('/admin_external_review')
 @login_required
