@@ -8,11 +8,14 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <link rel="stylesheet" href="{{url_for('static', filename='styles.css')}}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
     
     <title>Home</title>
   </head>
   <body style="background-color:#f2f2f2 ; width:100% !important;">
- 
+      <script text="text/javascript" src="{{url_for('static', filename='particles.js')}}"></script>
+      <script text="text/javascript" src="{{url_for('static', filename='app.js')}}"></script>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
@@ -23,9 +26,9 @@
    
    
     <!-- NAVBAR -->
-    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color:#6c92dd ;">
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light" style="background-color:#ffc107; color:#161616;">
         
-        <a class="navbar-brand" href="#"><img src="{{url_for('static', filename='sfi-logo.svg')}}"/></a>
+        <a class="navbar-brand" href="/home"><img src="{{url_for('static', filename='sfi-logo.svg')}}"/></a>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <img src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50"/>
@@ -33,12 +36,13 @@
            
 
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
+            <ul class="navbar-nav mr-auto" >
                 <li class="nav-item active">
                     <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
                 </li>
+                
                 {% if not current_user.is_authenticated %}
-                <li class="nav-item  d-block d-xs-block d-lg-none">
+                <li class="nav-item ">
                     <a class="nav-link " href="/sign_in" >Sign In</a>
                 </li>
                 {% endif %}
@@ -54,37 +58,58 @@
                     <a class="nav-link " href="/dashboard" >Dashboard</a>
                 </li>
                 {% endif %}
-
-                {% if current_user.is_authenticated and current_user.type == "Researcher" %}
+<!-- 
+                {% if current_user.is_authenticated %}
                  <li class="nav-item">
-                    <a class="nav-link " href="/proposals" >Proposals</a>
+                    <a class="nav-link " href="/proposals" >Calls</a>
+                </li>
+                {% endif %}
+ -->
+                {% if current_user.is_authenticated %}
+                <li class="nav-item">
+                  <a class="nav-link " href="/profile" >Profile</a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.type!="Researcher"%}
+                <li class="nav-item">
+                  <a class="nav-link " href="reviewer_pending_list" >Pending External Reviews</a>
+                </li>
+                {% endif %}
+
+                {% if current_user.is_authenticated and current_user.type!="Admin"%}
+                <li class="nav-item">
+                  <a class="nav-link " href="proposals" >Open calls</a>
                 </li>
                 {% endif %}
 
                 {% if current_user.is_authenticated and current_user.type == "Admin" %}
-                 <li class="nav-item">
+                <li class="nav-item">
                     <a class="nav-link " href="/proposal_call" >Create Proposal</a>
                 </li>
-                {% endif %}
-               
+            {% endif %}
+
+                {% if current_user.is_authenticated %}
                 <li class="nav-item">
-                    <a class="nav-link " href="#" >About</a>
+                  <a class="nav-link " href="/logout" >Sign Out</a>
                 </li>
+                {% endif %}
+
                 
             </ul>
-            
+            <!---
             <form class="form-inline my-2 my-lg-0" style="">
                     <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-light my-2 my-sm-0" style="background-color:green" type="submit">Search</button>
                     
-            </form>
-            <ul class="navbar-nav mr-auto d-none d-lg-block d-xl-block">
-            <li class="nav-item dropdown float-right">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <img class='d-none d-lg-block d-xl-block 'src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50"/>
+            </form>-->
+            <ul class="navbar-nav mr-auto d-none d-lg-block d-xl-block  " style="padding-left: 25em;">
+            <li class="nav-item dropdown float-right" >
+                    <a class="nav-link dropdown-toggle "   href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img class='d-none d-lg-block d-xl-block 'src="{{url_for('static', filename='profileIcon2.svg')}}" width="50" height="50" />
                     </a>
                     {% if not current_user.is_authenticated %}
-                    <div class="dropdown-menu" >
+                    <div class="dropdown-menu" ">
                       <a class="dropdown-item" href="/sign_in">Sign In</a>
                     </div>
                     {% endif %}
@@ -95,7 +120,7 @@
                       <a class="dropdown-item" href="/logout">Sign Out</a>
                     </div>
                     {% endif %}
-
+                    
 
                   </li>
             </ul>
@@ -105,6 +130,16 @@
     <br>
     <br>
     <br>
+ 
+    
+    <div class="footer">
+        <a href="https://www.facebook.com/ScienceFoundationIreland/" class="fa fa-facebook"></a>
+        <a href="https://twitter.com/scienceirel?ref_src=twsrc%5Egoogle%7Ctwcamp%5Eserp%7Ctwgr%5Eauthor" class="fa fa-twitter"></a>
+        <a href="https://ie.linkedin.com/company/science-foundation-ireland" class="fa fa-linkedin"></a>
+        <a href="https://www.youtube.com/ScienceFoundationIreland" class="fa fa-youtube"></a>
+        
+        <p>Science Foundation Ireland 2019. All rights reserved.</p>
+    </div>
    
     {% block content %}
    
@@ -112,4 +147,3 @@
     
   </body>
 </html>
-

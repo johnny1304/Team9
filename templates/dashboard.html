@@ -5,74 +5,109 @@
 <br><br><br>
 
 <div class="container-fluid text-center bg-grey">
-    <h4>Hi {{current_user.first_name}}, this is your Dashboard</h4>
+  <h4>Hi {{current_user.first_name}}, this is your Dashboard</h4>
     <br>
+    {% if current_user.is_authenticated and current_user.type != "Admin" %}
     <div class="row text-center">
-      <div class="col-sm-4">
-        <div class="thumbnail">
-          <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
-          <p><strong>Applications Pending Action</strong></p>
-          <p>0</p> 
+        <div class="col"></div>
+        <div class="col">
+            <a href="current_applications">
+              
+          <div class="thumbnail">
+              <span class="notify-badge">{{applications|length}}</span>
+              <img src="{{url_for('static', filename='app.svg')}}" alt="Application Icon">
+            <p><strong>Current Applications</strong></p>
+            </div>
+          </a>   
         </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="thumbnail">
-          <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
-          <p><strong>Scientific Reports Pending Action</strong></p>
-          <p>1</p>
+        
+        <div class="col">
+        <a href="scientific_reports">
+          <div class="thumbnail">
+              <span class="notify-badge">{{s_reports|length}}</span>
+            <img src="{{url_for('static', filename='sci.svg')}}" alt="Scientific Icon">
+            <p><strong>Current Scientific Reports</strong></p>
+          </div>
+        </a>
         </div>
-      </div>
-      <div class="col-sm-4">
-        <div class="thumbnail">
-          <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
-          <p><strong>Financial Reports Pending Action</strong></p>
-          <p>0</p>
+        <div class="col"></div>
+    </div>
+
+        <div class="row text-center">
+
+        <div class="col"></div>
+        <div class="col">
+        <a href="financial_reports">
+          <div class="thumbnail">
+              <span class="notify-badge">{{f_reports|length}}</span>
+            <img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
+            <p><strong>Current Financial Reports</strong></p>
+          </div>
+            </a>
         </div>
+    
+
+    
+      <div class="col">
+        <a href="profile">
+          <div class="thumbnail">
+              <span class="notify-badge">{{info}}</span>
+            <img src="{{url_for('static', filename='profileIcon2.svg')}}" alt="Profile Icon">
+            <p><strong>Researcher Profile Page</strong></p>
+          </div>
+          
+            </a>
+        </div>
+        <div class="col"></div>
       </div>
-      
+    </div>
+    
+<!--       
 <div class="container-fluid text-center bg-grey">
       <div class="row text-center">
         <div class="col-sm-4">
+            <a href="#">
           <div class="thumbnail">
+              <span class="notify-badge">0</span>
             <img src="{{url_for('static', filename='budget.svg')}}" alt="Budget Icon">
-            <p><strong>Budgets Pending Action</strong></p>
-            <p>0</p> 
+            <p><strong>Current Budgets</strong></p>
+            </a>
           </div>
         </div>
+      
+  -->      
+  
+<!-- 
         <div class="col-sm-4">
+            <a href="#">
           <div class="thumbnail">
-            <img src="{{url_for('static', filename='award.svg')}}" alt="Award Icon">
-            <p><strong>Pre Award Applicant Response Pending Action</strong></p>
-            <p>1</p>
-          </div>
-        </div>
-        <div class="col-sm-4">
-          <div class="thumbnail">
+              <span class="notify-badge">0</span>
             <img src="{{url_for('static', filename='other.svg')}}" alt="Other Icon">
             <p><strong>Other Items Pending Action</strong></p>
-            <p>0</p>
+            </a>
           </div>
         </div>
-  </div>
-</div>
-
+ -->  
+<!-- 
 <div class="container">
 <div id="accordion">
   <div class="card">
     <div class="card-header" id="headingOne">
       <h5 class="mb-0">
-        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        <a href="proposals"><button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
           Open Calls
-        </button>
+        </button></a>
       </h5>
     </div>
-
+    
     <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
       <div class="card-body">
         Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
       </div>
     </div>
   </div>
+
+  
   <div class="card">
     <div class="card-header" id="headingTwo">
       <h5 class="mb-0">
@@ -82,9 +117,14 @@
       </h5>
     </div>
     <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
-      <div class="card-body">
-        Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+      {% if applications %}
+      {% for each in applications %}
+        {% if each.status == "under" %}
+      <div class="card-body">{{each.title}}
       </div>
+        {% endif %}
+      {% endfor %}
+      {% endif %}
     </div>
   </div>
   <div class="card">
@@ -131,8 +171,84 @@
       </div>
     </div>
   </div>
+ -->
+
+{% endif %}
+
+{% if current_user.is_authenticated and current_user.type == "Admin" %}
+<div class="row text-center">
+  <div class="col"></div>
+  <div class="col">
+    <div class="thumbnail">
+      <a href="/proposal_call"><img  src="{{url_for('static', filename='app.svg')}}" alt="Application Icon"></a>
+        <a href="proposal_call"><p><strong>Create calls for proposal</strong></p></a>
+      
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="thumbnail">
+      <a href="admin_external_review" > <img src="{{url_for('static', filename='send.svg')}}" alt="Scientific Icon">
+      </a><a href="admin_external_review"><p><strong>Review submissions</strong></p></a>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+
+<div class="row text-center">
+  <div class="col"></div>
+  <div class="col">
+    <div class="thumbnail">
+      <a href="completed reviews_list"><img src="{{url_for('static', filename='funds.svg')}}" alt="Funds Icon">
+      </a><a href="completed reviews_list"><p><strong>Completed Reviews</strong></p></a>
+    </div>
+  </div>
   
+  <div class="col">
+    <div class="thumbnail">
+        <a href="manage"><img src="{{url_for('static', filename='manage.svg')}}" alt="Budget Icon">
+        </a>  <a href="manage"><p><strong>Manage Users</strong></p></a>
+    </div>
+  </div>
+  <div class ="col"></div>
+</div>
+   <!--- <div class="col-sm-4">
+      <div class="thumbnail">
+        <img src="{{url_for('static', filename='award.svg')}}" alt="Award Icon">
+        <p><strong>Pre Award Applicant Response Pending Action</strong></p>
+        <p>1</p>
+      </div>
+    </div>
+    <div class="col-sm-4">
+      <div class="thumbnail">
+        <img src="{{url_for('static', filename='other.svg')}}" alt="Other Icon">
+        <p><strong>Other Items Pending Action</strong></p>
+        <p>0</p>
+      </div>
+    </div>
+</div>
+</div> -->
+<br>
+<div class="container">
+<div id="accordion">
+<div class="card">
+<div class="card-header" id="headingOne">
+  <h5 class="mb-0">
+    <a href="proposals"><button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+      Open Calls
+    </button></a>
+  </h5>
+</div>
+<!--
+<div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+  <div class="card-body">
+    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+  </div> -->
 </div>
 </div>
 
+
+
+
+{% endif %}
 {% endblock content %}
