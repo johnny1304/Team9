@@ -1163,7 +1163,9 @@ def funding():
     id = request.args.get("id")
     submission = Submissions.query.filter_by(subid=id).first()
     orcid = submission.user
+    print(submission)
     fundingform = FundingForm()
+    funding = Funding.query.filter_by(subid=id).first()
     if fundingform.submit.data and fundingform.validate():
         new_funding = Funding(StartDate=fundingform.start_date.data, EndDate=fundingform.end_date.data, 
             AmountFunding=fundingform.amount_funding.data, FundingBody=fundingform.funding_body.data, 
@@ -1172,7 +1174,7 @@ def funding():
         db.session.add(new_funding)
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template("funding.html", id=id, fundingform=fundingform)
+    return render_template("funding.html", id=id, fundingform=fundingform, submission=submission, funding=funding)
 
 @app.route('/admin_external_review')
 @login_required
