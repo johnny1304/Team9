@@ -831,8 +831,9 @@ def mail(receiver, content="", email="", password="", subject=""):
         email = "team9sendermail@gmail.com"
     if not password:
         password = "default password"
-
         password = "team9admin"
+    if not subject:
+        subject="Account confirmation email"
     msg = MIMEText(content)
     msg['Subject'] = subject
     msg['To'] = receiver
@@ -2615,14 +2616,12 @@ def grants():
 
 
 def getProfileInfo():
-    #for the demo the profileInfo will start at -9
-    profileInfo = -9
+    profileInfo = 0
     education = current_user.education
     employment = current_user.education
     societies = current_user.societies
     awards = current_user.awards
     funding = current_user.funding
-    team_members = current_user.team_members
     impacts = current_user.impacts
     inno_and_comm = current_user.inno_and_comm
     publications = current_user.publications
@@ -2641,8 +2640,6 @@ def getProfileInfo():
     if len(funding) < 1:
         profileInfo += 1
     if len(impacts) < 1:
-        profileInfo += 1
-    if len(team_members) < 1:
         profileInfo += 1
     if len(inno_and_comm) < 1:
         profileInfo += 1
