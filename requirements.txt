@@ -16,7 +16,7 @@ mysql-connector-python==8.0.15
 parso==0.3.3
 Pillow==5.4.1
 pluggy==0.8.1
-protobuf==3.6.1
+protobuf==3.18.3
 PyMySQL==0.9.3
 python-jsonrpc-server==0.1.2
 python-language-server==0.22.0
