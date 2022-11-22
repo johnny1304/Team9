@@ -14,7 +14,7 @@ MarkupSafe==1.1.0
 mysql-connector==2.1.6
 mysql-connector-python==8.0.15
 parso==0.3.3
-Pillow==5.4.1
+Pillow==9.3.0
 pluggy==0.8.1
 protobuf==3.6.1
 PyMySQL==0.9.3
